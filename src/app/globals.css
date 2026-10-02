@@ -1,0 +1,211 @@
+@import "tailwindcss";
+@import "../vector/tokens.css";
+
+/* dark: follows the system unless the visitor picked an appearance (data-theme on <html>). */
+@custom-variant dark {
+  &:where([data-theme="dark"], [data-theme="dark"] *) {
+    @slot;
+  }
+  @media (prefers-color-scheme: dark) {
+    &:where(:root:not([data-theme="light"]), :root:not([data-theme="light"]) *) {
+      @slot;
+    }
+  }
+}
+
+/*
+ * Vector kit, web edition. Type roles from design-system §3.2. App code never writes text-size, font-weight,
+ * tracking or uppercase classes: it uses a role (type-*) through the kit's Text, Heading, Label and Value.
+ * Weights are explicit numbers; Inter is variable, Plex Mono ships Regular only.
+ */
+
+@utility type-hero {
+  /* Web only: the marketing hero. display (40/44) on phones, larger from tablets up. */
+  font-family: var(--font-sans);
+  font-size: 40px;
+  line-height: 44px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  @media (width >= 768px) {
+    font-size: 56px;
+    line-height: 60px;
+  }
+}
+@utility type-display {
+  font-family: var(--font-sans);
+  font-size: 40px;
+  line-height: 44px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+@utility type-h1 {
+  font-family: var(--font-sans);
+  font-size: 28px;
+  line-height: 34px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+@utility type-h2 {
+  font-family: var(--font-sans);
+  font-size: 22px;
+  line-height: 28px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+@utility type-h3 {
+  font-family: var(--font-sans);
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+@utility type-h4 {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+@utility type-lead {
+  /* Web only: the one subtitle under a page hero. body at 18/28 from tablets up. */
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 400;
+  @media (width >= 768px) {
+    font-size: 18px;
+    line-height: 28px;
+  }
+}
+@utility type-body {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 400;
+}
+@utility type-body-strong {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 500;
+}
+@utility type-small {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 400;
+}
+@utility type-caption {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 400;
+}
+@utility type-field-label {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+}
+@utility type-button {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 500;
+}
+@utility type-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 16px;
+  font-weight: 400;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+@utility type-readout-xl {
+  font-family: var(--font-mono);
+  font-size: 48px;
+  line-height: 52px;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+@utility type-readout-l {
+  font-family: var(--font-mono);
+  font-size: 34px;
+  line-height: 40px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+@utility type-readout-m {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  line-height: 28px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+@utility type-readout-s {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+@utility type-readout-xs {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Screen gutter (§4.1): 16 under 600, 24 to 1023, 32 from 1024. */
+@utility px-gutter {
+  padding-inline: 16px;
+  @media (width >= 600px) {
+    padding-inline: 24px;
+  }
+  @media (width >= 1024px) {
+    padding-inline: 32px;
+  }
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 24px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  /* Focus is a 2pt tint outline, offset 2 (§4.5). */
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: color-mix(in oklab, var(--tint) 24%, transparent);
+    color: var(--foreground);
+  }
+  input,
+  select,
+  textarea {
+    caret-color: var(--tint);
+  }
+  /* No motion beyond colour and opacity; Reduce Motion removes even that. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      transition-duration: 0ms !important;
+      animation-duration: 0ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
