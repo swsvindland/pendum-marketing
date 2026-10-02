@@ -9,12 +9,15 @@ import { Meter, Panel, ReadoutRow, Text, Value } from "@/vector";
 export function Specimen({
   data,
   tone = "default",
+  signal = false,
   exampleLabel = "Example",
   className,
 }: {
   data: SpecimenData;
   /** live: a 3pt signal start rule, for the one specimen that represents something in progress. */
   tone?: "default" | "live";
+  /** The page's one hero meter (§2.4: at most one signal meter per page). Others draw the neutral meter. */
+  signal?: boolean;
   exampleLabel?: string;
   className?: string;
 }) {
@@ -32,7 +35,7 @@ export function Specimen({
         </div>
         {data.meter ? (
           <Meter
-            tone="signal"
+            tone={signal ? "signal" : "neutral"}
             value={data.meter.value}
             max={data.meter.max}
             target={data.meter.target}
