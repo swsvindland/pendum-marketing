@@ -30,7 +30,7 @@ export function CalculatorFrame({
   /** Shown under the method: limits of the estimate. */
   caveat?: string;
 }) {
-  const app = getApp(meta.app);
+  const app = meta.app ? getApp(meta.app) : undefined;
   const related = calculators.filter((c) => c.slug !== meta.slug && (c.category === meta.category || c.app === meta.app)).slice(0, 4);
   return (
     <>
@@ -97,7 +97,24 @@ export function CalculatorFrame({
                 </ButtonLink>
               </Panel.Footer>
             </Panel>
-          ) : null}
+          ) : (
+            <Panel>
+              <Panel.Header eyebrow="Track / Apps" />
+              <Panel.Body>
+                <Heading level={2} variant="h3" id="next-title">
+                  Five apps on one design system
+                </Heading>
+                <Text tone="secondary">
+                  A subscription that syncs across devices, or one-time purchases that keep every record on your phone.
+                </Text>
+              </Panel.Body>
+              <Panel.Footer>
+                <ButtonLink href="/apps" variant="primary" icon="forward" iconPosition="end">
+                  See the apps
+                </ButtonLink>
+              </Panel.Footer>
+            </Panel>
+          )}
           <Panel inset="none">
             <div className="px-4 pt-4 min-[600px]:px-6 min-[600px]:pt-6">
               <Label as="h2">Related calculators</Label>

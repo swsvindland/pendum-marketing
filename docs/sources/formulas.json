@@ -1,0 +1,486 @@
+{
+ "formulas": [
+  {
+   "topic": "Unit conversions (shared by body/macro apps)",
+   "app": "Body (body-track), Macro (macro-track); Lift and Water use the same lb constant",
+   "formula": "toKg(v) = v * (metric ? 1 : stone ? 6.35029318 : 0.45359237); fromKg(kg) = kg / (same factor). toCm(v) = v * (metric ? 1 : 2.54); fromCm(cm) = cm / (metric ? 1 : 2.54). parseHeight(ft, in) = toCm(ft*12 + in, imperial), valid only when ft is an integer >= 0 and 0 <= in < 12 (an empty inches field counts as 0); otherwise NaN. parseNumber accepts only plain digits with one optional decimal part, using '.' or ',' (it rejects '-5', '1e2', 'Infinity', '75kg' and '1,234.5'). Water: OZ_ML = 29.5735295625 mL per US fl oz; LB_KG = 0.45359237. Lift: LB = 0.45359237.",
+   "constants": "lb = 0.45359237 kg; stone = 6.35029318 kg; inch = 2.54 cm; US fl oz = 29.5735295625 mL. Macro-track's program editor (line 48) uses factor 2.2046226218 lb/kg for every non-metric user, so stone users see pounds there. It takes height as a single inches field (cm / 2.54), not feet plus inches. Body/macro measurement entry limits: value > 0; body fat <= 74.9 %; weight <= 500 kg; lengths <= 300 cm. Values are stored rounded to 4 decimals.",
+   "fileRefs": [
+    "/Users/sam/Development/VectorApps/body-track/src/lib/metrics.ts:24-45",
+    "/Users/sam/Development/VectorApps/macro-track/src/lib/metrics.ts:26-47",
+    "/Users/sam/Development/VectorApps/lift-track/src/lib/metrics.ts:2-5",
+    "/Users/sam/Development/VectorApps/water-track/src/lib/metrics.ts:1-2",
+    "/Users/sam/Development/VectorApps/macro-track/src/components/nutrition/program-editor.tsx:48,67-69,98-100",
+    "/Users/sam/Development/VectorApps/body-track/src/components/measurements/use-measurement-log.ts:125",
+    "/Users/sam/Development/VectorApps/macro-track/src/components/measurements/use-measurement-log.ts:145-150"
+   ],
+   "testVectors": [
+    "toKg(14, 'stone') -> 88.90410452",
+    "toCm(70, 'imperial') -> 177.8",
+    "parseHeight('5','11') -> 180.34; parseHeight('6','') -> 182.88; parseHeight('5','11,5') -> 181.61; parseHeight('0','11') -> 27.94",
+    "parseHeight of ['5.5','1'], ['5','12'], ['-1','1'], ['',''], ['5','-1'], ['5','11in'] -> NaN",
+    "heightParts(180.34) -> {feet 5, inches 11}; heightParts(182.88) -> {feet 6, inches 0}",
+    "parseNumber('75,25') -> 75.25",
+    "12 * OZ_ML -> 354.88235475 mL"
+   ]
+  },
+  {
+   "topic": "BMI",
+   "app": "Body (body-track). Macro-track has the identical composition() code, but no UI uses it; macro-track uses BMI only as a cut guard in startingTargets.",
+   "formula": "bmi = weightKg / (heightCm / 100)^2. In body-track the weight is the latest TREND weight (7-day half-life smoothing), not the raw scale reading, and the height is the latest height entry. Returns null if weight or height is missing or 0. The dashboard shows it to 1 decimal, but the band is chosen from the unrounded value.",
+   "constants": "No rounding inside the function. Display uses 1 decimal.",
+   "fileRefs": [
+    "/Users/sam/Development/VectorApps/body-track/src/lib/metrics.ts:110-117",
+    "/Users/sam/Development/VectorApps/body-track/src/components/dashboard.tsx:102-112,175,218",
+    "/Users/sam/Development/VectorApps/macro-track/src/lib/metrics.ts:153-160",
+    "/Users/sam/Development/VectorApps/macro-track/src/lib/program.ts:208-214",
+    "/Users/sam/Development/VectorApps/body-track/src/lib/locales/en.json:146"
+   ],
+   "testVectors": [
+    "composition(80, 180, 20).bmi -> 24.691358024691358",
+    "composition(undefined, undefined, null) -> { bmi: null, ffmi: null }"
+   ],
+   "citation": "CDC Adult BMI Categories (https://www.cdc.gov/bmi/adult-calculator/bmi-categories.html)"
+  },
+  {
+   "topic": "BMI bands (CDC adult)",
+   "app": "Body (body-track). Macro-track has a copy in metric-context.ts that nothing uses.",
+   "formula": "value < 18.5 -> 'Underweight' (warning); value < 25 -> 'Healthy weight range' (success); value < 30 -> 'Overweight range' (warning); else 'Obesity range' (danger). The reference shown is 18.5-24.9. BMI bands do not depend on the selected sex/formula. A null or non-finite value gives 'Add measurements' (neutral).",
+   "constants": "Cutoffs 18.5 / 25 / 30. Each band includes its lower edge, so 18.5 is healthy, 25 is overweight and 30 is obesity. Method text: CDC categories apply to adults 20 and older: below 18.5, 18.5 to <25, 25 to <30, and 30 or above.",
+   "fileRefs": [
+    "/Users/sam/Development/VectorApps/body-track/src/lib/metric-context.ts:53-66",
+    "/Users/sam/Development/VectorApps/body-track/src/lib/locales/en.json:123-126,137,146",
+    "/Users/sam/Development/VectorApps/macro-track/src/lib/metric-context.ts:52-65"
+   ],
+   "testVectors": [
+    "metricContext('bmi', 18.5, 'none').tone -> 'success'",
+    "metricContext('bmi', 25, 'none').label -> 'bmiElevated'",
+    "metricContext('bmi', 30, 'none').tone -> 'danger'"
+   ],
+   "citation": "CDC Adult BMI Categories"
+  },
+  {
+   "topic": "US Navy body fat (male)",
+   "app": "Body (body-track). Macro-track has identical code that no UI uses.",
+   "formula": "circumference = abdomen - neck (cm). BF% = 86.01*log10(circumference/2.54) - 70.041*log10(heightCm/2.54) + 36.76. Log base 10; inputs are cm converted to inches with /2.54. A body-fat % the user recorded directly takes priority when 0 < bf < 75. Returns null if values are missing, height or neck is missing or 0, the formula is 'none', circumference <= 0 (or NaN), or the result is outside the open interval (0, 75).",
+   "constants": "86.01, 70.041, 36.76; 2.54 cm/in; the result is kept only when 0 < result < 75 (both ends exclusive). Measurement sites (help text): neck, and abdomen at the navel.",
+   "fileRefs": [
+    "/Users/sam/Development/VectorApps/body-track/src/lib/metrics.ts:93-109",
+    "/Users/sam/Development/VectorApps/macro-track/src/lib/metrics.ts:136-152",
+    "/Users/sam/Development/VectorApps/body-track/src/lib/locales/en.json:101,147",
+    "/Users/sam/Development/VectorApps/body-track/src/lib/metric-sources.ts:14-27"
+   ],
+   "testVectors": [
+    "bodyFat({neck:40, abdomen:90}, 180, 'male') -> between 18 and 19 (computes to about 18.462)",
+    "bodyFat({bodyFat:24}, undefined, 'none') -> 24 (recorded value wins)",
+    "bodyFat({neck:40}, 180, 'male') -> null",
+    "bodyFat({neck:40, abdomen:30}, 180, 'male') -> null"
+   ],
+   "citation": "U.S. Army AR 600-9 (2019), Appendix B, Table B-5"
+  },
+  {
+   "topic": "US Navy body fat (female)",
+   "app": "Body (body-track). Macro-track has identical code that no UI uses.",
+   "formula": "circumference = waist + hips - neck (cm). BF% = 163.205*log10(circumference/2.54) - 97.684*log10(heightCm/2.54) - 78.387. Log base 10; inputs are cm converted to inches with /2.54. The same priority and validity rules as the male formula apply.",
+   "constants": "163.205, 97.684, 78.387; 2.54 cm/in; the result is kept only when 0 < result < 75. Measurement sites (help text): neck, natural waist and hips.",
+   "fileRefs": [
+    "/Users/sam/Development/VectorApps/body-track/src/lib/metrics.ts:101-108",
+    "/Users/sam/Development/VectorApps/macro-track/src/lib/metrics.ts:144-151",
+    "/Users/sam/Development/VectorApps/body-track/src/lib/locales/en.json:101"
+   ],
+   "testVectors": [
+    "bodyFat({neck:33, waist:75, hips:100}, 165, 'female') -> 29.739407691790603"
+   ],
+   "citation": "U.S. Army AR 600-9 (2019), Appendix B, Table B-5"
+  },
+  {
+   "topic": "US Navy body fat (OmegaFyt server)",
+   "app": "OmegaFyt (FitnessBackend)",
+   "formula": "Male: 86.010*log10(navel - neck) - 70.041*log10(height) + 36.76. Female (used for every user whose Sex is not Male): 163.205*log10(navel + hip - neck) - 97.684*log10(height) - 78.387. Imperial users' values are already in inches. Metric users' values are converted one by one with cm * 0.393701 (not /2.54) before subtracting. Height is the most recent entry with Height > 0 (ordered by Created, then Id). There is no range check; only non-finite results (NaN or \u00b1Infinity) are dropped.",
+   "constants": "Same coefficients as the apps. Inch factor is 0.393701. The circumference is NAVEL, not abdomen or waist.",
+   "fileRefs": [
+    "/Users/sam/Development/VectorApps/FitnessBackend/FitnessServices/Services/BodyService.cs:616-643",
+    "/Users/sam/Development/VectorApps/FitnessBackend/FitnessServices/Services/BodyService.cs:645-680",
+    "/Users/sam/Development/VectorApps/FitnessBackend/FitnessServices.Tests/BodyServiceRecordsTests.cs:247-294"
+   ],
+   "testVectors": [
+    "Imperial male, heights 58 then 70 (latest wins), neck 15, navel 34 -> 86.010*log10(19) - 70.041*log10(70) + 36.76 (about 17.51), within 6 decimals",
+    "Metric male, height 178 (a later height of 0 is ignored), neck 38: navel 86 -> kept; navel 3.4 -> NaN, dropped; navel 38 -> -Infinity, dropped"
+   ]
+  },
+  {
+   "topic": "ACE body-fat bands",
+   "app": "Body (body-track). Macro-track has an unused copy.",
+   "formula": "[low, lean, high] = male ? [6, 14, 25] : [14, 21, 32]. value < low -> 'Very low body fat' (warning; ACE essential-fat range); value < lean -> 'Lean body fat' (info; athletes); value < high -> 'Typical body fat' (success; ACE fitness and average combined); else 'Elevated body fat' (warning; obese). The reference shown is [lean, high - 1]: male 14-24%, female 21-31%. If the formula is 'none', the label is 'Choose a formula in Settings for context' (neutral) and no band is shown. A null value is checked first and gives 'Add measurements'.",
+   "constants": "Male 6/14/25; Female 14/21/32. Each band includes its lower edge, so male 25 is 'Elevated' and female 25 is 'Typical'.",
+   "fileRefs": [
+    "/Users/sam/Development/VectorApps/body-track/src/lib/metric-context.ts:67-77",
+    "/Users/sam/Development/VectorApps/body-track/src/lib/locales/en.json:118,127-130,138,147",
+    "/Users/sam/Development/VectorApps/body-track/src/lib/metric-sources.ts:14-27",
+    "/Users/sam/Development/VectorApps/macro-track/src/lib/metric-context.ts:66-76"
+   ],
+   "testVectors": [
+    "metricContext('bodyFat', 25, 'male').label -> 'fatHigh'",
+    "metricContext('bodyFat', 25, 'female').label -> 'fatTypical'",
+    "metricContext('bodyFat', 25, 'none').tone -> 'neutral'"
+   ],
+   "citation": "ACE, Anthropometric Measurements: When to Use this Assessment (2014)"
+  },
+  {
+   "topic": "FFMI (unadjusted)",
+   "app": "Body (body-track). Macro-track has identical code that no UI uses.",
+   "formula": "ffmi = bmi * (1 - bodyFat% / 100), which equals lean mass (kg) / height (m)^2. It uses trend weight, and the body fat is the recorded value or the Navy estimate. It is null when BMI or body fat is null. There is no height-normalized FFMI (no 6.1*(1.8 - h) term). Display uses 1 decimal.",
+   "constants": "none",
+   "fileRefs": [
+    "/Users/sam/Development/VectorApps/body-track/src/lib/metrics.ts:115-116",
+    "/Users/sam/Development/VectorApps/macro-track/src/lib/metrics.ts:158-159",
+    "/Users/sam/Development/VectorApps/body-track/src/lib/locales/en.json:148"
+   ],
+   "testVectors": [
+    "composition(80, 180, 20).ffmi -> 19.753086419753085"
+   ],
+   "citation": "Schutz, Kyle & Pichard (2002), FFMI and FMI percentiles in Caucasians aged 18-98 y (https://pubmed.ncbi.nlm.nih.gov/12080449/). It is cited as context only; the bands are the app's own simplification."
+  },
+  {
+   "topic": "FFMI bands",
+   "app": "Body (body-track). Macro-track has an unused copy.",
+   "formula": "range = male ? [17, 20] : [14, 17]. value < range[0] -> 'Lower lean mass' (warning); value <= range[1] -> 'Typical lean mass' (success); else 'Higher lean mass' (info). A Navy formula/sex must be selected; 'none' gives 'Choose a formula in Settings for context'.",
+   "constants": "Male 17-20, Female 14-17. Both ends count as Typical.",
+   "fileRefs": [
+    "/Users/sam/Development/VectorApps/body-track/src/lib/metric-context.ts:78-84",
+    "/Users/sam/Development/VectorApps/body-track/src/lib/locales/en.json:131-133,139,148"
+   ],
+   "testVectors": [
+    "metricContext('ffmi', 21, 'male').label -> 'ffmiHigh'",
+    "metricContext('ffmi', 16, 'female').label -> 'ffmiTypical'",
+    "metricContext('ffmi', null, 'male').label -> 'metricMissing'"
+   ],
+   "citation": "Schutz, Kyle & Pichard (2002), referenced only; the bands are app comparisons, not clinical cutoffs"
+  },
+  {
+   "topic": "Shoulder-to-waist ratio goal",
+   "app": "Body (body-track). Macro-track has an unused copy.",
+   "formula": "ratio = shoulders / waist (circumferences in the same unit). It is null if either value is missing, 0, non-finite or <= 0. Classification compares Math.round(ratio*100) to 162: below -> 'Below goal' (warning); above -> 'Above goal' (info); equal -> 'At goal' (success). That makes 'At goal' about 1.615 <= ratio < 1.625. The dashboard uses the most recent body entry that has both values and shows the ratio to 2 decimals.",
+   "constants": "Goal 1.62. The app calls this a physique comparison, not a health cutoff.",
+   "fileRefs": [
+    "/Users/sam/Development/VectorApps/body-track/src/lib/metric-context.ts:7-18,37-52",
+    "/Users/sam/Development/VectorApps/body-track/src/components/dashboard.tsx:105-109,190,218",
+    "/Users/sam/Development/VectorApps/body-track/src/lib/locales/en.json:134-136,140,149"
+   ],
+   "testVectors": [
+    "shoulderWaistRatio({shoulders:129.6, waist:80}) -> 1.62",
+    "metricContext('shoulderWaistRatio', 1.5, 'none').label -> 'ratioBelowGoal'",
+    "metricContext('shoulderWaistRatio', 1.62, 'none').tone -> 'success'",
+    "metricContext('shoulderWaistRatio', 1.8, 'none').label -> 'ratioAboveGoal'",
+    "shoulderWaistRatio of undefined, {}, {waist:80}, {shoulders:120, waist:0}, {shoulders:Infinity, waist:80} -> null"
+   ]
+  },
+  {
+   "topic": "Exponential weight trend (7-day half-life)",
+   "app": "Body (body-track), Macro (macro-track), Lift (lift-track)",
+   "formula": "Readings that are non-finite or <= 0 are skipped, and macro-track also skips readings marked excluded. Same-day readings are averaged to give raw, and days are sorted. trend_0 = raw_0. For each later day, alpha = 1 - 0.5^(daysSincePreviousWeighIn / 7) and trend = prev + alpha*(raw - prev). Macro-track also has: (a) dailyTrend, which fills days between trend points at most 7 days apart by straight-line interpolation and leaves wider gaps null; (b) trendPace = (latest.trend - anchor.trend) / days between * 7 in kg/week, where the anchor is the point 7-28 days back that is closest to 21 days back.",
+   "constants": "Half-life 7 days; day = 86400000 ms. Each day's time is Date.parse(`${day}T00:00:00Z`) of the local date string, and timestamps map to local dates.",
+   "fileRefs": [
+    "/Users/sam/Development/VectorApps/body-track/src/lib/metrics.ts:71-92",
+    "/Users/sam/Development/VectorApps/macro-track/src/lib/metrics.ts:111-135",
+    "/Users/sam/Development/VectorApps/lift-track/src/lib/metrics.ts:26-47",
+    "/Users/sam/Development/VectorApps/macro-track/src/lib/program.ts:242-265",
+    "/Users/sam/Development/VectorApps/macro-track/src/lib/insights.ts:307-325",
+    "/Users/sam/Development/VectorApps/body-track/src/lib/locales/en.json:100"
+   ],
+   "testVectors": [
+    "[2024-01-08: 90, 2024-01-01: 78 & 82, 2024-01-09: NaN] -> 2 points; trend[0].raw 80; trend[1].trend 85",
+    "[80 on 2024-01-01, 80 on 2024-01-02] -> trend[1] 80",
+    "[] -> []"
+   ]
+  },
+  {
+   "topic": "Normalized weight (OmegaFyt server)",
+   "app": "OmegaFyt (FitnessBackend)",
+   "formula": "Each weight is replaced by the simple average of all weights dated from (its day - 7 days) through the end of its day, including later weights of the same day. The window covers 8 calendar days. The current normalized weight is the same average for the latest weight's day. Averages are stored as float.",
+   "constants": "7-day lookback (an 8-calendar-day window including the day itself)",
+   "fileRefs": [
+    "/Users/sam/Development/VectorApps/FitnessBackend/FitnessServices/Services/BodyService.cs:26-77",
+    "/Users/sam/Development/VectorApps/FitnessBackend/FitnessServices/Services/BodyService.cs:329-355"
+   ]
+  },
+  {
+   "topic": "Estimated one-rep max (Lift)",
+   "app": "Lift (lift-track)",
+   "formula": "Epley with reps in reserve: toFailure = reps + max(0, rir ?? 0). e1RM = toFailure <= 1 ? weight : weight * (1 + toFailure/30). Returns 0 if weight <= 0 or reps <= 0 (or either is NaN). Inverse: repsToFailure(e1rm, w) = max(0, 30*(e1rm/w - 1)), and 0 for invalid inputs. In the strength chart unknown RIR counts as 0 and warm-up sets are excluded. Load for a bodyweight exercise = bodyWeight + added; for an assisted exercise = max(0, bodyWeight - assistance). Without a known body weight, a bodyweight exercise uses the added load only and an assisted one uses 0. The day's best set is charted. Progression instead uses assumedRir (see the RIR topic).",
+   "constants": "Divisor 30. There is NO rep cap in code; the docs only say estimates beyond about 12 reps to failure are rough. The plan doc mentions an 'Epley/Brzycki table', but only Epley is implemented.",
+   "fileRefs": [
+    "/Users/sam/Development/VectorApps/lift-track/src/lib/strength.ts:3-18",
+    "/Users/sam/Development/VectorApps/lift-track/src/lib/strength.ts:20-36",
+    "/Users/sam/Development/VectorApps/lift-track/src/lib/analytics.ts:87-115",
+    "/Users/sam/Development/VectorApps/lift-track/docs/progression.md:74,164",
+    "/Users/sam/Development/VectorApps/lift-track/docs/lift-track-plan.md:58"
+   ],
+   "testVectors": [
+    "e1rm(100, 5, 2) -> 100*(1 + 7/30) = 123.333...",
+    "e1rm(100, 5) -> 100*(1 + 5/30) = 116.666...",
+    "e1rm(100, 1) -> 100",
+    "e1rm(0, 5) -> 0",
+    "repsToFailure(e1rm(80, 8, 2), 80) -> 10",
+    "effectiveLoad(10, 'bodyweight', 80) -> 90; effectiveLoad(30, 'assisted', 80) -> 50; effectiveLoad(60, undefined, 80) -> 60"
+   ]
+  },
+  {
+   "topic": "RIR handling and weekly RIR plan (Lift)",
+   "app": "Lift (lift-track)",
+   "formula": "rirPlan(weeks) clamps Math.round(weeks) to 3..6: 3 -> [3,2,1]; 4 -> [3,2,1,0]; 5 -> [3,2,2,1,0]; 6 -> [3,3,2,2,1,0]. The docs table lists only 4, 5 and 6 weeks. effortRir(effort, targetRir), with target = targetRir ?? 2: hard -> (target >= 2 ? 1 : 0); good -> clamp(target, 1, 3); easy -> max(4, target + 2). assumedRir picks, in order: the recorded RIR; the effort rating; 0 if reps fell short of target reps; then targetRir ?? 2. Reps at a load = floor(repsToFailure(oneRm, load) - rir + 0.1), where oneRm = e1rm(top set, assumedRir). A first session gives reps = round((min+max)/2) with no load. A deload uses the heaviest achievable load at or below 0.9 x the last top set's effective load, reps at the bottom of the range, and RIR 4.",
+   "constants": "DELOAD_RIR 4, DELOAD_LOAD 0.9, OVERFLOW 3 reps, STALL_SESSIONS 3",
+   "fileRefs": [
+    "/Users/sam/Development/VectorApps/lift-track/src/lib/progression.ts:14-31",
+    "/Users/sam/Development/VectorApps/lift-track/src/lib/progression.ts:104-126",
+    "/Users/sam/Development/VectorApps/lift-track/src/lib/progression.ts:224-256",
+    "/Users/sam/Development/VectorApps/lift-track/src/lib/progression.ts:280,296",
+    "/Users/sam/Development/VectorApps/lift-track/docs/progression.md:14-22,74-78"
+   ],
+   "testVectors": [
+    "rirPlan(5) -> [3,2,2,1,0]",
+    "effortRir hard with targets 3,2,1,0 -> [1,1,0,0]",
+    "effortRir good with targets 3,2,0,null -> [3,2,1,2]",
+    "effortRir easy with targets 2,3,0 -> [4,5,4]",
+    "assumedRir({rir:3, effort:'hard'}) -> 3"
+   ]
+  },
+  {
+   "topic": "Plate loading",
+   "app": "Lift (lift-track)",
+   "formula": "Default kg gym: bar 20, plates [25, 20, 15, 10, 5, 2.5, 1.25], dumbbell step 2 (max 50), machine step 5. Default lb gym: bar 45, plates [45, 35, 25, 10, 5, 2.5], dumbbell step 5 (max 120), machine step 10. EZ bar 10 kg / 25 lb; trap bar 25 kg / 55 lb; Smith and plate-loaded machines have base 0. Plate-paired equipment (barbell, ezBar, trapBar, smith, plateLoaded): load = base + 2*perSide. Dumbbells and kettlebells use multiples of the step up to dumbbellMax. Machines and cables use multiples of the machine step. Bodyweight and band added load is any single unpaired stack of plates. All math is in hundredths of the gym's unit. roundLoad 'nearest' picks the closest achievable load, with ties going to the lower load. roundLoad 'down' picks the heaviest load <= target, or the lightest achievable load if none is <= target. roundLoad(<= 0) -> 0. platesPerSide does a fewest-plates change-making search (not greedy), returns plates heaviest first, and returns null if the load cannot be made exactly, perSide < 0, or the equipment is not plate-paired.",
+   "constants": "kg/lb 0.45359237. roundLoad searches achievable loads up to target*1.25 + 10 (gym unit); stepLoad searches up to current + 100. Gym preset dumbbellMax: none 20 kg/50 lb, hotel 24/50, apartment 34/75, home 40/90, full 50/120.",
+   "fileRefs": [
+    "/Users/sam/Development/VectorApps/lift-track/src/lib/loads.ts:46-131",
+    "/Users/sam/Development/VectorApps/lift-track/src/lib/loads.ts:157-174",
+    "/Users/sam/Development/VectorApps/lift-track/src/lib/loads.ts:195-273"
+   ],
+   "testVectors": [
+    "roundLoad(101, barbell, kg) -> 100",
+    "roundLoad(101.3, barbell, kg) -> 102.5",
+    "roundLoad(99, barbell, kg, 'down') -> 97.5",
+    "roundLoad(225 lb, barbell, lb) -> 225 lb; roundLoad(226 lb) -> 225 lb",
+    "platesPerSide(100, barbell, kg) -> [25, 15]",
+    "platesPerSide(102.5, barbell, kg) -> [25, 15, 1.25]",
+    "platesPerSide(315 lb, barbell, lb) -> [45, 45, 45]",
+    "platesPerSide(15, barbell, kg) -> null; platesPerSide(20, dumbbell, kg) -> null",
+    "roundLoad(23, dumbbell, kg) -> 22; roundLoad(80, dumbbell, kg) -> 50",
+    "stepLoad(22, dumbbell, +1) -> 24; (-1) -> 20; stepLoad(0, cable, +1) -> 5; stepLoad(100, barbell, +1) -> 102.5",
+    "roundLoad(0, barbell, kg) -> 0"
+   ]
+  },
+  {
+   "topic": "BMR / starting TDEE (Mifflin-St Jeor + activity)",
+   "app": "Macro (macro-track)",
+   "formula": "resting = 10*weightKg + 6.25*heightCm - 5*ageYears + (male ? 5 : -161). initialExpenditure = round(resting * multiplier[activity]). Sex must be female or male; there is no 'none'. When a program is created, the formula is used only if there is no earlier program estimate and no method-2 reviewed expenditure from the last 56 days.",
+   "constants": "Activity multipliers: low 'Mostly seated' 1.2; light 'Lightly active' 1.375 (UI default); moderate 'Active' 1.55; high 'Very active' 1.725. Valid inputs: age is an integer 18-100; height 120-230 cm; weight and target weight 35-350 kg; expenditure 1200-5000. The docs call it the 'simplified' Mifflin-St Jeor equation and say the multipliers are coarse product assumptions.",
+   "fileRefs": [
+    "/Users/sam/Development/VectorApps/macro-track/src/lib/program.ts:77-83",
+    "/Users/sam/Development/VectorApps/macro-track/src/lib/program.ts:46-76",
+    "/Users/sam/Development/VectorApps/macro-track/src/lib/coaching-store.ts:381-388",
+    "/Users/sam/Development/VectorApps/macro-track/src/components/nutrition/program-editor.tsx:79",
+    "/Users/sam/Development/VectorApps/macro-track/src/lib/locales/en.json:531-534",
+    "/Users/sam/Development/VectorApps/macro-track/docs/coaching.md:5,7"
+   ],
+   "testVectors": [
+    "initialExpenditure({age 30, height 180, weight 80, male, moderate}) -> 2759"
+   ],
+   "citation": "Mifflin et al. 1990 (https://pubmed.ncbi.nlm.nih.gov/2305711/), cited in macro-track/docs/coaching.md for the resting equation only"
+  },
+  {
+   "topic": "Macro targets for Cut / Bulk / Maintain",
+   "app": "Macro (macro-track)",
+   "formula": "calories = round(expenditure + rate*7700/7), where rate = goalRate (kg/week, negative when losing). protein = round(weightKg * proteinGPerKg). If custom protein grams are set, protein = round(max(grams, 1.4*weight)). remaining = calories - 4*protein. fat = round(max(0.6*weightKg, remaining*fatShare/9)). carbs = round((calories - 4*protein - 9*fat)/4). It throws if calories < 1500, calories > 5000 or carbs < 0. startingTargets also throws whenever goalRate < 0 (a cut, or maintenance correcting downward) and the current or target BMI is < 18.5.",
+   "constants": "Protein choices 1.4 / 1.6 (default) / 2.0 / 2.2 g/kg. Fat share of non-protein kcal: balanced 0.40 (default), 'More carbs' (lower-fat) 0.25, 'More fat' (lower-carb) 0.60. Fat floor 0.6 g/kg. Atwater 4/4/9. With a custom carbPct, fatShare = 1 - carbPct/100. Custom protein must be 40-500 g and carbPct 0-100. Manual check-in adjustment requires: calories 1500-5000; |4P + 4C + 9F - calories| <= 50; protein >= floor(1.4*kg) and <= 500 g; fat >= floor(0.6*kg).",
+   "fileRefs": [
+    "/Users/sam/Development/VectorApps/macro-track/src/lib/program.ts:84-103",
+    "/Users/sam/Development/VectorApps/macro-track/src/lib/program.ts:104-154",
+    "/Users/sam/Development/VectorApps/macro-track/src/lib/program.ts:201-217",
+    "/Users/sam/Development/VectorApps/macro-track/src/lib/program.ts:47-51,67",
+    "/Users/sam/Development/VectorApps/macro-track/src/components/nutrition/program-editor.tsx:35-39,82-87",
+    "/Users/sam/Development/VectorApps/macro-track/src/lib/locales/en.json:449-451,769"
+   ],
+   "testVectors": [
+    "startingTargets(lose 0.5%, {30y,180cm,80kg,male,moderate,1.6,balanced,target 75, initialExpenditure 2600}) -> calories 2160, protein 128",
+    "startingTargets(gain 0.25%, same profile, target 85) -> calories 2820",
+    "programMacros(2400, 80, balanced/1.6) -> {calories 2400, protein 128, fat 84, carbs 283}",
+    "programMacros(2000, 80, lower-fat/1.6) -> {calories 2000, protein 128, fat 48, carbs 264} (fat floor applies)",
+    "customMacros({2362, P150, C256, F82}) -> {proteinG 150, carbPct 58.1}",
+    "stepTargets({2310,P128,F80,C270}, +50, 80) -> {2360, P128, C278, F82}",
+    "startingTargets(lose, target 50 kg at 180 cm) -> throws; startingTargets(maintain, target 50 kg) -> also throws"
+   ],
+   "citation": "ISSN protein position stand (https://link.springer.com/article/10.1186/s12970-017-0177-8), cited in macro-track/docs/coaching.md:7 for the protein choices"
+  },
+  {
+   "topic": "Weekly rate guidance (% body weight)",
+   "app": "Macro (macro-track)",
+   "formula": "goalRate (kg/week): manual -> 0. maintain -> 0 if |weight - target| <= 0.7 kg, otherwise weight*0.0015 toward the target. lose/gain -> 0 once the target is reached (weight <= target for lose, >= target for gain), otherwise min(|weight - target|, weight*pace/100), signed -1 for lose and +1 for gain. Goal ETA compounds weekly with step = kg*pace/100, adding a fractional final week. ETA = today + ceil(weeks*7) days; nothing is shown at 520 weeks or more.",
+   "constants": "Cut: min 0.1, max 1.5, step 0.05, recommended 0.5-1.0 %/wk, default 0.5. Above 1% is noted as suiting a 2-4 week mini-cut. Bulk: min 0.05, max 0.5, step 0.05, recommended 0.1-0.25 %/wk, default 0.25 when Bulk is chosen. Above 0.25% is noted as adding more fat. Maintenance band 0.7 kg; correction 0.15 %/wk.",
+   "fileRefs": [
+    "/Users/sam/Development/VectorApps/macro-track/src/lib/program.ts:21-28",
+    "/Users/sam/Development/VectorApps/macro-track/src/lib/program.ts:190-200",
+    "/Users/sam/Development/VectorApps/macro-track/src/components/nutrition/program-editor.tsx:55-56,154-157",
+    "/Users/sam/Development/VectorApps/macro-track/src/components/plan/pace-slider.tsx:41-51",
+    "/Users/sam/Development/VectorApps/macro-track/src/lib/locales/en.json:513-515,771",
+    "/Users/sam/Development/VectorApps/macro-track/src/lib/insights.ts:327-361"
+   ],
+   "testVectors": [
+    "goalRate(maintain, 80.4, 80) -> 0",
+    "goalRate(maintain, 82, 80) -> < 0; goalRate(maintain, 78, 80) -> > 0",
+    "goalRate(lose 0.5, 75, 75) -> 0; goalRate(gain 0.25, 85, 85) -> 0"
+   ]
+  },
+  {
+   "topic": "Energy density of weight change and adaptive expenditure",
+   "app": "Macro (macro-track)",
+   "formula": "Method 1 (reviewWeek; used only for a goal without a program): uses the 21 days before the check-in, all of which must be marked complete with food, and at least 3 weigh-in days in each of the 3 weeks. A least-squares slope (kg/day) is fitted to daily average weights, and intake = 21-day mean. It holds if |slope*7| > 1% of mean weight, the RMS residual > 1% of mean weight, or consecutive weigh-ins differ by > 2% of mean weight. expenditure = intake - slope*7700. desiredWeeklyKg = meanWeight*pace/100 (signed, 0 for maintain, with no target cap). desired = expenditure + desiredWeeklyKg*7700/7. It requires expenditure 1200-5000 and desired and current calories 1500-5000. The change is capped at min(100, 5% of current calories), and P/C/F are scaled proportionally. Method 2 (reviewProgram; used with a program): uses the 21 days before the check-in. Known days are complete days with food or explicit 'fasting' days with none (0 kcal). Only runs of >= 7 consecutive known days with a trend value count. It needs >= 12 used days, >= 6 weigh-in days and a weigh-in within the last 4 days. raw = intake/used - (deltaTrendKg/used)*7700. It holds if any consecutive daily raw averages differ by > 3% of trend weight, |weekly change| > 1% of body weight, or raw is outside 1200-5000. expenditure = round(prev + 0.35*clamp(raw - prev, -500, 500)). Calories move toward startingTargets(...).calories by at most min(150, 7.5% of current calories). Macros are recomputed with programMacros at the trend weight. The Progress chart uses the method-2 relation every day, smoothed with a 4-day half-life (1 - 0.5^(1/4)) and steps capped at \u00b1500.",
+   "constants": "7700 kcal per kg. Valid expenditure 1200-5000. Coached calories 1500-5000. Damping 0.35. Caps: method 1 min(100 kcal, 5%); method 2 min(150 kcal, 7.5%).",
+   "fileRefs": [
+    "/Users/sam/Development/VectorApps/macro-track/src/lib/coaching.ts:29-144",
+    "/Users/sam/Development/VectorApps/macro-track/src/lib/program.ts:266-433",
+    "/Users/sam/Development/VectorApps/macro-track/src/lib/coaching-store.ts:97-122",
+    "/Users/sam/Development/VectorApps/macro-track/src/lib/insights.ts:75-78,88-166",
+    "/Users/sam/Development/VectorApps/macro-track/src/lib/locales/en.json:765,767",
+    "/Users/sam/Development/VectorApps/macro-track/docs/coaching.md:11,31,41-42"
+   ],
+   "testVectors": [
+    "reviewWeek(21 days x 2400 kcal, flat 80 kg, targets 2200, lose 0.25%) -> expenditure 2400, proposed.calories 2180, desiredWeeklyKg -0.2",
+    "same input with 3000 kcal/day -> proposed.calories 2300",
+    "reviewProgram(profile, priorExpenditure 2600, flat 80 kg, 2400 kcal) -> expenditure 2530, trendWeightKg 80, protein 128; with day 10 partial -> observedDays 20, still ready"
+   ],
+   "citation": "NIDDK Body Weight Planner and dynamic-model research, listed in macro-track/docs/coaching.md as context. The docs state that 7700 kcal/kg is a short-term approximation."
+  },
+  {
+   "topic": "TDEE / expenditure estimation (OmegaFyt server)",
+   "app": "OmegaFyt (FitnessBackend)",
+   "formula": "V1 (uses normalized weights): for each normalized weight, the food window is the 14 days before its date (start inclusive, its own day excluded). weightStart = the last normalized weight dated <= date - 7 days. If >= 7 days are tracked and weightStart exists and is earlier: expenditure = avgCalories - (weightChange * kcalPerUnit / daysBetween), where daysBetween is fractional days between timestamps. Otherwise expenditure = weight * defaultMultiplier. V2/history (uses RAW weights): the check-in is the Sunday on or before each date. The window is (checkIn - 14 days, checkIn]. With >= 3 weights, it keeps those with |w - median|/median < 0.05, where median = sorted[count/2] (the upper median for an even count). Food days count only when > 500 kcal. With >= 2 weights and >= 3 food days, expenditure = avg - (last - first)*kcalPerUnit / (calendar days between first and last). Otherwise it is lastWeight*multiplier, or 2000 when there are no weights.",
+   "constants": "kcalPerUnit 7700 (kg) or 3500 (lb). defaultMultiplier 33 kcal/kg or 15 kcal/lb. Fallback 2000 kcal.",
+   "fileRefs": [
+    "/Users/sam/Development/VectorApps/FitnessBackend/FitnessServices/Services/BodyService.cs:91-157",
+    "/Users/sam/Development/VectorApps/FitnessBackend/FitnessServices/Services/BodyService.cs:159-322"
+   ],
+   "testVectors": [
+    "Imperial V1: 2500 kcal/day, normalized weight 198.8 -> 198.1 lb over 7 days -> 2850",
+    "Metric V1: 2500 kcal/day, normalized change -0.35 kg over 7 days -> 2885",
+    "Imperial V1, no food, 200 lb -> 3000 (200 * 15)",
+    "V2 imperial example -> 2850 (BodyServiceV2Tests.cs:183-184)"
+   ]
+  },
+  {
+   "topic": "Macro targets (OmegaFyt server)",
+   "app": "OmegaFyt (FitnessBackend)",
+   "formula": "Uses the current NORMALIZED weight (the 7-day window average). All math is per POUND: metric weight * 2.20462. cal = lb * 15. With a Cut or Bulk plan, dailyDelta = lb*(Amount/100)*3500/7, added for Bulk and subtracted for Cut. Maintenance, Unknown or no plan gets no delta, so the 'Amount ?? 1' default never affects the result. low = cal*0.975 (reported Calories); high = low + cal*0.025 = cal (CaloriesHigh). Protein g/lb (low/high): Cut 1.0/1.2, Bulk 0.8/1.0, Maintenance/none 0.55/0.73. Fat 0.35/0.40 g/lb. carbs = max(0, (low - 4*protein - 9*fat)/4); carbsHigh = carbs*1.05. fiber = low*0.01; fiberHigh = high*0.02. Reported Carbs = carbs + fiber when carbs > 0, but fiberHigh when carbs = 0. Reported CarbsHigh = carbsHigh + fiberHigh. With no user or weight, the defaults are female (only when Sex == Female) 1425-1575 kcal, P 95-105, C 180-200, F 35-45, fiber 15-30; otherwise male 2425-2575 kcal, P 165-175, C 300-325, F 60-70, fiber 25-50.",
+   "constants": "2.20462 lb/kg (float); 15 kcal/lb; 3500 kcal/lb; 2.5% band; Atwater 4/4/9",
+   "fileRefs": [
+    "/Users/sam/Development/VectorApps/FitnessBackend/FitnessServices/Services/FoodService.cs:18",
+    "/Users/sam/Development/VectorApps/FitnessBackend/FitnessServices/Services/FoodService.cs:96-127",
+    "/Users/sam/Development/VectorApps/FitnessBackend/FitnessServices/Services/FoodService.cs:130-210",
+    "/Users/sam/Development/VectorApps/FitnessBackend/FitnessRepository/Models/UserPlan.cs:7-26"
+   ],
+   "testVectors": [
+    "Imperial 200 lb Maintenance -> Calories 2925, CaloriesHigh 3000, Protein 110, ProteinHigh 146, Fat 70, FatHigh 80 (within 0.5)",
+    "Metric 80 kg Maintenance -> Calories in [2570, 2585], Protein in [96, 98]",
+    "Metric 80 kg equals Imperial 80*2.20462 lb for Cut, Bulk and Maintenance (Calories, CaloriesHigh, Protein, Fat, Carbs, Fiber within 0.5)",
+    "Imperial 100 lb Cut at 3% -> Carbs >= 0 and CarbsHigh >= 0"
+   ]
+  },
+  {
+   "topic": "Weekly rate presets (OmegaFyt)",
+   "app": "OmegaFyt (fitness-native)",
+   "formula": "Quick-pick weekly rates in % of body weight per week. Cut and Bulk need a rate > 0. Weekly change preview = (rate/100) * latest normalized weight, in the user's unit.",
+   "constants": "Cut: 0.25, 0.5, 0.75, 1. Bulk: 0.1, 0.2, 0.3, 0.5.",
+   "fileRefs": [
+    "/Users/sam/Development/VectorApps/fitness-native/src/components/plan/AddPlanForm.tsx:53-57,96-106",
+    "/Users/sam/Development/VectorApps/fitness-native/src/components/plan/planAmount.ts:10-16"
+   ]
+  },
+  {
+   "topic": "Estimated one-rep max (OmegaFyt server)",
+   "app": "OmegaFyt (FitnessBackend)",
+   "formula": "estimate = (int)(weight * (1 + reps/30.0)), truncated to an integer in the user's unit. Only sets with weight > 0 and reps > 0 count. There is no RIR and no 1-rep special case, so 1 rep gives weight*1.0333 (truncated). The best estimate per tracked exercise (after substitutions) per workout day is stored.",
+   "constants": "Divisor 30. Tracked exercises: Incline Bench Press, Bench Press, Chest Dip, Squat, Leg Press, Deadlift, Sumo Deadlift, Shoulder Press, Pull-Up, Chin-Up, Barbell Row.",
+   "fileRefs": [
+    "/Users/sam/Development/VectorApps/FitnessBackend/FitnessServices/Services/WorkoutService.cs:12",
+    "/Users/sam/Development/VectorApps/FitnessBackend/FitnessServices/Services/WorkoutService.cs:376-399"
+   ]
+  },
+  {
+   "topic": "Progressive overload load step (OmegaFyt server)",
+   "app": "OmegaFyt (FitnessBackend)",
+   "formula": "next = prev + max(prev*0.05, 1). In the final week (Duration == week) or a deload, next *= 0.6. The result rounds UP (ceiling) to a 2.5 step if next < 45, otherwise to a 5 step, then to 1 decimal. With no previous weight the load is 5; a bodyweight set (prev <= 0) gives 0. Reps: if previous reps or weight is missing (or reps <= 0), reps = min. Otherwise lighter load -> prev + 2, same load (within 0.001) -> prev + 1, heavier -> prev, then clamped to [min (default 8, at least 1), max (unbounded if unset)]. Sets: week 1 -> minSets. Final or deload week -> max(1, lastWeekSets/2). Otherwise last week + 1 while below the exercise's share of the daily cap (cap / exercises), else ceil(share), clamped to [minSets, maxSets (default 10)].",
+   "constants": "+5% (minimum 1 unit); deload x0.6; step 2.5 below 45, else 5; daily set cap male 25 / female 35; max 50 sets per exercise",
+   "fileRefs": [
+    "/Users/sam/Development/VectorApps/FitnessBackend/FitnessServices/Services/ProgressiveOverload.cs:8-113"
+   ]
+  },
+  {
+   "topic": "Water goal default",
+   "app": "Water (water-track)",
+   "formula": "The daily goal is a fixed user setting; there is no per-kg formula. Only non-alcoholic fluids (abv == 0), including coffee and tea, count toward the goal. Total fluid includes alcohol.",
+   "constants": "goalMl default 2500 mL; default serving 250 mL; goal and serving 1-5000 mL; weight 20-400 kg (optional)",
+   "fileRefs": [
+    "/Users/sam/Development/VectorApps/water-track/src/db/schema.ts:35-36",
+    "/Users/sam/Development/VectorApps/water-track/src/lib/metrics.ts:60-70",
+    "/Users/sam/Development/VectorApps/water-track/src/app/(tabs)/settings.tsx:87-91",
+    "/Users/sam/Development/VectorApps/water-track/src/lib/locales/en.json:72,111"
+   ],
+   "testVectors": [
+    "totals([355 mL 5% ABV, 240 mL 0% with 95 mg caffeine]) -> fluid 595, goalFluid 240, caffeine 95, alcohol 14.00475 g"
+   ]
+  },
+  {
+   "topic": "Caffeine reference values",
+   "app": "Water (water-track)",
+   "formula": "Each drink kind has a default caffeine (mg) and size (mL). Logging a favorite scales caffeine by the size ratio: caffeineMg = favorite.caffeine * (volumeMl / favorite.ml).",
+   "constants": "coffee 95 mg / 8 fl oz (8*29.5735295625 = 236.588 mL); tea 47 mg / 8 fl oz; preworkout 200 mg / 300 mL; energy drink 160 mg / 473 mL; water 250 mL, juice 240, milk 240 and other 250, all 0 mg; alcohol default 355 mL at 5% ABV. The default favorite 'Drip coffee' is 240 mL with 95 mg. Input limit 0-2000 mg per drink. There is no daily caffeine limit.",
+   "fileRefs": [
+    "/Users/sam/Development/VectorApps/water-track/src/lib/metrics.ts:15-26",
+    "/Users/sam/Development/VectorApps/water-track/src/db/schema.ts:38-42",
+    "/Users/sam/Development/VectorApps/water-track/src/lib/favorites.ts:163-164"
+   ],
+   "citation": "USDA FoodData Central (brewed coffee, black tea per 8 fl oz cup), per the in-code comment"
+  },
+  {
+   "topic": "Widmark BAC",
+   "app": "Water (water-track)",
+   "formula": "alcoholGrams = volumeMl * (abv/100) * 0.789. Each drink adds rise = alcoholGrams / (weightKg*1000*r) * 1.055 * 100 (BAC % in g/100 mL). Drinks with abv > 0 and consumedAt <= now are processed in time order: bac = max(0, bac - 0.015*hoursSincePrevious), then the rise is added. The same elimination is applied from the last drink up to now. Whole-dose absorption is assumed (instant peak). The result is null without a weight and r, and when BAC is disabled. The display shows 3 fixed decimals, and 'Under 0.001%' below that. History covers the last 6 hours, with zero crossings.",
+   "constants": "Ethanol density 0.789 g/mL; whole-blood density 1.055 g/mL; elimination 0.015 %/h; r options 0.55 (default, 'Lower body water') and 0.68 ('Higher body water'). Weight is the Health weight when Health is enabled and has one, else the manual weight. BAC is off by default.",
+   "fileRefs": [
+    "/Users/sam/Development/VectorApps/water-track/src/lib/metrics.ts:58-59,85-143",
+    "/Users/sam/Development/VectorApps/water-track/src/lib/health-data.ts:23-31",
+    "/Users/sam/Development/VectorApps/water-track/src/db/schema.ts:44-45",
+    "/Users/sam/Development/VectorApps/water-track/src/app/(tabs)/settings.tsx:31,53,191-193",
+    "/Users/sam/Development/VectorApps/water-track/src/components/bac-summary.tsx:15-21",
+    "/Users/sam/Development/VectorApps/water-track/src/lib/locales/en.json:114,118-120,192"
+   ],
+   "testVectors": [
+    "14 g ethanol (volume 14/0.789/0.05 mL at 5%), 70 kg, r 0.68, at drink time -> 0.031029 (within 1e-6)",
+    "same, 2 h later -> peak - 0.030",
+    "355 mL 5%, 70 kg, r 0.68, 1 h later -> alcoholGrams*1.055/476 - 0.015",
+    "two 355 mL 5% drinks 1 h apart, evaluated at the second -> 2*alcoholGrams*1.055/476 - 0.015; 24 h after the second -> 0",
+    "estimateBac([d], null, 0.68, now) -> null"
+   ],
+   "citation": "Widmark approximation (in-code comments); US/NIAAA standard drink"
+  },
+  {
+   "topic": "Standard drink",
+   "app": "Water (water-track)",
+   "formula": "standardDrinks = alcoholGrams / 14 (exported to Health)",
+   "constants": "14 g ethanol per US/NIAAA standard drink",
+   "fileRefs": [
+    "/Users/sam/Development/VectorApps/water-track/src/lib/health-data.ts:37-38"
+   ]
+  },
+  {
+   "topic": "Step goal default",
+   "app": "OmegaFyt (FitnessBackend, fitness-native)",
+   "formula": "If the user has no saved goal, the step goal is 10000; the client also falls back to 10000 for a falsy goal. progress = min(1, max(0, steps/goal)).",
+   "constants": "10000 steps/day",
+   "fileRefs": [
+    "/Users/sam/Development/VectorApps/FitnessBackend/FitnessServices/Services/UserStepGoalService.cs:11-19",
+    "/Users/sam/Development/VectorApps/fitness-native/src/components/home/StepCard.tsx:29-31"
+   ]
+  }
+ ],
+ "notes": "I re-checked every fileRef read-only (cat, sed, grep only). Nothing was edited, installed or run.\n\nCorrections to the draft:\n1. BMI, Navy, FFMI, ACE, FFMI bands and shoulder/waist in macro-track: the code exists (metrics.ts, metric-context.ts) but no component imports it; only tests use it. Macro-track's only use of BMI is the BMI < 18.5 guard in startingTargets. Body-track is the only app that shows these metrics.\n2. The BMI guard fires whenever goalRate < 0, not only on a cut. Maintenance correcting downward also triggers it; the test at macro-track/tests/nutrition.test.cjs:1258-1260 checks this.\n3. metricContext takes 3 arguments, and the tests pass 'none' for BMI and ratio. Test vectors are corrected to match.\n4. Corrected line refs:\n   - The 2.2046226218 factor is on program-editor.tsx:48, not 47.\n   - Macro-track unit conversions are at metrics.ts:26-31, not 26-29.\n   - Macro-track metric-context lines are 1 lower than body-track's.\n   - BodyService.cs NormalizeWeights is at 26-77; the current normalized weight is at 329-355.\n5. OmegaFyt macros: when there is no plan, 'Amount ?? 1' has no effect, because the switch falls to the default branch and adds no delta. The reported Carbs is carbs + fiber only when carbs > 0; when carbs is 0 it is fiberHigh. Female defaults apply only when Sex == Female.\n6. OmegaFyt Navy: every non-male user gets the female formula. Metric values are converted to inches one by one with x0.393701 before subtracting.\n7. OmegaFyt expenditure: V1 uses normalized weights and V2 uses raw weights. The V2 median is the upper median, sorted[count/2]. The V2 window is (checkIn - 14, checkIn].\n8. Method 1 (reviewWeek) has extra holds the draft left out: RMS residual > 1% and a consecutive weigh-in jump > 2%. Its desired rate is meanWeight*pace/100 with no target cap. It runs only for a goal without a program.\n9. Lift: the RIR docs table leaves out the 3-week plan that the code has ([3,2,1]). Deload = the heaviest achievable load at or below 0.9 x the last top effective load, reps at the bottom of the range, RIR 4. effectiveLoad without a body weight: bodyweight -> added load only; assisted -> 0.\n\nAdded: dailyTrend interpolation and trendPace (macro); body measurement input limits (body fat <= 74.9 %, weight <= 500 kg, lengths <= 300 cm); the favorites caffeine scaling ref; Mifflin and ISSN citations from macro-track/docs/coaching.md; gym preset dumbbell maxima; OmegaFyt set-progression rules.\n\nEdge checks confirmed:\n- BMI, ACE and FFMI bands include their lower edge (value < cutoff goes to the band below).\n- FFMI Typical includes both ends.\n- Shoulder/waist 'At goal' covers roughly 1.615 <= r < 1.625, because Math.round(r*100) is compared to 162.\n- Navy results are kept only inside the open interval (0, 75).\n- All logs are base 10.\n\nKeyword grep (log10, 86.010, 163.205, 1.0324, 1.29579, 495, brzycki, mifflin, katch, harris, 6.25, 0.789, widmark, ffmi, 1.62, heart rate, 220-age, karvonen, MET, ml/kg, 400 mg) found nothing new in the apps or backend:\n- No Siri/Lohman 495 formula, no Jackson-Pollock 1.0324 or 1.29579 density formula, no Brzycki, Katch-McArdle or Harris-Benedict, no heart rate or zones, no MET or calories-burned formula, no per-kg water goal, no caffeine limit.\n- Brzycki appears only in lift-track/docs/lift-track-plan.md:58 ('RIR-adjusted Epley/Brzycki table'), a planning note; the code is Epley only.\n- Copies under vector-design/.work/ are harness snapshots, not sources.\n\nWhere the apps disagree (choose one per calculator):\n- Navy: body-track uses abdomen (male) or waist + hips (female), cm/2.54, and a (0, 75) range check. The backend uses navel, x0.393701, and drops only non-finite results.\n- Epley: Lift adds RIR, returns the weight itself at 1 rep and does not round. The backend ignores RIR, has no 1-rep case and truncates to an integer.\n- TDEE and macros: macro-track uses Mifflin-St Jeor x activity, 7700 kcal/kg, g/kg protein and a 0.6 g/kg fat floor. OmegaFyt uses 15 kcal/lb, 3500 kcal/lb, g/lb protein and fat, a -2.5% band and the fiber-in-carbs quirk. The macro-track model is the more defensible one for a public calculator.\n- Weekly rate: macro-track allows cut 0.1-1.5 %/wk (recommended 0.5-1) and bulk 0.05-0.5 %/wk (recommended 0.1-0.25). OmegaFyt offers cut presets 0.25/0.5/0.75/1 and bulk presets 0.1/0.2/0.3/0.5.\n\nLabel text is in /Users/sam/Development/VectorApps/body-track/src/lib/locales/en.json:117-149. Citations are in /Users/sam/Development/VectorApps/body-track/src/lib/metric-sources.ts and /Users/sam/Development/VectorApps/macro-track/docs/coaching.md."
+}

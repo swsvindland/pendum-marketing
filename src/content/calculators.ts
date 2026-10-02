@@ -107,7 +107,6 @@ export const calculators: CalculatorMeta[] = [
     short: "Heart rate zones",
     description: "Five training zones from your age, or from your maximum and resting heart rate.",
     category: "cardio",
-    app: "omegafyt",
     icon: "pulse",
   },
 ];

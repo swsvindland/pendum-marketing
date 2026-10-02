@@ -75,7 +75,7 @@ export type CalculatorMeta = {
   /** One sentence for lists and the meta description. */
   description: string;
   category: CalculatorCategory;
-  /** The app that tracks this over time. */
-  app: AppSlug;
+  /** The app that tracks this over time; none when no app does. */
+  app?: AppSlug;
   icon: IconName;
 };

@@ -1,0 +1,1191 @@
+{
+ "omegafyt": {
+  "slug": "omegafyt",
+  "name": "OmegaFyt",
+  "homeScreenLabel": "OmegaFyt",
+  "tagline": "Training and nutrition, planned and tracked together",
+  "summary": "OmegaFyt is the subscription app in the Vector series: an account-based training and nutrition tracker for iPhone, Android and the web. It sets calorie targets and a training program from a few questions, then tracks workouts, food, body measurements, supplements and soreness against that plan.",
+  "platforms": [
+   "iPhone (iOS 18 or later; iPhone-only build, supportsTablet false and TARGETED_DEVICE_FAMILY 1)",
+   "Android (minSdk 26, Android 8.0 or later; targetSdk 36)",
+   "Web (Expo web export as a single-page build with a Vercel config; the repo holds no public web URL)"
+  ],
+  "features": [
+   {
+    "title": "Guided plan setup",
+    "body": "On iPhone and Android, a new account answers a few questions about goal, body, pace and training days. Setup then sets daily calorie and macro targets, projects an end weight and can build a first training program.",
+    "evidence": "/Users/sam/Development/VectorApps/fitness-native/src/components/onboarding/OnboardingFlow.tsx (ALL_STEPS, buildPlan, HEALTH_SUPPORTED); /Users/sam/Development/VectorApps/fitness-native/src/components/onboarding/PlanSummaryPanels.tsx; /Users/sam/Development/VectorApps/fitness-native/src/lib/onboarding.ts (projectWeight); /Users/sam/Development/VectorApps/fitness-native/src/app/_layout.tsx (native-only onboarding gate)"
+   },
+   {
+    "title": "Programs built for your gym",
+    "body": "Pick a gym, 2 to 6 days a week, 30 to 90 minute sessions and up to three muscles to bring up, and the program uses only that gym's equipment. You can also start a store program or build your own by hand.",
+    "evidence": "/Users/sam/Development/VectorApps/fitness-native/src/lib/program-builder.ts (BUILDER_DAYS, SESSION_MINUTES, MAX_PRIORITIES, PRESETS); /Users/sam/Development/VectorApps/fitness-native/src/components/workout/builder/ProgramBuilder.tsx; /Users/sam/Development/VectorApps/fitness-native/src/components/gyms/GymEditor.tsx; /Users/sam/Development/VectorApps/FitnessBackend/FitnessServices/Services/ProgramGenerator.cs (Build: input.Equipment filter); /Users/sam/Development/VectorApps/fitness-native/src/components/workout/store/WorkoutStore.tsx; /Users/sam/Development/VectorApps/fitness-native/src/components/workout/custom/CreateCustomWorkout.tsx; /Users/sam/Development/VectorApps/fitness-native/src/components/workout/custom/ExercisePicker.tsx"
+   },
+   {
+    "title": "Sets that progress weekly",
+    "body": "Each set shows a recommended weight and rep count based on the same day last week. Sets can grow by one a week up to a cap, the last week is a lighter deload, and any exercise can be swapped for another of the same muscle group.",
+    "evidence": "/Users/sam/Development/VectorApps/FitnessBackend/FitnessServices/Services/ProgressiveOverload.cs (GetRecommendedWeight, GetRecommendedReps, GetRecommendedSets); /Users/sam/Development/VectorApps/FitnessBackend/FitnessServices/Services/WorkoutService.cs:80-160 (GetPrevActivity baseline); /Users/sam/Development/VectorApps/fitness-native/src/components/workout/WorkoutSubstitution.tsx; /Users/sam/Development/VectorApps/fitness-native/src/components/workout/SelectWorkout.tsx (Add a deload week)"
+   },
+   {
+    "title": "Rest timer on every set",
+    "body": "A rest timer starts when you log a set, using the exercise's own rest length or 90 seconds to 3 minutes by lift type. It keeps its end time when the app closes, and on iPhone and Android a notification says when rest is over.",
+    "evidence": "/Users/sam/Development/VectorApps/fitness-native/src/lib/rest-timer.ts (startRest, restSecondsFor); /Users/sam/Development/VectorApps/fitness-native/src/lib/rest-notifications.ts; /Users/sam/Development/VectorApps/fitness-native/src/components/workout/RestBar.tsx; /Users/sam/Development/VectorApps/fitness-native/src/components/workout/WorkoutSet.tsx:116; /Users/sam/Development/VectorApps/fitness-native/src/app/settings/index.tsx (Rest timer toggle)"
+   },
+   {
+    "title": "Food search and barcode scan",
+    "body": "Search the food database by name with suggestions as you type, or scan a barcode. Each food shows a full nutrition label, and search results and recent foods log one serving per tap.",
+    "evidence": "/Users/sam/Development/VectorApps/fitness-native/src/components/eat/FoodSearch.tsx; /Users/sam/Development/VectorApps/fitness-native/src/components/eat/Scanner.tsx; /Users/sam/Development/VectorApps/fitness-native/src/components/eat/barcode.ts; /Users/sam/Development/VectorApps/fitness-native/src/components/eat/NutritionLabel.tsx; /Users/sam/Development/VectorApps/fitness-native/src/components/eat/AddFoodCard.tsx; /Users/sam/Development/VectorApps/fitness-native/src/components/eat/FoodGrid.tsx; /Users/sam/Development/VectorApps/FitnessBackend/FoodApi/FatSecretApi.cs"
+   },
+   {
+    "title": "Targets that follow your trend",
+    "body": "Daily calorie, protein, carbs, fat and fiber targets come from your 7-day trend weight and a cut, bulk or maintenance plan with a weekly rate as a percent of body weight. You can also set your own targets in Settings.",
+    "evidence": "/Users/sam/Development/VectorApps/FitnessBackend/FitnessServices/Services/FoodService.cs (GenerateMacros, custom macros override); /Users/sam/Development/VectorApps/FitnessBackend/FitnessServices/Services/BodyService.cs (NormalizeWeights, GetCurrentUserNormalizedWeight); /Users/sam/Development/VectorApps/fitness-native/src/components/plan/AddPlanForm.tsx; /Users/sam/Development/VectorApps/fitness-native/src/components/macros/MacroGrid.tsx; /Users/sam/Development/VectorApps/fitness-native/src/components/settings/CustomMacroForm.tsx"
+   },
+   {
+    "title": "Expenditure from your data",
+    "body": "OmegaFyt estimates daily energy expenditure from logged intake and weight change over 14-day windows. Reports show it as weekly, monthly or yearly averages.",
+    "evidence": "/Users/sam/Development/VectorApps/FitnessBackend/FitnessServices/Services/BodyService.cs (GetEstimatedExpenditureHistory, ExpenditureWindowDays = 14); /Users/sam/Development/VectorApps/fitness-native/src/components/body/expenditure/ExpenditureGraph.tsx (PERIODS week, month, year)"
+   },
+   {
+    "title": "Body and strength reports",
+    "body": "Trend weight sits over your scale readings, alongside 12-site measurements, height and a US Navy body fat estimate. Strength charts track an estimated one-rep max for 11 main lifts, such as bench press, squat and deadlift.",
+    "evidence": "/Users/sam/Development/VectorApps/fitness-native/src/app/(tabs)/body.tsx; /Users/sam/Development/VectorApps/fitness-native/src/components/body/weight/WeightGraph.tsx; /Users/sam/Development/VectorApps/fitness-native/src/components/body/measurements/sites.ts; /Users/sam/Development/VectorApps/FitnessBackend/FitnessServices/Services/BodyService.cs:622-680 (Navy formula); /Users/sam/Development/VectorApps/fitness-native/src/components/strength/StrengthTab.tsx; /Users/sam/Development/VectorApps/FitnessBackend/FitnessServices/Services/WorkoutService.cs:12 (TrackedExercises) and :355-404 (Epley)"
+   },
+   {
+    "title": "Supplement checklist",
+    "body": "Add supplements from a catalog and choose when you take them across seven time slots. Each day is a checklist you tick off.",
+    "evidence": "/Users/sam/Development/VectorApps/fitness-native/src/components/supplements/times.ts (SUPPLEMENT_TIMES); /Users/sam/Development/VectorApps/fitness-native/src/components/supplements/AllSupplements.tsx; /Users/sam/Development/VectorApps/fitness-native/src/components/supplements/SupplementCard.tsx; /Users/sam/Development/VectorApps/fitness-native/src/app/(tabs)/supplements.tsx"
+   },
+   {
+    "title": "Soreness body map",
+    "body": "Rate 14 muscle groups as not sore, a little or very sore. A front and back body map shows the day at a glance.",
+    "evidence": "/Users/sam/Development/VectorApps/fitness-native/src/components/soreness/SorenessForm.tsx (MUSCLE_GROUPS, LEVEL_LABELS); /Users/sam/Development/VectorApps/fitness-native/src/components/soreness/MuscleMap.tsx; /Users/sam/Development/VectorApps/fitness-native/src/components/home/Todo.tsx"
+   }
+  ],
+  "deviceIntegrations": [
+   {
+    "title": "Apple Health sync",
+    "body": "On iPhone, OmegaFyt imports weigh-ins that scales or other apps save to Apple Health and writes your weight and daily calories, protein, carbs and fat back. Sync is off until you turn it on, and it turns off in Settings.",
+    "evidence": "/Users/sam/Development/VectorApps/fitness-native/src/lib/health.ios.ts (requestHealthPermissions, importWeights, exportWeights, exportNutrition); /Users/sam/Development/VectorApps/fitness-native/src/lib/health.shared.ts (isHealthSyncEnabled defaults to false); /Users/sam/Development/VectorApps/fitness-native/app.json (@kingstinct/react-native-healthkit plugin); /Users/sam/Development/VectorApps/fitness-native/src/components/settings/HealthSyncToggle.tsx"
+   },
+   {
+    "title": "Health Connect on Android",
+    "body": "On Android devices with Health Connect, OmegaFyt reads weight and steps and writes weight and daily nutrition totals.",
+    "evidence": "/Users/sam/Development/VectorApps/fitness-native/src/lib/health.android.ts:40-46 (REQUESTED_PERMISSIONS), syncHealthData; /Users/sam/Development/VectorApps/fitness-native/app.json (android.permissions health.READ_WEIGHT, WRITE_WEIGHT, READ_STEPS, READ_NUTRITION, WRITE_NUTRITION)"
+   },
+   {
+    "title": "Daily steps on Home",
+    "body": "With health sync on, Home shows the day's step count from Apple Health or Health Connect against a daily step goal you set. The goal is 10,000 until you change it.",
+    "evidence": "/Users/sam/Development/VectorApps/fitness-native/src/components/home/StepCard.tsx (stepGoal default 10000); /Users/sam/Development/VectorApps/fitness-native/src/app/steps/edit.tsx; /Users/sam/Development/VectorApps/fitness-native/src/app/(tabs)/home.tsx"
+   },
+   {
+    "title": "Rest notifications",
+    "body": "On iPhone and Android, a local notification says rest is over while the app is in the background, if notifications are allowed.",
+    "evidence": "/Users/sam/Development/VectorApps/fitness-native/src/lib/rest-notifications.ts (web returns null, permission request); /Users/sam/Development/VectorApps/fitness-native/package.json (expo-notifications)"
+   },
+   {
+    "title": "Barcode camera",
+    "body": "The camera reads EAN-13, EAN-8, UPC-A and UPC-E codes on food packaging. Microphone access is turned off.",
+    "evidence": "/Users/sam/Development/VectorApps/fitness-native/src/components/eat/barcode.ts (FOOD_BARCODE_TYPES); /Users/sam/Development/VectorApps/fitness-native/src/components/eat/Scanner.tsx:158-163; /Users/sam/Development/VectorApps/fitness-native/app.json (expo-camera plugin, microphonePermission false, RECORD_AUDIO blocked)"
+   },
+   {
+    "title": "Web app with one account",
+    "body": "The same account opens in a web build with a sidebar for Home, Workout, Eat, Supplements, Reports and Settings. Health sync, setup, the paywall and purchases are not part of the web build.",
+    "evidence": "/Users/sam/Development/VectorApps/fitness-native/src/components/layout/AppShell.web.tsx; /Users/sam/Development/VectorApps/fitness-native/vercel.json; /Users/sam/Development/VectorApps/fitness-native/src/app/settings/index.tsx (native-only Subscription and Health sections); /Users/sam/Development/VectorApps/fitness-native/src/app/_layout.tsx (Platform.OS === 'web' skips the gate)"
+   }
+  ],
+  "privacyFacts": [
+   "An account is required. Sign-in and sign-up go through Clerk; the backend keeps a user record keyed by the Clerk id and email (src/api.ts getUser/createUser, src/app/_layout.tsx).",
+   "Logged data (food, workouts, body records, plans, supplements, soreness, gyms) is stored on the OmegaFyt backend: an ASP.NET Core API on Fly.io (region iad, US) with a PostgreSQL database (FitnessBackend/Readme.MD, fly.toml, .junie/guidelines.md).",
+   "With health sync on, weigh-ins imported from Apple Health or Health Connect are saved to the OmegaFyt backend (src/lib/health.ios.ts and health.android.ts importWeights, FitnessBackend HealthKitService.cs).",
+   "Food search, autocomplete and barcode lookups go through the backend to the FatSecret Platform API (FitnessBackend/FoodApi/FatSecretApi.cs).",
+   "The iOS and Android apps send product analytics events, screen names, tap events and error reports to PostHog when the build has a PostHog key; the web build sends none (src/lib/analytics.ts).",
+   "Analytics events exclude weight, height, sex and measurements, but include plan choices such as goal, weekly pace, plan length and training days. Tap autocapture records component names, testID and ph-label, never the tapped text. No session replay is configured (README.md, src/lib/analytics-provider.tsx, OnboardingFlow.tsx stepProperties).",
+   "Purchases go through RevenueCat with App Store and Google Play billing. On iOS, RevenueCat collects Apple Search Ads attribution through the AdServices token, which needs no App Tracking Transparency prompt (src/lib/purchases.ts).",
+   "Health sync is off until the user turns it on, and it can be turned off in Settings. It reads weight and steps and writes weight and daily calories, protein, carbs and fat (src/lib/health.ios.ts, src/lib/health.android.ts, src/lib/health.shared.ts).",
+   "Delete account is in Settings and on the forced paywall: backend data is deleted first, then the Clerk login. The backend also deletes account data when a Clerk user.deleted webhook arrives, if the webhook secret is configured (src/components/settings/DeleteAccount.tsx, src/app/paywall.tsx, FitnessBackend/.junie/guidelines.md).",
+   "Small preferences and the onboarding plan summary (onboarding status, rest timer, health sync settings) are stored on the device in SecureStore on native and localStorage on web (src/lib/utils.ts, src/lib/onboarding.ts).",
+   "The camera permission is requested for barcode scanning; microphone access is disabled and RECORD_AUDIO is blocked on Android (app.json)."
+  ],
+  "businessModel": "Subscription. The product is \"OmegaFyt Pro\" (RevenueCat entitlement id \"pro\"), sold through the App Store and Google Play via RevenueCat. On iOS and Android, a signed-in account without the entitlement is sent to a paywall it cannot dismiss; a new account sees guided setup first unless it falls in the onboarding experiment's control group. From the forced paywall the only ways forward are subscribing, restoring a purchase, signing out or deleting the account. The paywall lists whatever packages the current RevenueCat offering holds, and a PostHog flag can pick a different offering. No prices are in code. The web build has no checkout.",
+  "subscription": {
+   "productName": "OmegaFyt Pro",
+   "account": "Required. Clerk handles sign-in and sign-up: the native Clerk AuthView on iOS, the AuthView with a hosted-browser fallback on Android, and the Clerk web SignIn on web. The enabled sign-in methods live in the Clerk dashboard, not in code; the README tells the developer to enable email, phone and username plus Apple, Google and GitHub SSO, and app.json carries the Google client IDs and the expo-apple-authentication plugin. The Clerk user id is also the RevenueCat app user id and the PostHog distinct id.",
+   "backend": "ASP.NET Core Web API on .NET 10 (FitnessBackend), deployed to Fly.io (app fitnessapi-black-breeze-3375, region iad) with PostgreSQL via EF Core. It provides accounts, food logging backed by the FatSecret Platform API (search, autocomplete, barcode, food details), macro target generation, the workout store, a program generator with saved gyms, progressive overload recommendations, one-rep max estimates for 11 tracked lifts, trend weight, expenditure and body fat estimates, supplements, soreness, step goals, health weight import (used by both Apple Health and Health Connect sync), S3-compatible storage for progress photos (a feature the app does not link to today), and RevenueCat and Clerk webhooks.",
+   "packageTypes": [
+    "Packages come from the RevenueCat offering, not from code",
+    "Code labels weekly, monthly, 2-month, 3-month, 6-month and annual packages as recurring prices",
+    "Code labels a lifetime package as a one-time price; the backend stores lifetime purchases as non-expiring"
+   ],
+   "sync": "All data lives on the backend, so the same account and data open on iPhone, Android and the web build. Subscriptions and health sync exist only in the native apps; the web build has no checkout and no paywall gate in the client.",
+   "thirdParties": [
+    "Clerk (authentication)",
+    "RevenueCat (subscriptions, entitlement webhook, Apple Search Ads attribution on iOS)",
+    "Apple App Store and Google Play (billing)",
+    "PostHog (product analytics, feature flags, error tracking; native only)",
+    "FatSecret Platform API (food database, via the backend)",
+    "Fly.io (backend hosting) with PostgreSQL",
+    "S3-compatible object storage (progress photo files; the feature is not reachable in the app today)",
+    "Vercel (web build config in vercel.json)",
+    "Apple HealthKit and Android Health Connect (opt-in; imported weights are saved to the backend)"
+   ],
+   "trial": "Not fixed in code. The paywall shows a free trial or intro price only if the store product has one and RevenueCat reports the user as eligible (Android: any intro price Google Play returns). Trial length and price are set in App Store Connect, Google Play and RevenueCat.",
+   "whatIsFree": "Creating an account and, on iOS and Android, the guided setup. Setup saves units, sex, height, weight and a plan, shows calorie and macro targets, and builds or starts a first training program before the paywall; the backend exempts those endpoints from the subscription check. There is no ongoing free tier on iOS or Android.",
+   "whatRequiresSubscription": "On iOS and Android, everything after setup: the Home, Workout, Eat, Supplements and Reports tabs and their screens sit behind the forced paywall for accounts without the pro entitlement. The backend can also gate every data endpoint server side (Entitlements:Enforce), but that switch is off by default."
+  },
+  "readoutSpecimen": {
+   "eyebrow": "TODAY / CALORIES",
+   "heroValue": "1,840",
+   "heroUnit": "kcal",
+   "heroCaption": "Target 2,096 to 2,150",
+   "meta": "8-week cut \u00b7 0.5% a week",
+   "meter": {
+    "value": 1840,
+    "max": 2150,
+    "valueText": "1,840 of 2,096 to 2,150 kcal"
+   },
+   "rows": [
+    {
+     "label": "Protein",
+     "value": "142",
+     "unit": "g"
+    },
+    {
+     "label": "Carbs",
+     "value": "176",
+     "unit": "g"
+    },
+    {
+     "label": "Fat",
+     "value": "58",
+     "unit": "g"
+    }
+   ]
+  },
+  "caveats": [
+   "Macro targets, projected end weight, energy expenditure, body fat (US Navy formula) and one-rep max (Epley formula) are estimates, not medical advice. Calorie targets start from a rule of thumb of 15 Cal per pound of trend weight, adjusted for the plan, and are shown as a narrow range.",
+   "Release status: onboarding, the personalized paywall, PostHog analytics, the program builder, saved gyms and the rest timer all landed between 2026-09-29 and 2026-10-02 (app bumped to 1.8.0 on 2026-10-02, backend c89ff3c on 2026-10-02). Earlier public builds were 1.7.0. Confirm the 1.8.0 store release and the backend deploy and migration before the site markets these features. On a backend without the generator, the builder shows \"Not available yet\" and onboarding falls back to a Workout Store program.",
+   "No prices, trial length or plan lineup are in code. They live in App Store Connect, Google Play and RevenueCat. Do not state prices or promise a free trial.",
+   "Subscriptions can be bought only in the iOS and Android apps. The web build has no checkout and no client-side paywall, so do not market the web build as free or as included with a plan; describe it only as the same account in a browser.",
+   "No public web URL is in either repo; confirm the Vercel deployment before linking to a web app.",
+   "The food database is the FatSecret Platform API, reached through the backend. Its size is not in code, so do not quote a food count. The app shows no FatSecret attribution today.",
+   "142 is the number of exercises in the program generator catalog migration. The full exercise library lives in the production database and its total is not in code, so do not quote an exercise count.",
+   "One-rep max estimates cover only 11 tracked lifts (Incline Bench Press, Bench Press, Chest Dip, Squat, Leg Press, Deadlift, Sumo Deadlift, Shoulder Press, Pull-Up, Chin-Up, Barbell Row) and only sets logged with weight above zero.",
+   "Body fat needs a height and neck and navel measurements (plus hip for the female formula); the male formula is used only when sex is set to male.",
+   "Onboarding is a PostHog experiment: the control variant skips it and goes straight to the paywall. Onboarding never runs on web.",
+   "Health sync, the steps card, rest notifications, setup and purchases are native only.",
+   "Steps are read from Apple Health or Health Connect. The app does not count steps itself.",
+   "No iPad version (supportsTablet is false). English only, with numbers and dates in the device's regional format.",
+   "An account and a network connection to the backend are required. There is no offline mode.",
+   "Expenditure needs at least 2 weigh-ins and 3 logged days of more than 500 Cal in a 14-day window. With less data it falls back to a weight multiple or 2,000."
+  ],
+  "notYetShipped": [
+   "Progress photos: the camera, gallery, routes and API exist, but the Reports panel is commented out (src/app/(tabs)/body.tsx:41) and nothing in the main navigation links to it.",
+   "Blood pressure logging: client API functions exist (src/api.ts), but there are no screens.",
+   "Server-side subscription enforcement (Entitlements:Enforce) is off by default.",
+   "Web purchases and subscription management on web.",
+   "Over-the-air updates: app.json and the native configs carry an EAS Update URL, but the expo-updates package is not installed, so do not claim instant updates.",
+   "In-app feedback: the backend has PostFeedback endpoints, but the app has no feedback screen.",
+   "Widgets, Live Activities, Apple Watch and Wear OS apps: the design-system doc covers these for the other Vector apps; OmegaFyt has a single app target and no extensions.",
+   "iPad support (supportsTablet is false).",
+   "Languages other than English (supportedLocales is en only).",
+   "Writing waist circumference to Apple Health: the permission is requested but the app never writes it.",
+   "README license section is still TODO."
+  ],
+  "languages": [
+   "English"
+  ],
+  "units": "Imperial (lb, ft and in, Cal) and metric (kg, cm, kcal), chosen in setup or Settings. The default is imperial when the device locale uses the US measurement system and metric otherwise.",
+  "sources": [
+   "/Users/sam/Development/VectorApps/fitness-native/README.md",
+   "/Users/sam/Development/VectorApps/fitness-native/app.json",
+   "/Users/sam/Development/VectorApps/fitness-native/package.json",
+   "/Users/sam/Development/VectorApps/fitness-native/vercel.json",
+   "/Users/sam/Development/VectorApps/fitness-native/eas.json",
+   "/Users/sam/Development/VectorApps/fitness-native/.env.example",
+   "/Users/sam/Development/VectorApps/fitness-native/docs/design-system.md",
+   "/Users/sam/Development/VectorApps/fitness-native/ios/OmegaFyt.xcodeproj/project.pbxproj",
+   "/Users/sam/Development/VectorApps/fitness-native/ios/OmegaFyt/Info.plist",
+   "/Users/sam/Development/VectorApps/fitness-native/ios/Podfile.lock",
+   "/Users/sam/Development/VectorApps/fitness-native/android/gradle.properties",
+   "/Users/sam/Development/VectorApps/fitness-native/src/app/_layout.tsx",
+   "/Users/sam/Development/VectorApps/fitness-native/src/app/paywall.tsx",
+   "/Users/sam/Development/VectorApps/fitness-native/src/lib/paywall.ts",
+   "/Users/sam/Development/VectorApps/fitness-native/src/lib/purchases.ts",
+   "/Users/sam/Development/VectorApps/fitness-native/src/lib/onboarding.ts",
+   "/Users/sam/Development/VectorApps/fitness-native/src/lib/analytics.ts",
+   "/Users/sam/Development/VectorApps/fitness-native/src/lib/analytics-provider.tsx",
+   "/Users/sam/Development/VectorApps/fitness-native/src/lib/program-builder.ts",
+   "/Users/sam/Development/VectorApps/fitness-native/src/lib/rest-timer.ts",
+   "/Users/sam/Development/VectorApps/fitness-native/src/lib/rest-notifications.ts",
+   "/Users/sam/Development/VectorApps/fitness-native/src/lib/health.ios.ts",
+   "/Users/sam/Development/VectorApps/fitness-native/src/lib/health.android.ts",
+   "/Users/sam/Development/VectorApps/fitness-native/src/lib/health.shared.ts",
+   "/Users/sam/Development/VectorApps/fitness-native/src/lib/utils.ts",
+   "/Users/sam/Development/VectorApps/fitness-native/src/api.ts",
+   "/Users/sam/Development/VectorApps/fitness-native/src/vector-adapter.tsx",
+   "/Users/sam/Development/VectorApps/fitness-native/src/components/onboarding/OnboardingFlow.tsx",
+   "/Users/sam/Development/VectorApps/fitness-native/src/components/onboarding/OnboardingSteps.tsx",
+   "/Users/sam/Development/VectorApps/fitness-native/src/components/onboarding/PlanSummaryPanels.tsx",
+   "/Users/sam/Development/VectorApps/fitness-native/src/components/onboarding/labels.ts",
+   "/Users/sam/Development/VectorApps/fitness-native/src/components/nav/app-tabs.tsx",
+   "/Users/sam/Development/VectorApps/fitness-native/src/components/layout/AppShell.web.tsx",
+   "/Users/sam/Development/VectorApps/fitness-native/src/components/auth/clerk-sign-in.tsx",
+   "/Users/sam/Development/VectorApps/fitness-native/src/components/auth/clerk-sign-in.android.tsx",
+   "/Users/sam/Development/VectorApps/fitness-native/src/components/auth/clerk-sign-in.web.tsx",
+   "/Users/sam/Development/VectorApps/fitness-native/src/app/(tabs)/home.tsx",
+   "/Users/sam/Development/VectorApps/fitness-native/src/app/(tabs)/body.tsx",
+   "/Users/sam/Development/VectorApps/fitness-native/src/app/settings/index.tsx",
+   "/Users/sam/Development/VectorApps/fitness-native/src/components/settings/DeleteAccount.tsx",
+   "/Users/sam/Development/VectorApps/fitness-native/src/components/settings/HealthSyncToggle.tsx",
+   "/Users/sam/Development/VectorApps/fitness-native/src/components/settings/CustomMacroForm.tsx",
+   "/Users/sam/Development/VectorApps/fitness-native/src/components/gyms/GymEditor.tsx",
+   "/Users/sam/Development/VectorApps/fitness-native/src/components/workout/store/WorkoutStore.tsx",
+   "/Users/sam/Development/VectorApps/fitness-native/src/components/workout/custom/CreateCustomWorkout.tsx",
+   "/Users/sam/Development/VectorApps/fitness-native/src/components/workout/custom/ExercisePicker.tsx",
+   "/Users/sam/Development/VectorApps/fitness-native/src/components/workout/builder/ProgramBuilder.tsx",
+   "/Users/sam/Development/VectorApps/fitness-native/src/components/workout/WorkoutSet.tsx",
+   "/Users/sam/Development/VectorApps/fitness-native/src/components/workout/RestBar.tsx",
+   "/Users/sam/Development/VectorApps/fitness-native/src/components/workout/SelectWorkout.tsx",
+   "/Users/sam/Development/VectorApps/fitness-native/src/components/workout/WorkoutSubstitution.tsx",
+   "/Users/sam/Development/VectorApps/fitness-native/src/components/eat/barcode.ts",
+   "/Users/sam/Development/VectorApps/fitness-native/src/components/eat/Scanner.tsx",
+   "/Users/sam/Development/VectorApps/fitness-native/src/components/eat/FoodSearch.tsx",
+   "/Users/sam/Development/VectorApps/fitness-native/src/components/eat/FoodGrid.tsx",
+   "/Users/sam/Development/VectorApps/fitness-native/src/components/eat/AddFoodCard.tsx",
+   "/Users/sam/Development/VectorApps/fitness-native/src/components/eat/NutritionLabel.tsx",
+   "/Users/sam/Development/VectorApps/fitness-native/src/components/macros/CalorieSummary.tsx",
+   "/Users/sam/Development/VectorApps/fitness-native/src/components/macros/MacroGrid.tsx",
+   "/Users/sam/Development/VectorApps/fitness-native/src/components/plan/AddPlanForm.tsx",
+   "/Users/sam/Development/VectorApps/fitness-native/src/components/soreness/SorenessForm.tsx",
+   "/Users/sam/Development/VectorApps/fitness-native/src/components/soreness/MuscleMap.tsx",
+   "/Users/sam/Development/VectorApps/fitness-native/src/components/supplements/times.ts",
+   "/Users/sam/Development/VectorApps/fitness-native/src/components/body/measurements/sites.ts",
+   "/Users/sam/Development/VectorApps/fitness-native/src/components/body/weight/WeightGraph.tsx",
+   "/Users/sam/Development/VectorApps/fitness-native/src/components/body/expenditure/ExpenditureGraph.tsx",
+   "/Users/sam/Development/VectorApps/fitness-native/src/components/strength/StrengthTab.tsx",
+   "/Users/sam/Development/VectorApps/fitness-native/src/components/home/StepCard.tsx",
+   "/Users/sam/Development/VectorApps/fitness-native/src/components/home/Todo.tsx",
+   "/Users/sam/Development/VectorApps/FitnessBackend/Readme.MD",
+   "/Users/sam/Development/VectorApps/FitnessBackend/.junie/guidelines.md",
+   "/Users/sam/Development/VectorApps/FitnessBackend/fly.toml",
+   "/Users/sam/Development/VectorApps/FitnessBackend/FitnessApi/Program.cs",
+   "/Users/sam/Development/VectorApps/FitnessBackend/FitnessApi/Identity/EntitlementFilter.cs",
+   "/Users/sam/Development/VectorApps/FitnessBackend/FitnessServices/Services/EntitlementService.cs",
+   "/Users/sam/Development/VectorApps/FitnessBackend/FitnessServices/Services/ProgramGenerator.cs",
+   "/Users/sam/Development/VectorApps/FitnessBackend/FitnessServices/Services/ProgressiveOverload.cs",
+   "/Users/sam/Development/VectorApps/FitnessBackend/FitnessServices/Services/BodyService.cs",
+   "/Users/sam/Development/VectorApps/FitnessBackend/FitnessServices/Services/FoodService.cs",
+   "/Users/sam/Development/VectorApps/FitnessBackend/FitnessServices/Services/WorkoutService.cs",
+   "/Users/sam/Development/VectorApps/FitnessBackend/FitnessServices/Services/HealthKitService.cs",
+   "/Users/sam/Development/VectorApps/FitnessBackend/FoodApi/FatSecretApi.cs",
+   "/Users/sam/Development/VectorApps/FitnessBackend/FitnessApi/Migrations/20261002125646_WorkoutGeneratorCatalog.cs",
+   "/Users/sam/Development/VectorApps/FitnessBackend/FitnessApi/Controllers"
+  ]
+ },
+ "body": {
+  "slug": "vector-body",
+  "name": "Vector Body",
+  "homeScreenLabel": "VECTOR BODY",
+  "tagline": "Weight, measurements and progress photos, kept local",
+  "summary": "Vector Body is a local-first tracker for weight, height, tape measurements and progress photos on iPhone and Android. It is for people who want to follow body composition over time without an account or a cloud service.",
+  "platforms": [
+   "iPhone",
+   "Android"
+  ],
+  "features": [
+   {
+    "title": "Smoothed weight trend",
+    "body": "Trend weight averages each day and smooths it with a seven-day half-life. The chart shows up to 90 days of daily averages beside the trend.",
+    "evidence": "src/lib/metrics.ts:72-92 (weightTrend, 7-day half-life, daily mean); src/components/dashboard.tsx:113-115 (90-day window from latest entry), :149-165 (TrendChart raw and trend lines)"
+   },
+   {
+    "title": "16 tape measurement sites",
+    "body": "Record up to 16 circumference sites, from neck and shoulders to left and right ankles. Add a measured body-fat percentage in the same session.",
+    "evidence": "src/lib/metrics.ts:3-20 (16 sites); src/components/measurements/body-form.tsx:11-29"
+   },
+   {
+    "title": "Body fat from a tape",
+    "body": "With height, neck and abdomen or neck, waist and hips give a US Navy circumference estimate, depending on the equation you choose. A measured body-fat percentage takes precedence over the estimate.",
+    "evidence": "src/lib/metrics.ts:93-109 (bodyFat: male neck+abdomen, female neck+waist+hips, manual value first); src/components/screens/settings-screen.tsx:129-137 (Sex choice)"
+   },
+   {
+    "title": "BMI, FFMI and ratio",
+    "body": "The dashboard shows BMI, body fat, FFMI and shoulder-to-waist ratio. BMI, body fat and FFMI carry adult reference labels, and the ratio compares against a 1.62 physique goal.",
+    "evidence": "src/components/dashboard.tsx:172-255; src/lib/metric-context.ts:7-85; src/lib/metrics.ts:110-117 (composition)"
+   },
+   {
+    "title": "Sources and methods",
+    "body": "Each dashboard metric explains its method, with links to the CDC, AR 600-9, ACE and Schutz et al. (2002) where they apply. The method text is stored in the app and reads offline.",
+    "evidence": "src/app/health-sources.tsx; src/lib/metric-sources.ts (trend and ratio have no external references); src/components/dashboard.tsx:82-90, 134-136 (Sources & methods link and help popovers); docs/app-store/review-response-1.4.1.md"
+   },
+   {
+    "title": "Private progress photos",
+    "body": "Take or choose front, side and back photos. They sit on a dated timeline you can filter by pose, and you can change a photo's date or pose or delete it.",
+    "evidence": "src/components/screens/photos-screen.tsx:23 (pose filter), :72-73 (edit date and pose), :75-90 (camera or library), :93-103 (progress-photos directory), :114-137 (delete)"
+   },
+   {
+    "title": "Edit and backdate entries",
+    "body": "Add, edit, delete and backdate weight, height and body entries. Records imported from a health app open read-only and can only be deleted.",
+    "evidence": "src/components/measurements/use-measurement-log.ts:70-71, 97-161, 166-203; src/components/measurements/measurement-editor.tsx:33-37 (DateInput, imported read-only); src/components/measurements/measurement-history.tsx:42; src/lib/metrics.ts:58 (validDay)"
+   },
+   {
+    "title": "Units and appearance",
+    "body": "Choose metric, imperial or decimal stone, with height in centimeters or feet and inches. Values are stored in kilograms and centimeters, so switching units does not rewrite history. Appearance follows the system or stays light or dark.",
+    "evidence": "src/lib/metrics.ts:21-29 (fromKg/toKg, fromCm/toCm), :39 (parseHeight); src/components/measurements/height-form.tsx:15-29; src/components/screens/settings-screen.tsx:95-119; src/lib/store.tsx:74-76 (Uniwind.setTheme)"
+   },
+   {
+    "title": "Eleven languages",
+    "body": "The interface, numbers and dates follow one of 11 languages. Units stay independent of language.",
+    "evidence": "src/lib/translations.ts:13-25; src/lib/locales/*.json (11 files); app.json expo-localization supportedLocales; ios/VECTORBODY/Info.plist CFBundleLocalizations"
+   },
+   {
+    "title": "Screen reader descriptions",
+    "body": "The trend chart reads out its date range, low, high, latest value and direction. History rows offer edit and delete as screen reader actions.",
+    "evidence": "src/components/dashboard.tsx:117-131, 164 (trendSummary); src/vector/chart.tsx:385, 441 (accessibilityLabel={summary}); src/components/measurements/measurement-history.tsx:84-88 (accessibilityActions)"
+   }
+  ],
+  "deviceIntegrations": [
+   {
+    "title": "Apple Health sync",
+    "body": "Optional sync moves weight and height in both directions. Recorded body fat and waist circumference export to Apple Health.",
+    "evidence": "src/lib/health-native.ios.ts:6-17 (identifiers, bodyWriteKinds waist and bodyFat), :27-49 (reads weight and height only); src/lib/health.ts; ios/VECTORBODY/VECTORBODY.entitlements (healthkit); app.json @kingstinct/react-native-healthkit plugin"
+   },
+   {
+    "title": "Health Connect sync",
+    "body": "Weight and height sync in both directions on Android. Recorded body fat exports, and imports cover the most recent 29 days.",
+    "evidence": "src/lib/health-native.android.ts:10 (bodyWriteKinds bodyFat), :12-15 (permissions), :43 (29-day window); app.json android.permissions"
+   },
+   {
+    "title": "Daily background sync",
+    "body": "When sync is on, it runs at most once a day, in the background when the operating system allows and when you open the app after a day has passed. Automatic runs never open a permission prompt.",
+    "evidence": "src/lib/health-schedule.ts:20-37 (24h due check, non-interactive sync), :49-58 (minimumInterval 24*60 minutes); src/lib/store.tsx:77-99 (foreground and hourly due check); ios/VECTORBODY/Info.plist UIBackgroundModes fetch, processing; app.json READ_HEALTH_DATA_IN_BACKGROUND"
+   },
+   {
+    "title": "No duplicate health records",
+    "body": "Exports carry stable sync identifiers, so repeat syncs do not add duplicates. Edits replace the exported record, and deleting an app entry removes its exported copy on the next sync.",
+    "evidence": "src/lib/health.ts:71-119 (clientId key, fingerprint skip, remove on deletion); src/lib/health-native.ios.ts:54-58 (HKSyncIdentifier, HKSyncVersion); src/lib/health-native.android.ts:74-78 (clientRecordId, clientRecordVersion); src/db/schema.ts:45-52 (healthLinks)"
+   },
+   {
+    "title": "Camera and photo library",
+    "body": "Progress photos come from the camera or the photo library. Camera access is requested only when you take a photo.",
+    "evidence": "src/components/screens/photos-screen.tsx:75-90; app.json expo-image-picker plugin (microphonePermission false)"
+   },
+   {
+    "title": "Health Connect privacy screen",
+    "body": "On Android, the Health Connect permission rationale opens an in-app page that explains what syncs and what stays local.",
+    "evidence": "plugins/with-health-rationale.js; src/app/health-privacy.tsx; src/components/screens/health-privacy-screen.tsx"
+   }
+  ],
+  "privacyFacts": [
+   "No account or sign-in. There is no auth code in src/, and docs/app-store/review-notes.md states no account is required.",
+   "No network calls in app code. A search of src/ finds no fetch, XMLHttpRequest, WebSocket or HTTP client. The only URLs are four citation links on the Sources & methods screen, opened in the system browser via Linking.openURL (src/lib/metric-sources.ts, src/app/health-sources.tsx:14).",
+   "No analytics, advertising, crash reporting or payment SDKs in package.json.",
+   "All records live in an on-device SQLite database (expo-sqlite with Drizzle, src/db/index.ts, src/db/schema.ts): weight entries, measurements, preferences, photo file names and health-link mappings.",
+   "Progress photos are copied into the app's private document directory (progress-photos); only the file name is stored in the database (src/components/screens/photos-screen.tsx:93-103).",
+   "No cloud backup of its own. Operating-system device backups may include app data, and deleting the app may remove local records and photos (README.md, en.json localPhotos).",
+   "Health sync is optional and off until turned on in Settings (src/lib/store.tsx:56). The app does not send progress photos, the other tape measurements or calculated estimates to Apple Health or Health Connect.",
+   "Records the app exports to Apple Health or Health Connect carry a sync identifier built from a random per-install value and the local record ID (src/lib/health.ts:21-30, 82-90).",
+   "Deleting a record imported from Apple Health or Health Connect hides it locally and does not delete the source record; a stored mapping keeps it from being imported again (src/db/schema.ts:44, README.md).",
+   "The App Store privacy label answer \"Data Not Collected\" is a candidate only; the submission checklist says it is not yet verified against the final binary."
+  ],
+  "businessModel": "Not implemented in code. There is no in-app purchase, subscription, paywall or account in the source, README.md states there is no subscription or payment implementation, and review-notes.md states there are no in-app purchases. Price is left to the owner in App Store Connect (submission-checklist.md), and no price or paid/free decision appears anywhere in the repository. Marketing must not state a price.",
+  "readoutSpecimen": {
+   "eyebrow": "TODAY / TREND WEIGHT",
+   "heroValue": "79.4",
+   "heroUnit": "kg",
+   "heroCaption": "As of Sep 11 \u00b7 Latest: 79.1 kg",
+   "meta": "Fictional example",
+   "rows": [
+    {
+     "label": "BMI",
+     "value": "24.0"
+    },
+    {
+     "label": "Body fat",
+     "value": "18.0",
+     "unit": "%"
+    },
+    {
+     "label": "FFMI",
+     "value": "19.7"
+    }
+   ],
+   "meter": {
+    "value": 1.48,
+    "max": 1.62,
+    "valueText": "Shoulders / waist 1.48 \u00b7 Goal 1.62"
+   }
+  },
+  "caveats": [
+   "BMI, estimated body fat and FFMI are general adult reference tools, not medical advice, diagnosis or treatment. Adult references do not apply to children (en.json healthDisclaimer).",
+   "The body-fat estimate uses the US Navy circumference equations from AR 600-9 (2019) and depends on tape technique. The equation uses a Male or Female setting, which defaults to Male.",
+   "Body fat and FFMI use only the most recent body session; if that session lacks the needed sites, no estimate is shown even when an older session has them (src/components/dashboard.tsx:105, 111).",
+   "FFMI bands (male 17-20, female 14-17) are simplified app comparisons, not clinical cutoffs. The 1.62 shoulder-to-waist goal is a physique comparison chosen by the app, not a health target.",
+   "Trend weight smooths daily averages; early trends are provisional and the trend differs from the latest reading.",
+   "Store screenshots use fictional records and synthetic progress photos marked \"Fictional example \u00b7 Results vary\". Marketing must not imply an outcome or a 90-day result.",
+   "No cloud backup. Deleting the app may remove local records and photos.",
+   "Apple Health may hide records when read access is denied, and iOS does not reveal the denial. Imports are snapshots; deletions in the health provider are not mirrored.",
+   "Health Connect imports cover only the most recent 29 days and require all five requested permissions (read and write weight and height, write body fat). Sync also requires Health Connect to be available on the device.",
+   "Health sync does not work in Expo Go; it needs a native build.",
+   "Background sync timing is controlled by the operating system.",
+   "iPhone only on iOS (supportsTablet is false, TARGETED_DEVICE_FAMILY 1); there is no iPad layout, and iPads can run it only in iPhone compatibility mode.",
+   "App Store submission 1.0 (4) received a Guideline 1.4.1 response on September 15, 2026; the Sources & methods screen was added for resubmission. Confirm the app is live before linking a store badge.",
+   "The current app name and iOS home-screen label are \"VECTOR BODY\" (app.json name, Info.plist CFBundleDisplayName). \"Vector Body\" and \"Body\" are the recommended names pending owner sign-off (docs/design-system.md line 868)."
+  ],
+  "notYetShipped": [
+   "Side-by-side two-photo comparison. README.md lists it, but the current Photos screen has a gallery and single-photo preview only (src/components/screens/photos-screen.tsx; docs/app-store/README.md). The \"compare\" string in the locales is unused.",
+   "Any payment, in-app purchase or subscription implementation.",
+   "Cloud backup or multi-device sync.",
+   "Real-device verification of Apple Health and Health Connect permissions and sync is not documented as done (README.md Verified in this implementation; submission-checklist.md Release validation). Provider behavior is tested only with fakes.",
+   "Translations have not been reviewed by native speakers (README.md Before release).",
+   "Google Play listing. Only an App Store kit exists in docs/app-store.",
+   "Published privacy policy and support page. Both are drafts with placeholder contact fields.",
+   "Renaming to \"Vector Body\" with home-screen label \"Body\" (pending owner sign-off).",
+   "Undo after delete. Deletes use a confirmation alert until undo lands (use-measurement-log.ts comment, MIGRATION L4).",
+   "Health Connect history older than 29 days.",
+   "iPad layout (supportsTablet is false)."
+  ],
+  "sources": [
+   "/Users/sam/Development/VectorApps/body-track/README.md",
+   "/Users/sam/Development/VectorApps/body-track/package.json",
+   "/Users/sam/Development/VectorApps/body-track/app.json",
+   "/Users/sam/Development/VectorApps/body-track/eas.json",
+   "/Users/sam/Development/VectorApps/body-track/plugins/with-health-rationale.js",
+   "/Users/sam/Development/VectorApps/body-track/ios/VECTORBODY/Info.plist",
+   "/Users/sam/Development/VectorApps/body-track/ios/VECTORBODY/VECTORBODY.entitlements",
+   "/Users/sam/Development/VectorApps/body-track/ios/VECTORBODY.xcodeproj/project.pbxproj",
+   "/Users/sam/Development/VectorApps/body-track/docs/design-system.md",
+   "/Users/sam/Development/VectorApps/body-track/docs/app-store/README.md",
+   "/Users/sam/Development/VectorApps/body-track/docs/app-store/listing.json",
+   "/Users/sam/Development/VectorApps/body-track/docs/app-store/privacy-policy-draft.md",
+   "/Users/sam/Development/VectorApps/body-track/docs/app-store/review-notes.md",
+   "/Users/sam/Development/VectorApps/body-track/docs/app-store/review-response-1.4.1.md",
+   "/Users/sam/Development/VectorApps/body-track/docs/app-store/submission-checklist.md",
+   "/Users/sam/Development/VectorApps/body-track/docs/app-store/support-page-draft.md",
+   "/Users/sam/Development/VectorApps/body-track/src/app/_layout.tsx",
+   "/Users/sam/Development/VectorApps/body-track/src/app/(tabs)/_layout.tsx",
+   "/Users/sam/Development/VectorApps/body-track/src/app/health-sources.tsx",
+   "/Users/sam/Development/VectorApps/body-track/src/app/health-privacy.tsx",
+   "/Users/sam/Development/VectorApps/body-track/src/components/dashboard.tsx",
+   "/Users/sam/Development/VectorApps/body-track/src/components/screens/photos-screen.tsx",
+   "/Users/sam/Development/VectorApps/body-track/src/components/screens/settings-screen.tsx",
+   "/Users/sam/Development/VectorApps/body-track/src/components/screens/health-privacy-screen.tsx",
+   "/Users/sam/Development/VectorApps/body-track/src/components/measurements/body-form.tsx",
+   "/Users/sam/Development/VectorApps/body-track/src/components/measurements/height-form.tsx",
+   "/Users/sam/Development/VectorApps/body-track/src/components/measurements/measurement-editor.tsx",
+   "/Users/sam/Development/VectorApps/body-track/src/components/measurements/measurement-history.tsx",
+   "/Users/sam/Development/VectorApps/body-track/src/components/measurements/use-measurement-log.ts",
+   "/Users/sam/Development/VectorApps/body-track/src/components/measurements/readout.tsx",
+   "/Users/sam/Development/VectorApps/body-track/src/lib/metrics.ts",
+   "/Users/sam/Development/VectorApps/body-track/src/lib/metric-context.ts",
+   "/Users/sam/Development/VectorApps/body-track/src/lib/metric-sources.ts",
+   "/Users/sam/Development/VectorApps/body-track/src/lib/health.ts",
+   "/Users/sam/Development/VectorApps/body-track/src/lib/health-schedule.ts",
+   "/Users/sam/Development/VectorApps/body-track/src/lib/health-native.ios.ts",
+   "/Users/sam/Development/VectorApps/body-track/src/lib/health-native.android.ts",
+   "/Users/sam/Development/VectorApps/body-track/src/lib/store.tsx",
+   "/Users/sam/Development/VectorApps/body-track/src/lib/translations.ts",
+   "/Users/sam/Development/VectorApps/body-track/src/lib/locales/en.json",
+   "/Users/sam/Development/VectorApps/body-track/src/vector/chart.tsx",
+   "/Users/sam/Development/VectorApps/body-track/src/db/index.ts",
+   "/Users/sam/Development/VectorApps/body-track/src/db/schema.ts"
+  ],
+  "languages": [
+   "English",
+   "Spanish",
+   "French",
+   "German",
+   "Italian",
+   "Portuguese",
+   "Dutch",
+   "Swedish",
+   "Japanese",
+   "Korean",
+   "Simplified Chinese"
+  ],
+  "units": "Metric (kg, cm), imperial (lb, in, with feet and inches for height) and decimal stone (st, with lengths in inches and height in feet and inches). Values are stored in kg and cm; changing display units does not rewrite history.",
+  "subscription": {}
+ },
+ "lift": {
+  "slug": "vector-lift",
+  "name": "Vector Lift",
+  "homeScreenLabel": "Lift",
+  "tagline": "Adaptive strength programs that stay on your phone",
+  "summary": "Vector Lift is a local-first hypertrophy and strength trainer for iPhone and Android, with an Apple Watch companion app. It builds training blocks, prescribes every set from your last performance, and stores every workout in a database on the phone with no account and no server.",
+  "platforms": [
+   "iPhone (supportsTablet false, so iPad is not supported)",
+   "Android (minSdkVersion 26)",
+   "Apple Watch (watchOS 11 companion app embedded in the iPhone app; needs the iPhone app)"
+  ],
+  "features": [
+   {
+    "title": "Programs that write every set",
+    "body": "Each program session sets load, reps and reps in reserve from your last performance, how hard it felt and the week's target. The rules are deterministic, and every exercise shows a one-line reason.",
+    "evidence": "src/lib/progression.ts (METHOD = 2, assumedRir, effortRir, keptUp); src/lib/programs.ts; docs/progression.md; src/lib/locales/en.json (adviceUp, adviceSame, adviceDown, adviceTopOut)"
+   },
+   {
+    "title": "A program from four questions",
+    "body": "Pick a gym, answer days a week, minutes a session, years lifting and weeks before the deload, then choose muscles to bring up or down. The builder makes 4 to 6 training weeks for that gym with a deload week at the end, and every part can be edited before you start.",
+    "evidence": "src/components/plan/program-builder-sheet.tsx (weekOptions 4/5/6, experienceOptions, steps buildProgram/bringUp/bringDown); src/components/plan/program-editor.tsx (weeks stepper 3 to 6); src/lib/program-builder.ts (splits); docs/progression.md (Building one)"
+   },
+   {
+    "title": "One tap per set",
+    "body": "A set done as prescribed is one tap on the checkmark, with last time's weight and reps beside it. Each set is saved as it is checked, so a workout survives the app being closed.",
+    "evidence": "src/components/workout/set-row.tsx (previous column, SignalCell onComplete); src/lib/workouts.ts (completeSet); src/db/index.ts (WAL, each set its own commit); README.md"
+   },
+   {
+    "title": "Volume that follows recovery",
+    "body": "After a program session, two optional taps per muscle, one for workload and one for soreness, set next week's sets. Without an answer, hitting your reps decides.",
+    "evidence": "src/components/history/muscle-feedback.tsx (Easy, Good, Hard, Too much, Hurt; Not sore, Just recovered, Still sore); src/lib/programs.ts; docs/progression.md (Sets per muscle)"
+   },
+   {
+    "title": "Loads your gym can make",
+    "body": "Each gym keeps its bar, plates, dumbbell step, heaviest dumbbell and machine step, in kg or lb. Prescriptions round to loads it can make, and the plates per side are shown for the next barbell set.",
+    "evidence": "src/lib/loads.ts (achievableLoads, roundLoad, platesPerSide, gymPresets, defaultGym); src/components/gyms/gym-editor.tsx; src/components/workout/exercise-card.tsx (platesPerSide)"
+   },
+   {
+    "title": "Training while you travel",
+    "body": "Pick a travel gym and your last day there. Program sessions swap in the closest exercises it can do, and back home your loads pick up from before you left.",
+    "evidence": "src/components/gyms/travel.tsx; src/components/gyms/gyms-screen.tsx; src/lib/workouts.ts (travelPlan, startTravel, endTravel, trainingGym); docs/progression.md (Gyms and travel); tests/gyms.test.cjs"
+   },
+   {
+    "title": "258 curated exercises",
+    "body": "Every exercise lists its primary muscles and any secondary ones across 17 muscle groups, with front, side and rear delts counted apart. Search reads gym shorthand such as rdl, db and ohp, and one-letter typos.",
+    "evidence": "src/lib/exercises/library.ts (258 entries, each with a cue); src/lib/exercises/types.ts (17 muscles); src/lib/exercises/index.ts (ohp, rdl aliases; edit distance of one)"
+   },
+   {
+    "title": "Progress at a glance",
+    "body": "An 8-week heatmap shows hard sets per muscle, with secondary muscles at half a set, beside estimated 1RM trends, recent records and body weight. Each exercise has a strength chart with ranges from 1W to All.",
+    "evidence": "src/components/progress/progress-screen.tsx (WEEKS = 8); src/components/progress/muscle-heatmap.tsx; src/components/progress/strength-chart.tsx; src/vector/chart.tsx (ranges 1W to All); src/lib/analytics.ts"
+   },
+   {
+    "title": "Log sets in shorthand",
+    "body": "Type bench 225x5x3 on any phone and the sets are matched to the library, ready to confirm. A pasted program with lines like Bench Press 3x6-8 opens in the program editor.",
+    "evidence": "src/lib/workout-text.ts; src/lib/program-text.ts; src/components/workout/describe-sheet.tsx; src/components/plan/import-sheet.tsx; tests/ai.test.cjs; docs/ai.md (Without a model column)"
+   },
+   {
+    "title": "Encrypted backups you keep",
+    "body": "A backup is a password-protected encrypted file that you save wherever you choose from the share sheet. Sets and body weight also export as CSV.",
+    "evidence": "src/lib/backup-crypto.ts; src/components/settings/backup-panel.tsx; src/components/settings/data-panel.tsx (exportSetsCsv, exportWeightCsv); docs/backups.md; tests/backup.test.cjs"
+   }
+  ],
+  "deviceIntegrations": [
+   {
+    "title": "Apple Watch logging",
+    "body": "Start the next session or follow one started on the phone, then log a set in one tap with load and reps on the crown. Rate the set during rest, feel a tap when rest is over, and finish from the wrist.",
+    "evidence": "targets/watch/*.swift (WorkoutView digitalCrownRotation, Skip rest, Finish; Phone.swift WKInterfaceDevice haptics); modules/watch-link/ios/WatchLink.swift; src/lib/watch.ts; docs/watch.md; app.json (@bacons/apple-targets, LiftWatch extension)"
+   },
+   {
+    "title": "Apple Health and Health Connect",
+    "body": "With sync on, body weight syncs both ways and finished workouts are saved as strength training with their name and start and end times. Sets and loads stay in the app, and no energy is estimated.",
+    "evidence": "src/lib/health.ts; src/lib/health-native.ios.ts (saveWorkoutSample, no energy, HKWorkoutBrandName title); src/lib/health-native.android.ts (ExerciseSession STRENGTH_TRAINING with title); src/lib/health-schedule.ts; app.json (HealthKit plugin, android.permission.health.*)"
+   },
+   {
+    "title": "Lock screen rest timer",
+    "body": "Rest starts on each checked set, with a length set by the exercise. On iPhone a Live Activity counts down on the Lock Screen and in the Dynamic Island, and tapping it opens the workout.",
+    "evidence": "src/lib/rest-timer.ts (defaultRest, showActivity); targets/activity/LiveActivity.swift (Text timerInterval, DynamicIsland, widgetURL lifttrack://workout); app.json (NSSupportsLiveActivities)"
+   },
+   {
+    "title": "Rest alerts",
+    "body": "A local notification fires when rest ends while the app is in the background, and a haptic fires in the app. On Android an ongoing notification shows the time rest ends.",
+    "evidence": "src/lib/rest-timer.ts (channels rest and rest-running, restUntil title, sticky notification); src/components/workout/rest-bar.tsx (haptics.complete)"
+   },
+   {
+    "title": "Home-screen quick actions",
+    "body": "Quick actions resume the open workout, start the next program session or start an empty workout. Opening the lifttrack://start link, for example from a shortcut, does the same.",
+    "evidence": "src/components/quick-actions.tsx; src/app/start.tsx; app.json (scheme lifttrack)"
+   }
+  ],
+  "privacyFacts": [
+   "No account and no sign-in. The Settings screen states: Vector Lift keeps everything on this phone. No account, no servers. (src/lib/locales/en.json localOnlyNote, src/components/screens/settings-screen.tsx)",
+   "No network code: a search of src, modules and targets finds no fetch, XMLHttpRequest, axios, WebSocket or URLSession calls, and package.json has no networking, analytics, crash-reporting or over-the-air update SDK.",
+   "No analytics or tracking. src/lib/analytics.ts only computes Progress summaries from local workouts on demand and stores nothing.",
+   "All records live in a local SQLite database (lift_track.db) through Drizzle. The exercise library ships in the app bundle and updates only with app updates.",
+   "Nothing in the code excludes the database from the operating system's own device backups, so an iCloud or Android device backup the user has turned on may include it.",
+   "Health sync is off by default and goes through the OS (HealthKit or Health Connect). When on, it reads and writes body weight and writes finished workouts with their name and start and end times, using only the permissions granted.",
+   "The Apple Watch app asks HealthKit for permission to run a strength-training session and read heart rate. It shows live heart rate and discards that session at the end; the phone writes the one Health workout.",
+   "Backups are files the user saves through the share sheet: AES-256-GCM with a key from PBKDF2-HMAC-SHA256 at 600,000 iterations and a random 16-byte salt. Passwords are at least 10 characters, are not stored and cannot be recovered.",
+   "Restore writes an encrypted recovery copy of current records first and replaces everything in one database transaction.",
+   "Erase all data deletes every personal table and app-held copies, overwrites deleted rows (secure_delete) and compacts the database. It does not touch files already shared or Health records.",
+   "CSV exports and pre-migration database copies are unencrypted.",
+   "On-device AI features call only the phone's own model: Apple Foundation Models SystemLanguageModel, never Private Cloud Compute, and the ML Kit GenAI Prompt API on Android, whose Gemini Nano model is installed by the system, not the app. There is no cloud fallback, and the app's copy of a program photo is deleted once read.",
+   "No in-app purchase or payment code exists in the app."
+  ],
+  "businessModel": "Not implemented in code. The product plan says pricing follows the other Vector apps as a one-time unlock, but the price and model are marked undecided (docs/lift-track-plan.md Open decisions; docs/lift-competitor-review.md: one-time price, undecided). No StoreKit, RevenueCat, paywall or purchase code exists.",
+  "readoutSpecimen": {
+   "eyebrow": "WEEK 3 / BENCH PRESS",
+   "heroValue": "102.5",
+   "heroUnit": "kg",
+   "heroCaption": "\u00d7 8 \u00b7 2 reps in reserve",
+   "meta": "Up from 100 kg \u00d7 8 last time",
+   "meter": {
+    "value": 2,
+    "max": 4,
+    "valueText": "Set 2 of 4"
+   },
+   "rows": [
+    {
+     "label": "Last time",
+     "value": "100 \u00d7 8",
+     "unit": "kg"
+    },
+    {
+     "label": "Plates per side",
+     "value": "25 + 15 + 1.25",
+     "unit": "kg"
+    },
+    {
+     "label": "Rest",
+     "value": "3:00"
+    }
+   ]
+  },
+  "caveats": [
+   "Progression rules are product heuristics built on RIR-based autoregulation and volume ideas, not individual prescriptions. Starting volumes, caps and set steps are choices, not validated thresholds (docs/progression.md Limits).",
+   "Estimated 1RM uses Epley, which overestimates at high reps; estimates beyond about 12 reps to failure are rough.",
+   "Health export writes strength-training workouts with a name and start and end times; no energy is estimated, so it does not report calories.",
+   "Backup passwords cannot be recovered, and restore replaces records rather than merging them.",
+   "Exercises carry one short text technique cue each; there are no exercise videos or illustrations.",
+   "iPhone only on iOS; iPad is not supported. The Apple Watch app is a companion that logs the phone's open workout and needs the iPhone app.",
+   "The Dynamic Island countdown appears only on iPhones that have a Dynamic Island.",
+   "The on-device model never produces a load, rep or set number. A session note can only nudge the method one step, which is marked and can be undone; every other model result is a draft the user confirms.",
+   "The interface is translated into 11 languages, but exercise and muscle names are in English in every language, and the Apple Watch app text is in English only.",
+   "Do not claim data can never leave the phone: OS device backups are not excluded, Health sync is opt-in, and backups and CSV files go wherever the user saves them.",
+   "Android support is in the code and config, but no Android device test of Lift is recorded, and the local Android native project is still the Vector Body one (docs/ai.md and docs/backups.md list Android checks still to do).",
+   "docs/app-store/* is inherited from Vector Body and is reference material only; do not reuse its listing or privacy policy text for Lift."
+  ],
+  "notYetShipped": [
+   "App Store and Google Play availability: no Lift store listing exists (docs/app-store is Body's), and pricing is undecided.",
+   "Home-screen widget (README: still to come; plan: deferred).",
+   "Pricing and the one-time unlock (undecided; no purchase code).",
+   "On-device model path not verified on a real iPhone with Apple Intelligence; simulators fail every call (docs/ai.md).",
+   "Gemini Nano on Android compiles but has not run on a device.",
+   "Android device QA for Lift (plan stage 4 gate; no record of a device run).",
+   "Session-note nudges (How did it go?) have not been run against the real model.",
+   "Dictation and photographed printed programs still need testing on current and older iPhones and a midrange Android before release.",
+   "Backup share-sheet and file-picker flows still need checking on devices (docs/backups.md).",
+   "Early deload offered after repeated performance drops (planned; no code found; a stall note suggesting a swap exists instead).",
+   "In-app Sources and methods screen (planned; not found in code).",
+   "Premade program templates such as full body, PPL or bro split (planned; the builder generates splits instead).",
+   "Exercise media such as illustrations or videos (open decision).",
+   "Wear OS logging, cardio, and Vector Macros energy sharing via Health (Later).",
+   "Video form analysis and a downloadable fallback model (out of scope for v1)."
+  ],
+  "languages": [
+   "English",
+   "Spanish",
+   "French",
+   "German",
+   "Italian",
+   "Portuguese",
+   "Dutch",
+   "Swedish",
+   "Japanese",
+   "Korean",
+   "Simplified Chinese"
+  ],
+  "units": "Metric (kg) and imperial (lb). Loads are stored in kg; each gym keeps its plates, bar and steps in its own unit, so 225 lb stays exactly 225 lb. CSV exports include both kg and lb.",
+  "subscription": {},
+  "sources": [
+   "/Users/sam/Development/VectorApps/lift-track/README.md",
+   "/Users/sam/Development/VectorApps/lift-track/app.json",
+   "/Users/sam/Development/VectorApps/lift-track/package.json",
+   "/Users/sam/Development/VectorApps/lift-track/eas.json",
+   "/Users/sam/Development/VectorApps/lift-track/docs/lift-track-plan.md",
+   "/Users/sam/Development/VectorApps/lift-track/docs/progression.md",
+   "/Users/sam/Development/VectorApps/lift-track/docs/ai.md",
+   "/Users/sam/Development/VectorApps/lift-track/docs/backups.md",
+   "/Users/sam/Development/VectorApps/lift-track/docs/watch.md",
+   "/Users/sam/Development/VectorApps/lift-track/docs/lift-competitor-review.md",
+   "/Users/sam/Development/VectorApps/lift-track/src/db/index.ts",
+   "/Users/sam/Development/VectorApps/lift-track/src/lib/analytics.ts",
+   "/Users/sam/Development/VectorApps/lift-track/src/lib/progression.ts",
+   "/Users/sam/Development/VectorApps/lift-track/src/lib/program-builder.ts",
+   "/Users/sam/Development/VectorApps/lift-track/src/lib/rest-timer.ts",
+   "/Users/sam/Development/VectorApps/lift-track/src/lib/loads.ts",
+   "/Users/sam/Development/VectorApps/lift-track/src/lib/health.ts",
+   "/Users/sam/Development/VectorApps/lift-track/src/lib/health-native.ios.ts",
+   "/Users/sam/Development/VectorApps/lift-track/src/lib/health-native.android.ts",
+   "/Users/sam/Development/VectorApps/lift-track/src/lib/health-schedule.ts",
+   "/Users/sam/Development/VectorApps/lift-track/src/lib/backup-crypto.ts",
+   "/Users/sam/Development/VectorApps/lift-track/src/lib/data-ownership.ts",
+   "/Users/sam/Development/VectorApps/lift-track/src/lib/local-ai.ts",
+   "/Users/sam/Development/VectorApps/lift-track/src/lib/workouts.ts",
+   "/Users/sam/Development/VectorApps/lift-track/src/lib/translations.ts",
+   "/Users/sam/Development/VectorApps/lift-track/src/lib/locales/en.json",
+   "/Users/sam/Development/VectorApps/lift-track/src/lib/exercises/types.ts",
+   "/Users/sam/Development/VectorApps/lift-track/src/lib/exercises/library.ts",
+   "/Users/sam/Development/VectorApps/lift-track/src/lib/exercises/index.ts",
+   "/Users/sam/Development/VectorApps/lift-track/src/components/screens/settings-screen.tsx",
+   "/Users/sam/Development/VectorApps/lift-track/src/components/settings/backup-panel.tsx",
+   "/Users/sam/Development/VectorApps/lift-track/src/components/settings/data-panel.tsx",
+   "/Users/sam/Development/VectorApps/lift-track/src/components/quick-actions.tsx",
+   "/Users/sam/Development/VectorApps/lift-track/src/components/progress/progress-screen.tsx",
+   "/Users/sam/Development/VectorApps/lift-track/src/components/workout/set-row.tsx",
+   "/Users/sam/Development/VectorApps/lift-track/src/components/workout/rest-bar.tsx",
+   "/Users/sam/Development/VectorApps/lift-track/src/components/workout/describe-sheet.tsx",
+   "/Users/sam/Development/VectorApps/lift-track/src/components/plan/import-sheet.tsx",
+   "/Users/sam/Development/VectorApps/lift-track/src/components/plan/program-builder-sheet.tsx",
+   "/Users/sam/Development/VectorApps/lift-track/src/components/plan/program-editor.tsx",
+   "/Users/sam/Development/VectorApps/lift-track/src/components/history/muscle-feedback.tsx",
+   "/Users/sam/Development/VectorApps/lift-track/src/app/start.tsx",
+   "/Users/sam/Development/VectorApps/lift-track/src/vector/chart.tsx",
+   "/Users/sam/Development/VectorApps/lift-track/targets/activity/LiveActivity.swift",
+   "/Users/sam/Development/VectorApps/lift-track/targets/activity/expo-target.config.js",
+   "/Users/sam/Development/VectorApps/lift-track/targets/watch/expo-target.config.js",
+   "/Users/sam/Development/VectorApps/lift-track/targets/watch/Session.swift",
+   "/Users/sam/Development/VectorApps/lift-track/targets/watch/WorkoutView.swift",
+   "/Users/sam/Development/VectorApps/lift-track/targets/watch/Phone.swift",
+   "/Users/sam/Development/VectorApps/lift-track/modules/local-ai/android/build.gradle",
+   "/Users/sam/Development/VectorApps/lift-track/modules/local-ai/ios/LocalAIModule.swift"
+  ]
+ },
+ "macros": {
+  "slug": "vector-macros",
+  "name": "Vector Macros",
+  "homeScreenLabel": "Macros",
+  "tagline": "Macro tracking that stays on your phone",
+  "summary": "Vector Macros is an offline calorie and macro tracker for iPhone and Android. It bundles 3.2 million foods, scans barcodes and nutrition labels, drafts meals from a photo or description with the phone's own AI model on supported phones, and proposes calorie and macro changes in a weekly check-in, with no account. It is for people who log food toward a cut, bulk or maintenance goal and want their records kept on the phone.",
+  "platforms": [
+   "iPhone",
+   "Android"
+  ],
+  "features": [
+   {
+    "title": "3.2 million foods offline",
+    "body": "Search 7,793 USDA foods and 3,192,971 packaged foods from 184 countries without a connection. Search forgives typos and ranks packaged foods sold in your region first.",
+    "evidence": "macro-track/assets/food/manifest.json (usda.included 7793, off.included 3192971); macro-track/src/lib/food-catalog.ts (region(), lines 466-480); macro-track/src/lib/food-rank.ts; macro-track/README.md (Offline food search, 184 countries, Food search does not call a remote API)"
+   },
+   {
+    "title": "Weekly adaptive check-ins",
+    "body": "Cut, Bulk and Maintain programs set calories and macros from your profile, and manual targets stay available. A weekly check-in compares logged intake with trend weight and proposes a change of at most 150 kcal, which you accept, keep or adjust.",
+    "evidence": "macro-track/src/lib/program.ts:417 (cap = min(150, 7.5% of calories)); macro-track/src/lib/coaching.ts; macro-track/src/lib/coaching-store.ts; macro-track/src/components/nutrition/home-check-in.tsx; macro-track/src/components/nutrition/check-in-adjuster.tsx; macro-track/docs/coaching.md"
+   },
+   {
+    "title": "Photo and description logging",
+    "body": "On phones with Apple Intelligence or Gemini Nano, a photo, a sentence or both become an editable draft of foods and estimated portions. The model runs on the phone and nothing is uploaded.",
+    "evidence": "macro-track/src/lib/meal-ai.ts; macro-track/src/lib/local-ai.ts; macro-track/src/components/nutrition/photo-logger.tsx (photoLoggingOffered); macro-track/modules/local-ai/ios/LocalAIModule.swift:12; macro-track/modules/local-ai/android/build.gradle (genai-prompt); macro-track/docs/ai-logging.md"
+   },
+   {
+    "title": "Barcode and label scanning",
+    "body": "Scan EAN-13, EAN-8, UPC-A, UPC-E and ITF-14 barcodes, or type the number. For an unknown product, a photo of its Nutrition Facts panel fills in a new food for you to check.",
+    "evidence": "macro-track/src/lib/barcode-scanner.ts:8 (foodBarcodeTypes); macro-track/src/lib/nutrition-label.ts; macro-track/src/components/nutrition/food-editor.tsx; macro-track/docs/label-scanning.md; macro-track/tests/nutrition-label.test.cjs"
+   },
+   {
+    "title": "Quick logging with Undo",
+    "body": "A quick-log bar with search and scan sits above the tab bar, and Log again ranks foods by how often, how recently and at what hour you eat them. Amounts take grams, ounces, volumes or the food's own portions, and every diary change has Undo.",
+    "evidence": "macro-track/src/components/nutrition/quick-log-bar.tsx (search, scan; photo only when photoLoggingOffered); macro-track/src/lib/fast-log.ts:87-125 (recency half-life and timeFit scoring); macro-track/src/components/nutrition/amount-picker.tsx; macro-track/src/lib/locales/en.json (logUndone, logAgain); macro-track/README.md"
+   },
+   {
+    "title": "Calorie shifting",
+    "body": "In a program, give one to six chosen weekdays more calories. The other days give up the same total, so the week stays on budget.",
+    "evidence": "macro-track/src/components/plan/calorie-shift.tsx:156 (days.length >= 6); macro-track/src/components/nutrition/program-editor.tsx:274; macro-track/docs/coaching.md (Calorie shifting, off by default); macro-track/tests/strategy.test.cjs"
+   },
+   {
+    "title": "34 nutrients per food",
+    "body": "A food shows up to 34 nutrients beyond calories and macros, from fiber and sodium to vitamins, minerals and caffeine. The day totals them against FDA Daily Values where one exists and counts only what each record lists.",
+    "evidence": "macro-track/src/lib/nutrition.ts:8-41 (32 microKeys plus fiber and sodium) and 60-104 (daily values; none for sugars, trans fat, omega-3, omega-6 or caffeine); macro-track/src/components/nutrition/nutrient-list.tsx; macro-track/src/components/nutrition/today-screen.tsx"
+   },
+   {
+    "title": "Recipes and saved meals",
+    "body": "Build recipes from food search and log whole or partial servings. Save meals, copy a meal or a whole day, and keep your own foods and saved foods in Library.",
+    "evidence": "macro-track/src/components/nutrition/recipe-editor.tsx; macro-track/src/components/nutrition/meal-editor.tsx; macro-track/src/components/nutrition/copy-day.tsx; macro-track/src/components/nutrition/library-screen.tsx:97-150"
+   },
+   {
+    "title": "Progress at a glance",
+    "body": "Progress shows the week day by day against target, a daily expenditure estimate with a range and the weight trend. Charts open from 1W to All, and the goal date is projected from the program's weekly pace.",
+    "evidence": "macro-track/src/components/progress/progress-screen.tsx:296-395; macro-track/src/components/progress/expenditure-screen.tsx (estimateRange band); macro-track/src/components/progress/weight-trend-screen.tsx; macro-track/src/vector/chart.tsx:25 (1W, 1M, 3M, 6M, 1Y, All); macro-track/docs/coaching.md (projected goal date)"
+   },
+   {
+    "title": "Encrypted backups you hold",
+    "body": "A backup is encrypted with AES-256-GCM under a password you choose and saved where you pick. CSV exports cover food, weight and targets.",
+    "evidence": "macro-track/src/lib/backup-crypto.ts:9-18 (aes-256-gcm, pbkdf2-sha256, 600000 iterations); macro-track/src/components/nutrition/backup-panel.tsx; macro-track/src/lib/data-ownership.ts; macro-track/docs/backups.md"
+   }
+  ],
+  "deviceIntegrations": [
+   {
+    "title": "Apple Health and Health Connect",
+    "body": "Sync is opt-in. Weight and height sync both ways, and logged food is written with its macros, vitamins and minerals.",
+    "evidence": "macro-track/src/lib/health-native.ios.ts:8-55 (read weight, height, birthday, sex; write weight, height, dietary types); macro-track/src/lib/health-native.android.ts:9-25 and 130-195 (Weight/Height read-write, Nutrition write); macro-track/src/lib/health-schedule.ts; macro-track/app.json; macro-track/src/components/screens/settings-screen.tsx"
+   },
+   {
+    "title": "Home and Lock Screen widgets",
+    "body": "On iPhone, small and medium widgets show calories left and protein, carbs and fat, with buttons that open the scanner or the photo logger. Lock Screen widgets come in circular, rectangular and inline sizes.",
+    "evidence": "macro-track/targets/widget/Widgets.swift:262-460 (supportedFamilies systemSmall, systemMedium, accessoryCircular, accessoryRectangular, accessoryInline; macrotrack://scan and macrotrack://photo links); macro-track/targets/widget/expo-target.config.js; macro-track/src/lib/widget.ts; macro-track/app.json (@bacons/apple-targets plugin)"
+   },
+   {
+    "title": "Shortcuts and Action Button links",
+    "body": "The links macrotrack://log, search, scan, photo and weigh-in open the matching sheet. An iOS Shortcuts Open URL action can run them from the Action Button.",
+    "evidence": "macro-track/src/app/+native-intent.tsx; macro-track/src/lib/app-actions.ts:7-8; macro-track/README.md (Links for an iOS Shortcuts Open URL action)"
+   },
+   {
+    "title": "On-device AI models",
+    "body": "Photo logging uses Apple Foundation Models on iPhone and Gemini Nano through ML Kit on Android. Only the on-device model is used, never Private Cloud Compute.",
+    "evidence": "macro-track/modules/local-ai/ios/LocalAIModule.swift:12, 28, 96-173; macro-track/modules/local-ai/android/build.gradle:19 (com.google.mlkit:genai-prompt:1.0.0-beta4); macro-track/docs/ai-logging.md (Where it runs)"
+   },
+   {
+    "title": "On-device text recognition",
+    "body": "Label scanning reads text with Apple Vision on iPhone and the bundled ML Kit recognizer on Android. It needs no Apple Intelligence, Gemini Nano or model download.",
+    "evidence": "macro-track/modules/local-ai/ios/LocalAIModule.swift:68 (VNRecognizeTextRequest); macro-track/modules/local-ai/android/build.gradle:21 (com.google.mlkit:text-recognition:16.0.1, bundled); macro-track/src/lib/nutrition-label.ts; macro-track/docs/label-scanning.md"
+   }
+  ],
+  "privacyFacts": [
+   "No account and no sign-in: the code has no auth provider or login flow.",
+   "The app's own code makes no network requests: a search of src, modules, plugins and targets finds no fetch, XMLHttpRequest, WebSocket, URLSession or OkHttp use. Source, license and method links open in the system browser only.",
+   "No analytics or crash-reporting SDK in package.json (no Sentry, Firebase, Amplitude, Mixpanel, PostHog or expo-updates).",
+   "On Android, text recognition, the system barcode scanner and Gemini Nano are Google components (ML Kit, Google Play services code scanner, AICore). Their own data handling follows Google's terms and is outside what a code audit of this repo can confirm.",
+   "Food search and barcode lookup run against two bundled SQLite catalogs (usda.db and off.db) on the phone. The README states food search does not call a remote API.",
+   "Personal records live in a private on-device SQLite database (macro_track.db). It is not encrypted on the phone, like pre-migration copies.",
+   "Photo logging uses only on-device models. Photos are downscaled, deleted from the app cache when the logger closes, and not stored with diary entries.",
+   "Nutrition label photos are deleted once they have been read.",
+   "Encrypted backups use AES-256-GCM with PBKDF2-HMAC-SHA256 at 600,000 iterations. The password is not stored, there is no password recovery and there is no backup server; the user picks the destination in the share sheet, and a cloud destination uses that provider.",
+   "Apple Health and Health Connect sync is off until the user turns it on.",
+   "Erasure clears all personal tables, recovery backups, pre-migration copies and export cache, overwrites deleted rows and compacts the database when storage allows. It cannot delete copies shared outside the app or records already in Apple Health or Health Connect.",
+   "Bundled food catalogs are kept in the cache folder, which iCloud and Android backups skip.",
+   "On Android, a one-time Gemini Nano download is handled by the system AICore service when the user chooses it; it is a model download, not an upload of personal records."
+  ],
+  "businessModel": "Not implemented in code. There is no purchase, paywall or entitlement code and no StoreKit, RevenueCat or billing dependency. The product plan (docs/macro-track-plan.md) says a paid download or one-time core unlock fits the ownership proposition, that subscription versus lifetime pricing is undecided, and that any entitlement must keep ordinary offline use working without repeated server validation. The site owner groups this app with the single-purchase, always-offline apps, but no price or payment model is set anywhere in the repo. Do not show a price.",
+  "readoutSpecimen": {
+   "eyebrow": "TODAY / CALORIES",
+   "heroValue": "1,240",
+   "heroUnit": "kcal left",
+   "heroCaption": "On pace for ~2,240",
+   "meter": {
+    "value": 1060,
+    "max": 2300,
+    "valueText": "1,060 / 2,300 kcal"
+   },
+   "rows": [
+    {
+     "label": "Protein",
+     "value": "90 / 165",
+     "unit": "g"
+    },
+    {
+     "label": "Carbs",
+     "value": "100 / 252",
+     "unit": "g"
+    },
+    {
+     "label": "Fat",
+     "value": "34 / 70",
+     "unit": "g"
+    }
+   ],
+   "meta": "Next check-in \u00b7 Sunday"
+  },
+  "caveats": [
+   "Coaching is for adults 18 and over who are not pregnant or breastfeeding. Medical nutrition needs and eating disorder care need professional guidance (coachingScopeBody in src/lib/locales/en.json).",
+   "The coaching method is the app's own approximate method. It is not clinically validated and is not MacroFactor's algorithm. Do not market it as validated, clinical or medical (docs/mvp-validation.md, Before public release item 2).",
+   "Check-ins propose changes; nothing changes targets until the user accepts or adjusts. Check-ins hold until there are at least 12 covered days and six weigh-in days in the last 21.",
+   "Expenditure and trend weight are estimates, not measurements.",
+   "For general tracking, not diagnosis or treatment (healthDisclaimer).",
+   "Photo logging estimates foods and portions; the user reviews the draft. It only works on phones with Apple Intelligence (photos need iOS 27 on eligible iPhones, descriptions iOS 26 or later) or Gemini Nano on supported Android phones. Phone timing has not been measured, so make no speed claims.",
+   "Label scanning targets US Nutrition Facts panels; other layouts are not checked systematically.",
+   "Packaged food data comes from Open Food Facts under ODbL 1.0 and USDA data is CC0. Attribution is required, and label accuracy of community data cannot be guaranteed.",
+   "Targets stay within 1,500 to 5,000 kcal a day; check-ins hold on sharp weight jumps or implausible expenditure.",
+   "The app download is large: the catalogs are about 561 MiB combined, about 240 MB compressed, and Android installs take about twice the catalog size.",
+   "Food catalog updates ship with app updates, not as in-app downloads.",
+   "iPhone only on iOS; iPad is not supported (supportsTablet false). Widgets are iPhone only.",
+   "Energy is shown in kcal only.",
+   "Minimum supported OS versions are not decided; the generated build settings (iOS 16.4, widget iOS 17, Android API 26) should not be quoted as requirements.",
+   "Avoid speed words such as fast or instant in copy; the docs make no elapsed-time claims and device timing is unmeasured.",
+   "Native camera, Health and full UI behavior still need physical-device QA before release; photo logging and label scanning have not been run on an Android device."
+  ],
+  "notYetShipped": [
+   "Store release: no App Store or Google Play listing yet; a new EAS project, store privacy details and screenshots are still to come (docs/mvp-validation.md, README).",
+   "Any purchase or entitlement flow; pricing is undecided.",
+   "A downloadable AI model for phones without Apple Intelligence or Gemini Nano.",
+   "Signed downloadable food catalog updates.",
+   "Complete translations: Settings offers 11 languages and each locale file has every key, but some screens (Copy a day, Quick add, time picker) still use hardcoded English, and the roadmap considers hiding the language picker. Market English only.",
+   "Permission prompt text for meal and label photos (roadmap A2): the image picker prompts still describe progress photos.",
+   "Home-screen quick actions from a long press on the icon (roadmap N1).",
+   "Local reminders for weigh-ins, due check-ins or nothing logged (roadmap N2).",
+   "Siri, Spotlight and App Shortcuts through App Intents (roadmap N4).",
+   "Android home screen widget and an iOS Control Center control (roadmap section C).",
+   "Maintenance breaks and paused check-ins (roadmap section C).",
+   "Health reconciliation after a backup restore; re-enabling sync after restore can duplicate weights.",
+   "Backup v2 with preferences and height; current backups exclude body measurements and progress photos.",
+   "Restaurant coverage beyond what the USDA and Open Food Facts catalogs hold (docs/mvp-validation.md).",
+   "Clinical validation of the coaching method and the 100+ photo device accuracy gate for photo logging.",
+   "Inherited Body Track screens (progress photos, body measurements, height) exist as routes but are not linked in the UI; do not claim them.",
+   "Live Activities are intentionally not planned."
+  ],
+  "sources": [
+   "/Users/sam/Development/VectorApps/macro-track/README.md",
+   "/Users/sam/Development/VectorApps/macro-track/app.json",
+   "/Users/sam/Development/VectorApps/macro-track/package.json",
+   "/Users/sam/Development/VectorApps/macro-track/docs/macro-track-plan.md",
+   "/Users/sam/Development/VectorApps/macro-track/docs/roadmap.md",
+   "/Users/sam/Development/VectorApps/macro-track/docs/mvp-validation.md",
+   "/Users/sam/Development/VectorApps/macro-track/docs/ai-logging.md",
+   "/Users/sam/Development/VectorApps/macro-track/docs/label-scanning.md",
+   "/Users/sam/Development/VectorApps/macro-track/docs/backups.md",
+   "/Users/sam/Development/VectorApps/macro-track/docs/coaching.md",
+   "/Users/sam/Development/VectorApps/macro-track/assets/food/manifest.json",
+   "/Users/sam/Development/VectorApps/macro-track/src/app/(tabs)/_layout.tsx",
+   "/Users/sam/Development/VectorApps/macro-track/src/app/+native-intent.tsx",
+   "/Users/sam/Development/VectorApps/macro-track/src/db/index.ts",
+   "/Users/sam/Development/VectorApps/macro-track/src/lib/app-actions.ts",
+   "/Users/sam/Development/VectorApps/macro-track/src/lib/nutrition.ts",
+   "/Users/sam/Development/VectorApps/macro-track/src/lib/program.ts",
+   "/Users/sam/Development/VectorApps/macro-track/src/lib/coaching.ts",
+   "/Users/sam/Development/VectorApps/macro-track/src/lib/food-catalog.ts",
+   "/Users/sam/Development/VectorApps/macro-track/src/lib/barcode-scanner.ts",
+   "/Users/sam/Development/VectorApps/macro-track/src/lib/backup-crypto.ts",
+   "/Users/sam/Development/VectorApps/macro-track/src/lib/data-ownership.ts",
+   "/Users/sam/Development/VectorApps/macro-track/src/lib/fast-log.ts",
+   "/Users/sam/Development/VectorApps/macro-track/src/lib/widget.ts",
+   "/Users/sam/Development/VectorApps/macro-track/src/lib/health-native.ios.ts",
+   "/Users/sam/Development/VectorApps/macro-track/src/lib/health-native.android.ts",
+   "/Users/sam/Development/VectorApps/macro-track/src/lib/health-schedule.ts",
+   "/Users/sam/Development/VectorApps/macro-track/src/lib/metrics.ts",
+   "/Users/sam/Development/VectorApps/macro-track/src/lib/translations.ts",
+   "/Users/sam/Development/VectorApps/macro-track/src/lib/locales/en.json",
+   "/Users/sam/Development/VectorApps/macro-track/src/components/screens/settings-screen.tsx",
+   "/Users/sam/Development/VectorApps/macro-track/src/components/plan/calorie-shift.tsx",
+   "/Users/sam/Development/VectorApps/macro-track/src/components/nutrition/quick-log-bar.tsx",
+   "/Users/sam/Development/VectorApps/macro-track/src/components/nutrition/photo-capture.tsx",
+   "/Users/sam/Development/VectorApps/macro-track/src/components/nutrition/photo-logger.tsx",
+   "/Users/sam/Development/VectorApps/macro-track/src/components/nutrition/library-screen.tsx",
+   "/Users/sam/Development/VectorApps/macro-track/src/components/nutrition/copy-day.tsx",
+   "/Users/sam/Development/VectorApps/macro-track/src/components/nutrition/quick-add.tsx",
+   "/Users/sam/Development/VectorApps/macro-track/src/components/progress/progress-screen.tsx",
+   "/Users/sam/Development/VectorApps/macro-track/src/vector/chart.tsx",
+   "/Users/sam/Development/VectorApps/macro-track/targets/widget/Widgets.swift",
+   "/Users/sam/Development/VectorApps/macro-track/targets/widget/expo-target.config.js",
+   "/Users/sam/Development/VectorApps/macro-track/modules/local-ai/ios/LocalAIModule.swift",
+   "/Users/sam/Development/VectorApps/macro-track/modules/local-ai/android/build.gradle"
+  ],
+  "languages": [
+   "English"
+  ],
+  "units": "Body weight and length in metric (kg, cm), imperial (lb, in) or stone (st, in). Food amounts in grams, ounces, volumes the food can convert, the food's own portions (slice, serving) or kcal. Energy in kcal only.",
+  "subscription": {}
+ },
+ "hydration": {
+  "slug": "vector-hydration",
+  "name": "Vector Hydration",
+  "homeScreenLabel": "Hydration",
+  "tagline": "Track your drinks. Know your intake.",
+  "summary": "Vector Hydration is a private, local-first drink log for iPhone, Android phones and Apple Watch. It tracks fluid intake toward a daily goal, with caffeine and alcohol totals, history, and optional reminders that follow your day.",
+  "platforms": [
+   "iPhone (supportsTablet is false, so there is no iPad layout)",
+   "Android phones",
+   "Apple Watch (watchOS 10 or later, installed with the iPhone app)"
+  ],
+  "features": [
+   {
+    "title": "One tap logs a drink",
+    "body": "Today shows your favorite drinks in a grid, six per page. A tap logs one at the selected size, and Undo takes it back. The size slider snaps to common servings, from 25 mL to 2 L, or 1 to 64 fl oz.",
+    "evidence": "/Users/sam/Development/VectorApps/water-track/src/app/(tabs)/index.tsx (pageSize = 6, log(), showUndo, Slider over sizeOptions); /Users/sam/Development/VectorApps/water-track/src/lib/metrics.ts (sizeStops: us 1-64 fl oz, 13 stops; metric 25-2000 mL, 15 stops)"
+   },
+   {
+    "title": "41 drinks ready to log",
+    "body": "The catalog holds 41 preset drinks across water, energy drinks, coffee, tea, juice, milk and alcohol. Choose which ones appear on Today, and add your own drinks with a reference size, caffeine and alcohol by volume.",
+    "evidence": "/Users/sam/Development/VectorApps/water-track/src/lib/favorites.ts (popularDrinks: 41 entries, favoriteSections); /Users/sam/Development/VectorApps/water-track/src/app/favorites.tsx (showOnHome toggle; custom drink editor with drinkName, drinkType, referenceSize, caffeineAmount, abv)"
+   },
+   {
+    "title": "A goal for non-alcoholic fluids",
+    "body": "Non-alcoholic drinks count toward a daily fluid goal, coffee and tea included. The goal starts at 2,500 mL and you set your own.",
+    "evidence": "/Users/sam/Development/VectorApps/water-track/src/lib/metrics.ts (totals: goalFluid counts abv === 0); /Users/sam/Development/VectorApps/water-track/src/db/schema.ts (goalMl default 2500); /Users/sam/Development/VectorApps/water-track/src/app/(tabs)/settings.tsx (goal field)"
+   },
+   {
+    "title": "Caffeine and alcohol totals",
+    "body": "Today shows caffeine in milligrams and pure alcohol in grams beside your fluid progress. Caffeine scales with the size you log.",
+    "evidence": "/Users/sam/Development/VectorApps/water-track/src/app/(tabs)/index.tsx (caffeine and pureAlcohol readouts); /Users/sam/Development/VectorApps/water-track/src/lib/favorites.ts (favoriteIntake scales caffeine by volume ratio); /Users/sam/Development/VectorApps/water-track/src/lib/metrics.ts (alcoholGrams = volume x ABV x 0.789)"
+   },
+   {
+    "title": "History by day, week, month",
+    "body": "Each period shows total fluids, a daily average, caffeine, alcohol and fluids by day, followed by the drinks logged each day. Weeks run Monday to Sunday.",
+    "evidence": "/Users/sam/Development/VectorApps/water-track/src/app/(tabs)/history.tsx (periods day/week/month, Monday start via (getDay()+6)%7, periodTotal, dailyAverage, trend meters, DrinkList per day)"
+   },
+   {
+    "title": "Every entry stays editable",
+    "body": "Change a drink, its size, or the date and time it was logged. Delete it, and Undo brings it back.",
+    "evidence": "/Users/sam/Development/VectorApps/water-track/src/app/drink.tsx (EditorScreen with drink, size, WhenField; remove() with undoAction.show and restore()); /Users/sam/Development/VectorApps/water-track/src/components/drink-list.tsx (rows open the editor)"
+   },
+   {
+    "title": "Reminders that follow your day",
+    "body": "Set a wake-up time and bedtime for the whole week or for each day, and turn single days off. A reminder comes each hour only when you are behind plan, and reminders stop during the wind-down before bed.",
+    "evidence": "/Users/sam/Development/VectorApps/water-track/src/lib/reminders.ts (dayPlan, upcomingReminders hourly from wake-up to cutoff, deficit threshold, windDownOptions 60/90/120/180, morningGlassOptions 0-4); /Users/sam/Development/VectorApps/water-track/src/components/reminder-settings.tsx (variesByDay, per-day switch, planToday, nextReminder); /Users/sam/Development/VectorApps/water-track/src/db/schema.ts (remindersEnabled default false)"
+   },
+   {
+    "title": "Optional BAC estimate",
+    "body": "Off by default. With BAC estimates on and a body weight available, Today shows an estimated blood alcohol content and a six-hour trend. The details screen states that it is a rough estimate.",
+    "evidence": "/Users/sam/Development/VectorApps/water-track/src/lib/metrics.ts (estimateBac returns null without weight, bacHistory 6 h); /Users/sam/Development/VectorApps/water-track/src/components/bac-summary.tsx; /Users/sam/Development/VectorApps/water-track/src/app/(tabs)/index.tsx (showBac when bac > 0); /Users/sam/Development/VectorApps/water-track/src/app/today-details.tsx (bacWarning); /Users/sam/Development/VectorApps/water-track/src/db/schema.ts (bacEnabled default false)"
+   },
+   {
+    "title": "Your language, your units",
+    "body": "The app is available in 11 languages and follows your system language by default. Choose metric or US units, and system, light or dark appearance.",
+    "evidence": "/Users/sam/Development/VectorApps/water-track/src/lib/i18n.ts (11 languages, system default); /Users/sam/Development/VectorApps/water-track/src/app/(tabs)/settings.tsx (language, appearance, units); /Users/sam/Development/VectorApps/water-track/src/db/provider.tsx (initial units from device measurementSystem)"
+   },
+   {
+    "title": "Works with larger text",
+    "body": "At larger text sizes, Today switches to a scrolling layout. Each drink tile gives screen readers the drink name and size.",
+    "evidence": "/Users/sam/Development/VectorApps/water-track/src/app/(tabs)/index.tsx (fill = !largeType, scroll={largeType}, accessibilityLabel addDrinkLabel, AccessibilityInfo.announceForAccessibility on undo)"
+   }
+  ],
+  "deviceIntegrations": [
+   {
+    "title": "Apple Health sync",
+    "body": "Optional and off by default. It exports non-alcoholic fluids, caffeine and standard drinks, plus event-time BAC estimates when BAC estimates are on. It reads your latest weight for the BAC estimate.",
+    "evidence": "/Users/sam/Development/VectorApps/water-track/src/lib/health-native.ts (lines 6-11: DietaryWater, DietaryCaffeine, NumberOfAlcoholicBeverages, BloodAlcoholContent write; BodyMass read); /Users/sam/Development/VectorApps/water-track/src/lib/health-data.ts (bacWeight returns null when bacEnabled is false); /Users/sam/Development/VectorApps/water-track/app.json (@kingstinct/react-native-healthkit plugin); /Users/sam/Development/VectorApps/water-track/src/db/schema.ts (healthEnabled default false)"
+   },
+   {
+    "title": "Health Connect sync",
+    "body": "Optional and off by default. On Android it exports non-alcoholic fluids and caffeine, and reads weight from the last 29 days for the BAC estimate. Alcohol and BAC stay on the phone.",
+    "evidence": "/Users/sam/Development/VectorApps/water-track/src/lib/health-native.ts (Hydration and Nutrition write, Weight read over 29 days, writeBac undefined); /Users/sam/Development/VectorApps/water-track/app.json (android.permissions WRITE_HYDRATION, WRITE_NUTRITION, READ_WEIGHT, READ_HEALTH_DATA_IN_BACKGROUND); /Users/sam/Development/VectorApps/water-track/src/lib/locales/en.json (healthAndroid)"
+   },
+   {
+    "title": "Sync without a button",
+    "body": "Health sync runs when you log a drink or open the app, and in background work when the system allows it. A failed sync retries on its own while the app is open.",
+    "evidence": "/Users/sam/Development/VectorApps/water-track/src/lib/health.ts (RETRY_DELAYS 30 s, 2 min, 10 min, 30 min gated on AppState active; BackgroundTask.registerTaskAsync minimumInterval 15); /Users/sam/Development/VectorApps/water-track/src/lib/store.tsx (syncHealth on foreground and data change)"
+   },
+   {
+    "title": "Apple Watch app",
+    "body": "The watch shows today's progress toward your goal and up to 24 favorites, four per page. Swipe or turn the Digital Crown for more, and tap one to log it, with 4 seconds to undo.",
+    "evidence": "/Users/sam/Development/VectorApps/water-track/targets/watch/ContentView.swift (pages of four, .verticalPage TabView, UndoBanner); /Users/sam/Development/VectorApps/water-track/targets/watch/WatchStore.swift (undoWindow = 4); /Users/sam/Development/VectorApps/water-track/src/lib/quick-log.ts (WATCH_FAVORITE_LIMIT = 24); /Users/sam/Development/VectorApps/water-track/targets/watch/expo-target.config.js (deploymentTarget 10.0)"
+   },
+   {
+    "title": "Log from the reminder",
+    "body": "Each reminder has a button that logs a glass of water at your default size without opening the app. With the watch app installed, the watch logs it and sends it to the iPhone.",
+    "evidence": "/Users/sam/Development/VectorApps/water-track/src/lib/notifications.ts (setNotificationCategoryAsync, opensAppToForeground: false; Android headless logReminderDrink); /Users/sam/Development/VectorApps/water-track/src/lib/quick-log.ts (QUICK_LOG_ACTION, reminderIntake); /Users/sam/Development/VectorApps/water-track/targets/watch/HydrateWatchApp.swift (logFromReminder); /Users/sam/Development/VectorApps/water-track/src/lib/watch.ts (saveQueuedDrinks); /Users/sam/Development/VectorApps/water-track/modules/watch-bridge"
+   },
+   {
+    "title": "On-device schedule setup",
+    "body": "On iOS 26 with Apple Intelligence on, you can describe your routine in plain words. Common English phrases are read directly, and anything else goes to Apple's on-device model, which returns a week of wake-up and bedtime pairs. The description never leaves the device.",
+    "evidence": "/Users/sam/Development/VectorApps/water-track/modules/schedule-intelligence/ios/ScheduleIntelligenceModule.swift (FoundationModels, LanguageModelSession, @Generable); /Users/sam/Development/VectorApps/water-track/modules/schedule-intelligence/index.ts; /Users/sam/Development/VectorApps/water-track/src/lib/routine.ts (parseRoutine); /Users/sam/Development/VectorApps/water-track/src/components/reminder-settings.tsx (describe field rendered only when intelligence === \"available\")"
+   },
+   {
+    "title": "Local notifications",
+    "body": "Reminders are local notifications that the phone schedules up to 60 ahead, about four days. The app never requests a push token.",
+    "evidence": "/Users/sam/Development/VectorApps/water-track/src/lib/notifications.ts (scheduleNotificationAsync with DATE trigger, background refresh task); /Users/sam/Development/VectorApps/water-track/src/lib/reminders.ts (upcomingReminders limit = 60); /Users/sam/Development/VectorApps/water-track/README.md (Reminders section)"
+   }
+  ],
+  "privacyFacts": [
+   "No account and no sign-in: there is no auth code or auth dependency in src, modules, targets or package.json.",
+   "No network calls in app code: a grep of src, modules, targets and plugins finds no fetch, XMLHttpRequest, WebSocket or remote URL (only podspec homepages and a plist DTD).",
+   "No analytics, crash reporting, ad or purchase SDKs in package.json dependencies.",
+   "Drink logs and preferences live on the device in a SQLite database (water-track.db) through expo-sqlite and Drizzle (src/db/provider.tsx, src/db/schema.ts).",
+   "The app has no application-level backup or export; uninstalling or clearing app storage removes local records (README Database changes; en.json localNote).",
+   "Health sync is off by default and turned on from Settings; permission prompts appear only when enabling it, and automatic sync never prompts (settings.tsx connect(); schema healthEnabled default false).",
+   "The app writes health data only to Apple Health or Health Connect on the device; disconnecting stops future exports and leaves already exported records in the health app (en.json disconnectNote).",
+   "Reminders are off by default and are local notifications; the app never requests a push token and uses no push server or account (src/lib/notifications.ts; schema remindersEnabled default false).",
+   "The Apple Intelligence schedule setup runs Apple's on-device model; the routine description never leaves the device (modules/schedule-intelligence).",
+   "The Apple Watch talks to the iPhone directly through WatchConnectivity (targets/watch/expo-target.config.js frameworks; WatchStore.swift sendMessage and transferUserInfo)."
+  ],
+  "businessModel": "Not implemented in code. There is no in-app purchase, subscription, paywall, trial or licensing code, and no purchase library in package.json. No price or business model appears anywhere in the repo. The owner describes the Vector apps as single-purchase, always-offline apps with no account; that is the stated plan, not something the code shows.",
+  "readoutSpecimen": {
+   "eyebrow": "TODAY / FLUIDS",
+   "heroValue": "1,750",
+   "heroUnit": "mL",
+   "heroCaption": "Daily fluid goal 2,500 mL",
+   "meter": {
+    "value": 1750,
+    "max": 2500,
+    "valueText": "70%"
+   },
+   "rows": [
+    {
+     "label": "Caffeine",
+     "value": "158",
+     "unit": "mg"
+    },
+    {
+     "label": "Pure alcohol",
+     "value": "0.0",
+     "unit": "g"
+    },
+    {
+     "label": "Drink size",
+     "value": "250",
+     "unit": "mL"
+    }
+   ],
+   "meta": "Non-alcoholic fluids count toward your goal"
+  },
+  "caveats": [
+   "Hydration progress measures logged intake, not physiological hydration (en.json goalNote).",
+   "The default 2,500 mL goal is editable and is not a personalized recommendation.",
+   "Drinks containing alcohol do not count toward the fluid goal; coffee and tea do.",
+   "Caffeine and strength values on presets are estimates; the app tells users to check the label (en.json defaultsNote).",
+   "The BAC estimate is off by default, needs a body weight (entered manually or read from the health app), uses a simplified Widmark calculation, and is not a measurement. It must never be used to decide whether to drive or whether someone is sober, even at 0.000% (en.json bacWarning).",
+   "Health Connect exports fluids and caffeine only; alcohol and BAC are not exported on Android.",
+   "Background sync and background reminder rescheduling run when iOS or Android allows; execution can be delayed and is not guaranteed after force-quitting. Automatic retries after a failed sync happen only while the app is open.",
+   "Reminders are scheduled up to 60 ahead (about four days); if the app goes unopened for several days, reminders stop once those run out.",
+   "Plain-language routine setup, including the English phrase reader, is shown only where Apple Intelligence is available (iOS 26 or later, an eligible device, Apple Intelligence on). It is hidden on Android and older iPhones, where the schedule is set with time pickers.",
+   "The Apple Watch app needs the iPhone app; there is no watch-only install.",
+   "Presets include brand names (Monster, Red Bull, Celsius, Alani Nu); marketing should not imply endorsement.",
+   "Naming: the current build is named \"VECTOR HYDRATION\" with home-screen label \"HYDRATE\" (app.json, ios Info.plist). \"Vector Hydration\" / \"Hydration\" is the recommended family name in docs/design-system.md, applied only after owner sign-off.",
+   "README lists device acceptance checks (native permissions, background execution, remote edit and delete, watch and reminder flows) that must pass before release."
+  ],
+  "notYetShipped": [
+   "A Wear OS app: README says there is no Wear OS app yet. The mirrored reminder \"Log water\" button on Android watches is still on the device acceptance list.",
+   "Alcohol and BAC export to Health Connect: the current React Native Health Connect bridge does not expose those record types.",
+   "Any payment, one-time purchase or licensing flow: none exists in code.",
+   "App Store or Google Play availability: the repo shows version 1.0.0 with device acceptance checks, Google Play health declarations and a published privacy policy still needed before distribution.",
+   "A web build: browser SQLite is not configured (README); app.json only sets a favicon.",
+   "An iPad layout: ios.supportsTablet is false.",
+   "Home-screen widgets or Live Activities for this app: no widget target exists (targets/ has only watch and _shared).",
+   "Backup, export or cloud sync of drink logs: data has no application-level backup.",
+   "The rename to \"Vector Hydration\" with home-screen label \"Hydration\": recommended in docs/design-system.md, pending owner sign-off; the build still says VECTOR HYDRATION / HYDRATE.",
+   "Localized home-screen name and Health usage strings, and per-target watch string catalogs: marked Later in docs/design-system.md."
+  ],
+  "languages": [
+   "English",
+   "Spanish",
+   "French",
+   "German",
+   "Italian",
+   "Portuguese",
+   "Dutch",
+   "Swedish",
+   "Japanese",
+   "Korean",
+   "Simplified Chinese"
+  ],
+  "units": "Metric (mL, kg) or US (fl oz, lb). The device locale's measurement system sets the starting choice, and Settings can change it. Storage is always in mL and kg.",
+  "sources": [
+   "/Users/sam/Development/VectorApps/water-track/README.md",
+   "/Users/sam/Development/VectorApps/water-track/docs/design-system.md",
+   "/Users/sam/Development/VectorApps/water-track/app.json",
+   "/Users/sam/Development/VectorApps/water-track/package.json",
+   "/Users/sam/Development/VectorApps/water-track/ios/VECTORHYDRATION/Info.plist",
+   "/Users/sam/Development/VectorApps/water-track/src/app/(tabs)/_layout.tsx",
+   "/Users/sam/Development/VectorApps/water-track/src/app/(tabs)/index.tsx",
+   "/Users/sam/Development/VectorApps/water-track/src/app/(tabs)/history.tsx",
+   "/Users/sam/Development/VectorApps/water-track/src/app/(tabs)/settings.tsx",
+   "/Users/sam/Development/VectorApps/water-track/src/app/drink.tsx",
+   "/Users/sam/Development/VectorApps/water-track/src/app/favorites.tsx",
+   "/Users/sam/Development/VectorApps/water-track/src/app/today-details.tsx",
+   "/Users/sam/Development/VectorApps/water-track/src/components/bac-summary.tsx",
+   "/Users/sam/Development/VectorApps/water-track/src/components/drink-list.tsx",
+   "/Users/sam/Development/VectorApps/water-track/src/components/home-carousel.tsx",
+   "/Users/sam/Development/VectorApps/water-track/src/components/reminder-settings.tsx",
+   "/Users/sam/Development/VectorApps/water-track/src/db/schema.ts",
+   "/Users/sam/Development/VectorApps/water-track/src/db/provider.tsx",
+   "/Users/sam/Development/VectorApps/water-track/src/lib/favorites.ts",
+   "/Users/sam/Development/VectorApps/water-track/src/lib/metrics.ts",
+   "/Users/sam/Development/VectorApps/water-track/src/lib/i18n.ts",
+   "/Users/sam/Development/VectorApps/water-track/src/lib/locales/en.json",
+   "/Users/sam/Development/VectorApps/water-track/src/lib/health.ts",
+   "/Users/sam/Development/VectorApps/water-track/src/lib/health-data.ts",
+   "/Users/sam/Development/VectorApps/water-track/src/lib/health-native.ts",
+   "/Users/sam/Development/VectorApps/water-track/src/lib/reminders.ts",
+   "/Users/sam/Development/VectorApps/water-track/src/lib/routine.ts",
+   "/Users/sam/Development/VectorApps/water-track/src/lib/notifications.ts",
+   "/Users/sam/Development/VectorApps/water-track/src/lib/quick-log.ts",
+   "/Users/sam/Development/VectorApps/water-track/src/lib/store.tsx",
+   "/Users/sam/Development/VectorApps/water-track/src/lib/watch.ts",
+   "/Users/sam/Development/VectorApps/water-track/modules/schedule-intelligence/index.ts",
+   "/Users/sam/Development/VectorApps/water-track/modules/schedule-intelligence/ios/ScheduleIntelligenceModule.swift",
+   "/Users/sam/Development/VectorApps/water-track/targets/watch/ContentView.swift",
+   "/Users/sam/Development/VectorApps/water-track/targets/watch/HydrateWatchApp.swift",
+   "/Users/sam/Development/VectorApps/water-track/targets/watch/WatchStore.swift",
+   "/Users/sam/Development/VectorApps/water-track/targets/watch/expo-target.config.js"
+  ],
+  "subscription": {}
+ }
+}
