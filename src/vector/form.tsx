@@ -1,18 +1,26 @@
 "use client";
 
-import { useId, type ReactNode } from "react";
+import {
+  Checkbox,
+  CheckboxGroup,
+  Description,
+  FieldError,
+  Input,
+  Label,
+  ListBox,
+  Radio,
+  RadioGroup,
+  Select as HeroSelect,
+  TextField,
+} from "@heroui/react";
+import type { ReactNode } from "react";
 import { cn } from "./cn";
-import { ErrorText } from "./feedback";
 import { Icon } from "./icon";
-import { Text } from "./text";
-
-const fieldEdge =
-  "min-h-11 w-full rounded-control border bg-field-background text-field-foreground transition-colors duration-100 ease-standard hover:bg-field-hover";
 
 /**
- * Field (§5.5): the label above (never a placeholder), a 44 input with a 1pt field-border, radius 4. `numeric`
- * gives Plex Mono with a decimal keypad and the unit inside the field at the end. Errors add a danger edge and
- * ErrorText below.
+ * Field (§5.5) on HeroUI's TextField: the label above (never a placeholder), a 44 input with the 1pt field edge,
+ * radius 4. `numeric` gives Plex Mono with a decimal keypad and the unit inside the field at the end; the text is
+ * kept as typed and parsed by the caller. An error gives a danger edge and the message below, linked to the input.
  */
 export function Field({
   label,
@@ -25,7 +33,6 @@ export function Field({
   placeholder,
   disabled,
   inputMode,
-  id: idProp,
   className,
   autoComplete = "off",
   name,
@@ -40,70 +47,51 @@ export function Field({
   placeholder?: string;
   disabled?: boolean;
   inputMode?: "decimal" | "numeric" | "text";
-  id?: string;
   className?: string;
   autoComplete?: string;
   name?: string;
 }) {
-  const generated = useId();
-  const id = idProp ?? generated;
-  const hintId = `${id}-hint`;
-  const errorId = `${id}-error`;
-  const describedBy = [hint ? hintId : null, error ? errorId : null].filter(Boolean).join(" ") || undefined;
   return (
-    <div className={cn("flex min-w-0 flex-col gap-2", className)}>
-      <label htmlFor={id} className="type-field-label text-foreground-secondary">
-        {label}
-      </label>
+    <TextField
+      value={value}
+      onChange={onChange}
+      isInvalid={Boolean(error)}
+      isDisabled={disabled}
+      name={name}
+      fullWidth
+      className={cn("min-w-0", className)}
+    >
+      <Label>{label}</Label>
       <div className="relative">
-        <input
-          id={id}
-          name={name}
-          type="text"
+        <Input
           inputMode={inputMode ?? (numeric ? "decimal" : "text")}
           autoComplete={autoComplete}
           spellCheck={false}
-          value={value}
           placeholder={placeholder}
-          disabled={disabled}
-          aria-invalid={error ? true : undefined}
-          aria-describedby={describedBy}
-          onChange={(e) => onChange(e.target.value)}
-          className={cn(
-            fieldEdge,
-            "px-3 py-2.5 placeholder:text-field-placeholder disabled:opacity-40",
-            numeric ? "type-readout-s" : "type-body",
-            unit && "pe-14",
-            error ? "border-danger" : "border-field-border"
-          )}
+          className={cn(numeric ? "type-readout-s" : "type-body", unit && "pe-14")}
         />
         {unit ? (
-          <span
-            aria-hidden
-            className="pointer-events-none absolute inset-y-0 end-3 flex items-center type-small text-muted"
-          >
+          <span aria-hidden className="pointer-events-none absolute inset-y-0 end-3 flex items-center type-small text-muted">
             {unit}
           </span>
         ) : null}
       </div>
-      {hint ? (
-        <Text variant="caption" tone="muted" id={hintId}>
-          {hint}
-        </Text>
-      ) : null}
-      <ErrorText message={error} id={errorId} />
-    </div>
+      {hint ? <Description>{hint}</Description> : null}
+      <FieldError>{error}</FieldError>
+    </TextField>
   );
 }
 
-/** Select (§5.5): the Field look with a trailing down glyph, on the browser's own select for keyboard and a11y. */
+/**
+ * Select (§5.5) on HeroUI's Select: a Field-look trigger with a trailing down glyph, an overlay popover the width
+ * of the trigger with 44 items and a tint check on the selected one. For more than 4 options.
+ */
 export function Select<T extends string>({
   label,
   value,
   onChange,
   options,
   hint,
-  id: idProp,
   className,
 }: {
   label: string;
@@ -111,50 +99,55 @@ export function Select<T extends string>({
   onChange: (value: T) => void;
   options: readonly { value: T; label: string }[];
   hint?: ReactNode;
-  id?: string;
   className?: string;
 }) {
-  const generated = useId();
-  const id = idProp ?? generated;
   return (
-    <div className={cn("flex min-w-0 flex-col gap-2", className)}>
-      <label htmlFor={id} className="type-field-label text-foreground-secondary">
-        {label}
-      </label>
-      <div className="relative">
-        <select
-          id={id}
-          value={value}
-          aria-describedby={hint ? `${id}-hint` : undefined}
-          onChange={(e) => onChange(e.target.value as T)}
-          className={cn(fieldEdge, "cursor-pointer appearance-none border-field-border py-2.5 ps-3 pe-10 type-body")}
-        >
+    <HeroSelect
+      value={value}
+      onChange={(key) => {
+        if (key !== null) onChange(String(key) as T);
+      }}
+      fullWidth
+      className={cn("min-w-0", className)}
+    >
+      <Label>{label}</Label>
+      <HeroSelect.Trigger>
+        <HeroSelect.Value />
+        <HeroSelect.Indicator />
+      </HeroSelect.Trigger>
+      {hint ? <Description>{hint}</Description> : null}
+      <HeroSelect.Popover>
+        <ListBox>
           {options.map((o) => (
-            <option key={o.value} value={o.value}>
+            <ListBox.Item key={o.value} id={o.value} textValue={o.label}>
               {o.label}
-            </option>
+              <ListBox.ItemIndicator />
+            </ListBox.Item>
           ))}
-        </select>
-        <Icon
-          name="down"
-          size={16}
-          tone="muted"
-          className="pointer-events-none absolute end-3 top-1/2 -translate-y-1/2"
-        />
-      </div>
-      {hint ? (
-        <Text variant="caption" tone="muted" id={`${id}-hint`}>
-          {hint}
-        </Text>
-      ) : null}
-    </div>
+        </ListBox>
+      </HeroSelect.Popover>
+    </HeroSelect>
   );
 }
 
+/** The cell look shared by Choices segments and ChipRow chips (§5.5): selected is the signal fill with ink. */
+const cell = ({
+  isSelected,
+  isFocusVisible,
+}: {
+  isSelected: boolean;
+  isFocusVisible: boolean;
+}) =>
+  cn(
+    "relative flex w-full cursor-pointer items-center justify-center gap-1.5 transition-colors duration-150 ease-standard",
+    isFocusVisible && "z-10 outline-2 outline-offset-2 outline-focus",
+    isSelected ? "bg-accent text-accent-foreground" : "bg-surface text-foreground hover:bg-surface-secondary"
+  );
+
 /**
- * Choices (§5.5): the one segmented control. A 1pt border-strong edge, radius 4, equal cells with 1pt dividers.
- * Selected is a signal fill, #071017 label at 600 and a 12pt check in a reserved leading slot (so widths never
- * shift). Radios underneath, so arrow keys move the selection. At most 4 options (6 when `mono`).
+ * Choices (§5.5): the one segmented control, on HeroUI's RadioGroup (radios, arrow keys move the selection). A 1pt
+ * border-strong edge, radius 4, equal cells with 1pt dividers. Selected is a signal fill, #071017 label at 600 and
+ * a 12pt check in a reserved leading slot, so widths never shift. At most 4 options (6 when `mono`).
  */
 export function Choices<T extends string>({
   label,
@@ -175,50 +168,89 @@ export function Choices<T extends string>({
   mono?: boolean;
   className?: string;
 }) {
-  const name = useId();
   return (
-    <fieldset className={cn("flex min-w-0 flex-col gap-2", className)}>
-      <legend className={cn("mb-2 type-field-label text-foreground-secondary", !showLabel && "sr-only")}>
-        {label}
-      </legend>
-      <div
-        className="grid auto-cols-fr grid-flow-col divide-x divide-border-strong overflow-hidden rounded-control border border-border-strong rtl:divide-x-reverse"
-      >
-        {values.map((option) => {
-          const selected = option.value === value;
-          return (
-            <label
-              key={option.value}
-              className={cn(
-                "relative flex cursor-pointer items-center justify-center gap-1.5 px-2 text-center transition-colors duration-150 ease-standard",
-                "has-[:focus-visible]:z-10 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-focus",
-                size === "sm" ? "min-h-9" : "min-h-11",
-                selected
-                  ? "bg-accent text-accent-foreground"
-                  : "bg-surface text-foreground hover:bg-surface-secondary"
-              )}
+    <RadioGroup
+      value={value}
+      onChange={(v) => onChange(v as T)}
+      orientation="horizontal"
+      className={cn("flex min-w-0 flex-col gap-2", className)}
+    >
+      <Label className={cn(!showLabel && "sr-only")}>{label}</Label>
+      <div className="grid auto-cols-fr grid-flow-col divide-x divide-border-strong overflow-hidden rounded-control border border-border-strong rtl:divide-x-reverse">
+        {values.map((option) => (
+          <Radio key={option.value} value={option.value} className="min-w-0 items-stretch gap-0">
+            <Radio.Content
+              className={({ isSelected, isFocusVisible }) =>
+                cn(cell({ isSelected, isFocusVisible }), "px-2 text-center", size === "sm" ? "min-h-9" : "min-h-11")
+              }
             >
-              <input
-                type="radio"
-                name={name}
-                value={option.value}
-                checked={selected}
-                onChange={() => onChange(option.value)}
-                className="sr-only"
-              />
-              <Icon name="check" size={12} className={cn(selected ? "opacity-100" : "opacity-0")} />
-              <span
-                className={cn(
-                  mono ? "type-readout-xs" : size === "sm" ? "type-small" : "type-h4",
-                  selected && !mono && "[font-weight:600]"
-                )}
-              >
-                {option.label}
-              </span>
-            </label>
-          );
-        })}
+              {({ isSelected }) => (
+                <>
+                  <Icon name="check" size={12} className={isSelected ? "opacity-100" : "opacity-0"} />
+                  <span
+                    className={cn(
+                      mono ? "type-readout-xs" : size === "sm" ? "type-small" : "type-h4",
+                      isSelected && !mono && "[font-weight:600]"
+                    )}
+                  >
+                    {option.label}
+                  </span>
+                </>
+              )}
+            </Radio.Content>
+          </Radio>
+        ))}
       </div>
-    </fieldset>
+    </RadioGroup>
+  );
+}
+
+/**
+ * ChipRow, multiple mode (§5.5), on HeroUI's CheckboxGroup: any number on at once, each chip a real checkbox. Cells
+ * have the Choices `sm` look (36 tall, 1pt border-strong, radius 4, 8 gap); selected is the signal fill with a 12pt
+ * check. Selection is exempt from the signal budget.
+ */
+export function ChipRow<T extends string>({
+  label,
+  values,
+  value,
+  onChange,
+  hint,
+  className,
+}: {
+  label: string;
+  values: readonly { value: T; label: ReactNode; mono?: boolean }[];
+  value: readonly T[];
+  onChange: (value: T[]) => void;
+  hint?: ReactNode;
+  className?: string;
+}) {
+  return (
+    <CheckboxGroup
+      value={[...value]}
+      onChange={(v) => onChange(values.map((o) => o.value).filter((k) => v.includes(k)))}
+      className={cn("flex min-w-0 flex-col gap-2", className)}
+    >
+      <Label>{label}</Label>
+      <div className="flex flex-wrap gap-2">
+        {values.map((option) => (
+          <Checkbox key={option.value} value={option.value} className="gap-0">
+            <Checkbox.Content
+              className={({ isSelected, isFocusVisible }) =>
+                cn(cell({ isSelected, isFocusVisible }), "min-h-9 rounded-control border border-border-strong ps-2 pe-3")
+              }
+            >
+              {({ isSelected }) => (
+                <>
+                  <Icon name="check" size={12} className={isSelected ? "opacity-100" : "opacity-0"} />
+                  <span className={option.mono ? "type-readout-xs" : "type-small"}>{option.label}</span>
+                </>
+              )}
+            </Checkbox.Content>
+          </Checkbox>
+        ))}
+      </div>
+      {hint ? <Description>{hint}</Description> : null}
+    </CheckboxGroup>
   );
 }

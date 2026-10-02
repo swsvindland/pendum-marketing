@@ -16,15 +16,11 @@ export function FfmiPage({ meta }: { meta: CalculatorMeta }) {
             lean mass are in kilograms, height in metres and BF is the body-fat percentage; imperial inputs are
             converted exactly (1 lb = 0.45359237 kg, 1 in = 2.54 cm) first.
           </p>
-          {/* Lines are kept short for a 375 phone. The method column is a grid item that grows to its content, so
-              a zero-width wrapper at full minimum width keeps any longer line in the Formula's own scroll. */}
-          <div className="w-0 min-w-full">
-            <Formula>
-              {`lean       = weight × (1 − BF ÷ 100)
+          <Formula>
+            {`lean       = weight × (1 − BF ÷ 100)
 FFMI       = lean ÷ height²
 normalized = FFMI + 6.1 × (1.8 − height)`}
-            </Formula>
-          </div>
+          </Formula>
           <p>
             FFMI rises slightly with height. <strong>Normalized FFMI</strong>, from Kouri et al. (1995), adjusts the
             value to a height of 1.8 m: it adds 0.061 for each centimetre under 1.8 m and takes off the same for

@@ -16,15 +16,12 @@ export function HeartRateZonesPage({ meta }: { meta: CalculatorMeta }) {
             (18,712 people) and confirmed in 514 people tested in the laboratory. It held for men and women and for
             sedentary and trained adults alike. The estimate is rounded to a whole bpm before the zones are worked out.
           </p>
-          {/* Zero intrinsic width, then full width: the formula scrolls on a narrow phone instead of widening the page. */}
-          <div className="w-0 min-w-full">
-            <Formula>
-              {`HRmax    = 208 − 0.7 × age (years)
+          <Formula>
+            {`HRmax    = 208 − 0.7 × age (years)
 % of max = round(p × HRmax)
 Reserve  = round(rest + p × (HRmax − rest))
 p        = 0.5, 0.6, 0.7, 0.8, 0.9, 1.0`}
-            </Formula>
-          </div>
+          </Formula>
           <p>
             <strong>220 − age</strong> is shown for comparison. It is the older rule of thumb, usually credited to Fox
             and colleagues (1971), and was not derived from a study of its own. The two agree at 40. Above 40, 220 − age

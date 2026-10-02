@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Choices, Field, Select } from "@/vector/form";
+import { ChipRow, Choices, Field, Select } from "@/vector/form";
 
 export function KitControls() {
   const [units, setUnits] = useState<"metric" | "imperial">("metric");
@@ -9,6 +9,7 @@ export function KitControls() {
   const [height, setHeight] = useState("180");
   const [bad, setBad] = useState("3");
   const [activity, setActivity] = useState<"low" | "moderate" | "high">("moderate");
+  const [plates, setPlates] = useState<string[]>(["25", "20", "10", "5"]);
   return (
     <div className="grid max-w-form gap-4">
       <Choices
@@ -41,6 +42,13 @@ export function KitControls() {
           { value: "moderate", label: "Moderate" },
           { value: "high", label: "High" },
         ]}
+      />
+      <ChipRow
+        label="Plates available"
+        value={plates}
+        onChange={setPlates}
+        values={["25", "20", "15", "10", "5", "2.5", "1.25"].map((p) => ({ value: p, label: p, mono: true }))}
+        hint="Any number of each is assumed."
       />
     </div>
   );

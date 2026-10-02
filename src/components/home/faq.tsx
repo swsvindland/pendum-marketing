@@ -1,5 +1,5 @@
 import { Section } from "@/components/page";
-import { Icon, Text } from "@/vector";
+import { Disclosures } from "@/vector";
 
 type Question = { q: string; a: string };
 
@@ -27,28 +27,15 @@ const questions: Question[] = [
   },
 ];
 
-/**
- * Native disclosure rows: a 1pt separator between rows, 44 minimum, the question in body strong and a down glyph
- * that turns to point up when open. No animation; the browser handles keyboard and screen reader state.
- */
+/** Kit disclosure rows (HeroUI Accordion) on the canvas between 1pt rules. */
 export function Faq() {
   return (
     <Section id="faq" bordered eyebrow="Help / FAQ" title="Common questions">
-      <div className="max-w-form border-t border-separator">
-        {questions.map(({ q, a }) => (
-          <details key={q} className="group border-b border-separator">
-            <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-4 rounded-mark py-3 [&::-webkit-details-marker]:hidden">
-              <Text variant="bodyStrong" as="span">
-                {q}
-              </Text>
-              <Icon name="down" size={16} tone="muted" className="group-open:rotate-180" />
-            </summary>
-            <Text tone="secondary" className="pe-8 pb-4 text-pretty">
-              {a}
-            </Text>
-          </details>
-        ))}
-      </div>
+      <Disclosures
+        look="plain"
+        className="max-w-form"
+        items={questions.map(({ q, a }) => ({ question: q, answer: <p className="text-pretty">{a}</p> }))}
+      />
     </Section>
   );
 }

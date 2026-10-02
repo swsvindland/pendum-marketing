@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Icon, LinkButton, Text } from "@/vector";
+import { Disclosures, LinkButton, Text } from "@/vector";
 import { purchasePriced } from "./models";
 
 type Question = { question: string; answer: ReactNode };
@@ -95,24 +95,7 @@ const questions: Question[] = [
   },
 ];
 
-/**
- * Native disclosure rows (no script): a 44 minimum summary in body strong with a down glyph that turns when
- * open, the answer below. Rows are separated by 1pt rules inside one bordered panel.
- */
+/** The billing questions as kit disclosure rows (HeroUI Accordion) in one bordered panel. */
 export function BillingFaq() {
-  return (
-    <div className="max-w-form overflow-clip rounded-panel border border-border bg-surface">
-      {questions.map((q, i) => (
-        <details key={q.question} className={i > 0 ? "group border-t border-separator" : "group"}>
-          <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-4 px-4 py-3 transition-colors duration-100 ease-standard hover:bg-surface-secondary focus-visible:-outline-offset-2 [&::-webkit-details-marker]:hidden">
-            <Text as="span" variant="bodyStrong">
-              {q.question}
-            </Text>
-            <Icon name="down" size={16} tone="muted" className="group-open:rotate-180" />
-          </summary>
-          <div className="flex max-w-[65ch] flex-col gap-3 px-4 pt-1 pb-4">{q.answer}</div>
-        </details>
-      ))}
-    </div>
-  );
+  return <Disclosures items={questions} className="max-w-form" />;
 }

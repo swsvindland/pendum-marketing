@@ -17,7 +17,8 @@ const toneClass = {
 
 /**
  * A kit glyph (Ionicons outline, the apps' default renderer). 12 is the Choices check slot, 17 the Button glyph,
- * 20 the default. Decorative unless `label` is given. Directional glyphs mirror under RTL.
+ * 20 the default. Decorative unless `label` is given. Directional glyphs mirror under RTL. The size is inline so
+ * HeroUI's slot CSS (which sizes any svg inside a button) never changes it.
  */
 export function Icon({
   name,
@@ -37,11 +38,13 @@ export function Icon({
       viewBox="0 0 512 512"
       width={size}
       height={size}
+      style={{ width: size, height: size }}
       role={label ? "img" : undefined}
       aria-label={label}
       aria-hidden={label ? undefined : true}
       focusable="false"
-      className={cn("shrink-0", toneClass[tone], mirroredIcons.has(name) && "rtl:-scale-x-100", className)}
+      data-kit-icon={name}
+      className={cn("kit-icon shrink-0", toneClass[tone], mirroredIcons.has(name) && "rtl:-scale-x-100", className)}
       dangerouslySetInnerHTML={{ __html: iconPaths[name] }}
     />
   );

@@ -6,6 +6,7 @@ import {
   Button,
   ButtonLink,
   Callout,
+  Disclosures,
   Heading,
   Icon,
   Label,
@@ -104,6 +105,15 @@ export default function KitPage() {
       </Section>
       <Section title="Inputs" eyebrow="Kit / Field" bordered>
         <KitControls />
+      </Section>
+      <Section title="Disclosures" eyebrow="Kit / Disclosure" bordered>
+        <Disclosures
+          className="max-w-form"
+          items={[
+            { question: "Do the Vector apps need an internet connection?", answer: "No. Health sync and backups are optional." },
+            { question: "Can I use OmegaFyt on the web?", answer: "Yes, with the same account." },
+          ]}
+        />
       </Section>
       <Section title="Icons" eyebrow="Kit / Icon" bordered>
         <div className="flex flex-wrap items-center gap-4">

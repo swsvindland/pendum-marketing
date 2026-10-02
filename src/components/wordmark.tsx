@@ -9,8 +9,9 @@ export function Wordmark() {
     <Link href="/" className="inline-flex min-h-11 items-center gap-2 rounded-control" aria-label="Vector home">
       <svg viewBox="0 0 20 20" width={20} height={20} aria-hidden className="shrink-0">
         <rect width="20" height="20" rx="4" className="fill-accent" />
+        <path d="M4.88 15.12 14.5 5.5" fill="none" className="stroke-accent-foreground" strokeWidth="1.75" />
         <path
-          d="M5.5 14.5 14.5 5.5M8 5.5h6.5V12"
+          d="M8 5.5h6.5V12"
           fill="none"
           className="stroke-accent-foreground"
           strokeWidth="1.75"

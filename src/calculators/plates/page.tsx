@@ -14,9 +14,7 @@ export function PlatesPage({ meta }: { meta: CalculatorMeta }) {
             The calculator loads a barbell the way Vector Lift does. Plates go on in pairs, one on each side, and
             pairs of every plate you mark as available are assumed. A load is the bar plus both sides.
           </p>
-          <div className="w-0 min-w-full">
-            <Formula>{`load = bar + 2 × (plates on one side)`}</Formula>
-          </div>
+          <Formula>{`load = bar + 2 × (plates on one side)`}</Formula>
           <p>
             Kilograms and pounds use separate equipment rather than a conversion, as in Lift&rsquo;s default gym.{" "}
             <strong>Kilograms:</strong> a 20 kg bar (15 and 10 kg also offered) and plates of 25, 20, 15, 10, 5, 2.5

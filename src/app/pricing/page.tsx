@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/components/site/metadata";
 import { PageHeader, Section } from "@/components/page";
 import { AppPrices } from "@/components/pricing/app-prices";
 import { BillingFaq } from "@/components/pricing/billing-faq";
@@ -9,12 +10,7 @@ import { ButtonLink, LinkButton } from "@/vector";
 const description =
   "OmegaFyt Pro is a subscription with an account that syncs across iPhone, Android and the web. Vector Body, Lift, Macros and Hydration are one-time purchases that work offline, with no account.";
 
-export const metadata: Metadata = {
-  title: "Pricing",
-  description,
-  alternates: { canonical: "/pricing" },
-  openGraph: { title: "Pricing · Vector", description },
-};
+export const metadata: Metadata = pageMetadata({ title: "Pricing", description, path: "/pricing" });
 
 /**
  * The two buying models. No price, trial length or bundle appears until the owner sets one in

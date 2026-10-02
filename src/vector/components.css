@@ -1,0 +1,176 @@
+/*
+ * Vector kit, web edition: corrections to HeroUI v3's component CSS, the web counterpart of the native kit's
+ * COMPONENTS block (tokens.css in vector-design/kit). HeroUI's styles are in @layer components, so these rules sit
+ * in the same layer later in source order: at equal specificity they win over HeroUI's slot styles, and they still
+ * lose to utilities, so a kit wrapper's className can refine them. Plain declarations on HeroUI slot classes only.
+ * Where HeroUI's selector is more specific, the override repeats it.
+ */
+
+@layer components {
+  /* 1. Buttons (§5.3, §7). Press is a colour change only: no scale. 44 minimum (52 at lg), labels wrap,
+        Inter 500 15/20, radius 4. Kit glyphs size themselves (Icon sets width and height inline). */
+  .button {
+    height: auto;
+    min-height: 44px;
+    padding: 12px 16px;
+    gap: 8px;
+    font-size: 15px;
+    line-height: 20px;
+    font-weight: 500;
+    white-space: normal;
+    text-align: center;
+    border-radius: var(--radius-control);
+    transition:
+      background-color 100ms var(--ease-standard),
+      color 100ms var(--ease-standard);
+  }
+  .button:active,
+  .button[data-pressed="true"],
+  .button--sm:active,
+  .button--sm[data-pressed="true"],
+  .button--lg:active,
+  .button--lg[data-pressed="true"] {
+    transform: none;
+  }
+  .button--lg {
+    min-height: 52px;
+    padding: 14px 20px;
+  }
+  .button--icon-only,
+  .button--icon-only.button--sm,
+  .button--icon-only.button--lg {
+    width: 44px;
+    min-width: 44px;
+    padding: 0;
+  }
+  .button .kit-icon[data-kit-icon] {
+    margin: 0;
+  }
+
+  /* 2. Fields (§5.5). The label above in fieldLabel and foreground-secondary (it does not turn red: the error says
+        what is wrong), a 44 input with the 1pt field edge, body type, and the error as a danger start rule. */
+  .textfield,
+  .select {
+    gap: 8px;
+  }
+  .label {
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 500;
+    color: var(--foreground-secondary);
+  }
+  .label--invalid,
+  [data-invalid="true"] .label,
+  [aria-invalid="true"] .label {
+    color: var(--foreground-secondary);
+  }
+  .description {
+    font-size: 12px;
+    line-height: 16px;
+    color: var(--muted);
+  }
+  .field-error {
+    padding: 0;
+    padding-inline-start: 12px;
+    border-inline-start: 2px solid var(--danger);
+    font-size: 14px;
+    line-height: 20px;
+  }
+  .input {
+    min-height: 44px;
+    padding: 10px 12px;
+    font-size: 16px;
+    line-height: 24px;
+  }
+  .input[data-invalid="true"] {
+    outline: none;
+    border-color: var(--danger);
+  }
+  .select__trigger {
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 40px 10px 12px;
+    font-size: 16px;
+    line-height: 24px;
+  }
+  .select__value {
+    font-size: 16px;
+    line-height: 24px;
+  }
+  .select__indicator {
+    inset-inline-end: 12px;
+    color: var(--muted);
+  }
+
+  /* 3. Overlays (§4.6, §7): overlay surface with a 1pt border, radius 4, the overlay shadow, and a fade only (no
+        zoom, no slide). Items are 44 minimum with a tint check for the selected one. */
+  .select__popover,
+  .popover {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-panel);
+  }
+  .select__popover[data-entering="true"],
+  .select__popover[data-exiting="true"],
+  .popover[data-entering="true"],
+  .popover[data-exiting="true"] {
+    --tw-enter-scale: 1;
+    --tw-exit-scale: 1;
+    --tw-enter-translate-x: 0;
+    --tw-enter-translate-y: 0;
+    --tw-exit-translate-x: 0;
+    --tw-exit-translate-y: 0;
+  }
+  .list-box-item {
+    min-height: 44px;
+    padding: 10px 12px;
+    font-size: 16px;
+    line-height: 24px;
+    border-radius: var(--radius-mark);
+  }
+  .list-box-item__indicator {
+    color: var(--tint);
+  }
+
+  /* 4. Accordion (§5.6 row geometry): rows 44 minimum, px-4 py-3, the question in bodyStrong, separators inset 16,
+        pressed and hovered rows in surface-secondary, the answer in body foreground-secondary. */
+  .accordion__trigger {
+    min-height: 44px;
+    padding: 12px 16px;
+    gap: 12px;
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 500;
+    color: var(--foreground);
+  }
+  @media (hover: hover) {
+    .accordion__trigger:hover:not([aria-expanded="true"]) {
+      background-color: var(--surface-secondary);
+    }
+  }
+  .accordion__indicator {
+    color: var(--muted);
+    transition-duration: 150ms;
+    transition-timing-function: var(--ease-standard);
+  }
+  .accordion__body {
+    font-size: 16px;
+    line-height: 24px;
+  }
+  .accordion__body-inner {
+    padding: 0 16px 16px;
+    color: var(--foreground-secondary);
+  }
+  .accordion__item::after {
+    inset-inline-start: 16px;
+    width: auto;
+    inset-inline-end: 0;
+    border-radius: 0;
+  }
+
+  /* 5. Groups. The kit lays out its own cells (Choices segments, ChipRow chips), so HeroUI's stacked-list spacing
+        between items goes. */
+  .checkbox-group [data-slot="checkbox"],
+  .radio-group[data-orientation="vertical"] [data-slot="radio"] {
+    margin-top: 0;
+  }
+}

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
-import { Icon, cn } from "@/vector";
+import { Icon, IconButton, cn } from "@/vector";
 
 /** Under 768: a menu button that opens the nav as a full-width panel under the header. Escape closes it. */
 export function MobileNav({ items }: { items: readonly { href: string; label: string }[] }) {
@@ -30,20 +30,17 @@ export function MobileNav({ items }: { items: readonly { href: string; label: st
 
   return (
     <div className="md:hidden">
-      <button
+      <IconButton
         ref={button}
-        type="button"
+        icon={shown ? "close" : "menu"}
+        label={shown ? "Close menu" : "Open menu"}
         aria-expanded={shown}
         aria-controls={id}
-        aria-label={shown ? "Close menu" : "Open menu"}
-        onClick={() => {
+        onPress={() => {
           setOpen(!shown);
           setOpenedAt(pathname);
         }}
-        className="inline-flex size-11 items-center justify-center rounded-control text-foreground hover:bg-surface-secondary"
-      >
-        <Icon name={shown ? "close" : "menu"} size={20} />
-      </button>
+      />
       <nav
         id={id}
         aria-label="Main"

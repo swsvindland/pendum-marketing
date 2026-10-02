@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/components/site/metadata";
 import { notFound } from "next/navigation";
 import { AppDetails } from "@/components/apps/app-details";
 import { AppHeader } from "@/components/apps/app-header";
@@ -22,18 +23,7 @@ export async function generateMetadata({ params }: PageProps<"/apps/[slug]">): P
   const app = getApp(slug);
   if (!app) return {};
   const description = app.summary || app.tagline || site.description;
-  return {
-    title: app.name,
-    description,
-    alternates: { canonical: `/apps/${app.slug}` },
-    openGraph: {
-      type: "website",
-      siteName: site.name,
-      url: `/apps/${app.slug}`,
-      title: `${app.name} · ${site.name}`,
-      description,
-    },
-  };
+  return pageMetadata({ title: app.name, description, path: `/apps/${app.slug}` });
 }
 
 /**

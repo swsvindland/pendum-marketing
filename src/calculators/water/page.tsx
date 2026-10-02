@@ -18,17 +18,14 @@ export function WaterPage({ meta }: { meta: CalculatorMeta }) {
             food. Most healthy people meet their needs by drinking to thirst.
           </p>
           <p>The estimate from drinks has three parts.</p>
-          {/* Zero intrinsic width, then full width: the formula scrolls on a narrow phone instead of widening the page. */}
-          <div className="w-0 min-w-full">
-            <Formula>
-              {`Baseline = 28 mL × weight (kg)
+          <Formula>
+            {`Baseline = 28 mL × weight (kg)
          = 35 mL/kg × 0.8 from drinks,
            kept within EFSA to NASEM
 Exercise = 10 mL × minutes a day
 Heat     = 1,000 mL when hot, else 0
 Drinks   = baseline + exercise + heat`}
-            </Formula>
-          </div>
+          </Formula>
           <p>
             <strong>Baseline.</strong> 35 mL of total water per kg of body weight is the D-A-CH guide value for adults
             aged 19 to 50 (30 mL per kg from 51). About 80 % of total water comes from drinks, so the baseline is 28 mL

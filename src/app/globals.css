@@ -1,5 +1,8 @@
-@import "tailwindcss";
+/* HeroUI v3 (Tailwind, its layered component CSS and default theme), then the kit: tokens.css restates every
+   theme variable unlayered so the Vector values win, and components.css corrects HeroUI slots the spec rules out. */
+@import "@heroui/styles";
 @import "../vector/tokens.css";
+@import "../vector/components.css";
 
 /* dark: follows the system unless the visitor picked an appearance (data-theme on <html>). */
 @custom-variant dark {
@@ -174,6 +177,8 @@
   html {
     -webkit-text-size-adjust: 100%;
     text-rendering: optimizeLegibility;
+    /* In-page anchors land below the 64px sticky header. */
+    scroll-padding-top: 4rem;
   }
   body {
     background: var(--background);

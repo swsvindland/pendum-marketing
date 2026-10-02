@@ -19,19 +19,15 @@ export function BodyFatPage({ meta }: { meta: CalculatorMeta }) {
             Every measurement is converted to inches (cm ÷ 2.54) and the logarithms are base 10. The male equation
             uses the abdomen at the navel; the female equation uses the natural waist and the hips.
           </p>
-          {/* Lines are broken to fit a 375 phone. The method column is a grid item that grows to its content, so
-              a zero-width wrapper at full minimum width keeps any longer line in the Formula's own scroll. */}
-          <div className="w-0 min-w-full">
-            <Formula>
-              {`Male
+          <Formula>
+            {`Male
 %BF = 86.010 × log10(abdomen − neck)
     − 70.041 × log10(height) + 36.76
 
 Female
 %BF = 163.205 × log10(waist + hips − neck)
     − 97.684 × log10(height) − 78.387`}
-            </Formula>
-          </div>
+          </Formula>
           <p>
             A result is kept only when it falls between 0 and 75 %. Measurements that give anything else, or a
             circumference term of zero or less (an abdomen no larger than the neck), give no estimate. With a

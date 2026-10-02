@@ -1,31 +1,46 @@
+import { Button as HeroButton } from "@heroui/react";
+import { buttonVariants } from "@heroui/styles";
 import Link from "next/link";
-import type { ComponentProps, ReactNode } from "react";
+import type { ComponentProps, ReactNode, Ref } from "react";
 import { cn } from "./cn";
 import { Icon, type IconName } from "./icon";
 
 export type ButtonVariant = "primary" | "secondary" | "ghost" | "destructive";
 
 /**
- * The Button look (§5.3) as classes. Radius 4, 44 minimum (52 at lg), Inter 500 15/20, press is colour only
- * (no scale), focus is the global 2pt tint outline, disabled is 0.4.
- * primary: signal fill, #071017 label (one per page). secondary: surface with a 1pt border-strong edge.
- * ghost: tint label. destructive: danger label, no fill.
+ * The kit's four looks on HeroUI's button (§5.3), as data: HeroUI supplies the behaviour and its variant, the kit
+ * supplies the look through HeroUI's own --button-* properties. Shared geometry (44 minimum, 52 at lg, radius 4,
+ * Inter 500 15/20, colour-only press) is in components.css.
+ * primary: signal fill, #071017 label (one per page; HeroUI's primary already uses --accent / --accent-hover).
+ * secondary: surface with a 1pt border-strong edge, never a grey fill. ghost: tint label. destructive: danger label,
+ * no fill.
  */
-export function buttonClass(variant: ButtonVariant = "secondary", size: "md" | "lg" = "md") {
-  return cn(
-    "inline-flex h-auto items-center justify-center gap-2 rounded-control text-center type-button",
-    "transition-colors duration-100 ease-standard select-none",
-    "aria-disabled:pointer-events-none aria-disabled:opacity-40 disabled:pointer-events-none disabled:opacity-40",
-    size === "lg" ? "min-h-13 px-5 py-3.5" : "min-h-11 px-4 py-3",
-    variant === "primary" && "bg-accent text-accent-foreground hover:bg-accent-hover active:bg-accent-hover",
-    variant === "secondary" &&
-      "border border-border-strong bg-surface text-foreground hover:bg-surface-secondary active:bg-surface-secondary",
-    variant === "ghost" && "text-tint hover:bg-surface-secondary active:bg-surface-secondary",
-    variant === "destructive" && "text-danger hover:bg-surface-secondary active:bg-surface-secondary"
-  );
-}
+const looks = {
+  primary: { hero: "primary", className: "" },
+  secondary: {
+    hero: "outline",
+    className:
+      "border-border-strong [--button-bg:var(--surface)] [--button-bg-hover:var(--surface-secondary)] [--button-bg-pressed:var(--surface-secondary)] [--button-fg:var(--foreground)]",
+  },
+  ghost: {
+    hero: "ghost",
+    className:
+      "[--button-fg:var(--tint)] [--button-bg-hover:var(--surface-secondary)] [--button-bg-pressed:var(--surface-secondary)]",
+  },
+  destructive: {
+    hero: "ghost",
+    className:
+      "[--button-fg:var(--danger)] [--button-bg-hover:var(--surface-secondary)] [--button-bg-pressed:var(--surface-secondary)]",
+  },
+} as const;
 
 const iconTone = { primary: "onSignal", secondary: "foreground", ghost: "tint", destructive: "danger" } as const;
+
+/** The Button look as a class string, for an element that is not a HeroUI Button (a Next link). */
+export function buttonClass(variant: ButtonVariant = "secondary", size: "md" | "lg" = "md") {
+  const look = looks[variant];
+  return cn(buttonVariants({ variant: look.hero, size }), look.className);
+}
 
 type CommonProps = {
   variant?: ButtonVariant;
@@ -48,22 +63,42 @@ function Inner({ variant = "secondary", icon, iconPosition = "start", children }
   );
 }
 
-/** A button that acts in place. Labels are verb + object in sentence case. */
+/**
+ * A button that acts in place: HeroUI's Button (React Aria press handling, keyboard and focus) in the kit look.
+ * Labels are verb + object in sentence case. `onPress` needs a client component around it.
+ */
 export function Button({
-  variant,
-  size,
+  variant = "secondary",
+  size = "md",
   icon,
   iconPosition,
   className,
   children,
-  ...rest
-}: CommonProps & Omit<ComponentProps<"button">, "children" | "className">) {
+  onPress,
+  disabled,
+  type = "button",
+  "aria-label": ariaLabel,
+}: CommonProps & {
+  onPress?: () => void;
+  disabled?: boolean;
+  type?: "button" | "submit" | "reset";
+  "aria-label"?: string;
+}) {
+  const look = looks[variant];
   return (
-    <button type="button" className={cn(buttonClass(variant, size), className)} {...rest}>
+    <HeroButton
+      variant={look.hero}
+      size={size}
+      type={type}
+      onPress={onPress}
+      isDisabled={disabled}
+      aria-label={ariaLabel}
+      className={cn(look.className, className)}
+    >
       <Inner variant={variant} icon={icon} iconPosition={iconPosition}>
         {children}
       </Inner>
-    </button>
+    </HeroButton>
   );
 }
 
@@ -136,32 +171,42 @@ export function LinkButton({
   );
 }
 
-/** 44×44 square, radius 4. ghost: a 20 glyph. secondary: 1pt border-strong edge. Label required. */
+/** 44×44 square, radius 4, on HeroUI's icon-only button. ghost: a 20 glyph in foreground. secondary: a 1pt edge. */
 export function IconButton({
   icon,
   label,
   variant = "ghost",
+  onPress,
   className,
-  ...rest
+  ref,
+  "aria-expanded": expanded,
+  "aria-controls": controls,
 }: {
   icon: IconName;
   label: string;
   variant?: "ghost" | "secondary";
+  onPress?: () => void;
   className?: string;
-} & Omit<ComponentProps<"button">, "children" | "className" | "aria-label">) {
+  ref?: Ref<HTMLButtonElement>;
+  "aria-expanded"?: boolean;
+  "aria-controls"?: string;
+}) {
   return (
-    <button
-      type="button"
+    <HeroButton
+      ref={ref}
+      isIconOnly
+      variant={variant === "secondary" ? "outline" : "ghost"}
       aria-label={label}
+      aria-expanded={expanded}
+      aria-controls={controls}
+      onPress={onPress}
       className={cn(
-        "inline-flex size-11 shrink-0 items-center justify-center rounded-control text-foreground",
-        "transition-colors duration-100 ease-standard hover:bg-surface-secondary active:bg-surface-secondary",
-        variant === "secondary" && "border border-border-strong bg-surface",
+        "[--button-fg:var(--foreground)] [--button-bg-hover:var(--surface-secondary)] [--button-bg-pressed:var(--surface-secondary)]",
+        variant === "secondary" && "border-border-strong [--button-bg:var(--surface)]",
         className
       )}
-      {...rest}
     >
       <Icon name={icon} size={20} />
-    </button>
+    </HeroButton>
   );
 }

@@ -38,7 +38,7 @@ export function CalculatorFrame({
       <div className="mx-auto w-full max-w-data px-gutter py-10 md:py-12">{tool}</div>
 
       <section aria-labelledby="method-title" className="border-t border-border">
-        <div className="mx-auto grid max-w-data gap-10 px-gutter py-12 md:py-16 lg:grid-cols-[1.4fr_1fr]">
+        <div className="mx-auto grid max-w-data grid-cols-[minmax(0,1fr)] gap-10 px-gutter py-12 md:py-16 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
           <div className="flex flex-col gap-4">
             <Label>Method</Label>
             <Heading level={2} id="method-title">

@@ -21,10 +21,8 @@ export function StrengthScorePage({ meta }: { meta: CalculatorMeta }) {
             written by Tim Konertz. The denominator is a fourth-degree polynomial in body weight x, in kilograms.
             Body weight outside 40 to 210 kg (men) or 40 to 150 kg (women) counts as the nearest end of that range.
           </p>
-          {/* Lines are broken to fit a 375 phone; a zero-width wrapper keeps any longer line in the Formula's scroll. */}
-          <div className="w-0 min-w-full">
-            <Formula>
-              {`DOTS = total × 500
+          <Formula>
+            {`DOTS = total × 500
        / (a·x⁴ + b·x³ + c·x² + d·x + e)
 
 Men    a = −0.000001093
@@ -38,17 +36,15 @@ Women  a = −0.0000010706
        c = −0.1126655495
        d = 13.6175032
        e = −57.96288`}
-            </Formula>
-          </div>
+          </Formula>
           <p>
             <strong>Wilks</strong> is Robert Wilks&rsquo; original formula; the IPF has since moved to its own points.
             Its denominator is a fifth-degree polynomial. OpenPowerlifting holds body weight to 40 to 201.9 kg for
             men and 26.51 to 154.53 kg for women, which keeps clear of the polynomial&rsquo;s asymptote at the heavy
             end and of very large coefficients at the light end.
           </p>
-          <div className="w-0 min-w-full">
-            <Formula>
-              {`Wilks = total × 500
+          <Formula>
+            {`Wilks = total × 500
         / (a + b·x + c·x² + d·x³ + e·x⁴ + f·x⁵)
 
 Men    a = −216.0475144
@@ -64,8 +60,7 @@ Women  a = 594.31747775582
        d = −0.00930733913
        e = 0.00004731582
        f = −0.00000009054`}
-            </Formula>
-          </div>
+          </Formula>
           <p>
             The scores are for comparing lifters, within a meet or across meets, not for grading one lifter. A score
             is only as comparable as the totals behind it: equipment, federation rules and drug testing all differ.

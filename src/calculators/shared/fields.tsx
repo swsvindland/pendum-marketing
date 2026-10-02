@@ -40,6 +40,8 @@ type QuantityProps = {
   max: number;
   hint?: string;
   placeholder?: { metric: string; imperial: string };
+  /** The thing in the range error, with its article ("a neck measurement"). Defaults to "a <label>". */
+  noun?: string;
 };
 
 function QuantityInner({
@@ -51,12 +53,13 @@ function QuantityInner({
   max,
   hint,
   placeholder,
+  noun: nounProp,
   kind,
 }: QuantityProps & { kind: "mass" | "length" }) {
   const toDisplay = kind === "mass" ? (units === "metric" ? (n: number) => n : kgToLb) : units === "metric" ? (n: number) => n : cmToIn;
   const fromDisplay = kind === "mass" ? (units === "metric" ? (n: number) => n : lbToKg) : units === "metric" ? (n: number) => n : inToCm;
   const unit = kind === "mass" ? (units === "metric" ? "kg" : "lb") : units === "metric" ? "cm" : "in";
-  const noun = label.toLowerCase();
+  const noun = nounProp ?? `a ${label.toLowerCase()}`;
   const lo = Math.ceil(toDisplay(min));
   const hi = Math.floor(toDisplay(max));
   const [text, setText] = useState(() => (value.value === null ? "" : editable(toDisplay(value.value))));
@@ -75,7 +78,7 @@ function QuantityInner({
         const n = parseNumber(t);
         const canonical = n === null ? null : fromDisplay(n);
         if (canonical === null || canonical < min - 1e-9 || canonical > max + 1e-9)
-          return onChange({ value: null, error: `Enter a ${noun} between ${formatNumber(lo)} and ${formatNumber(hi)} ${unit}.` });
+          return onChange({ value: null, error: `Enter ${noun} between ${formatNumber(lo)} and ${formatNumber(hi)} ${unit}.` });
         onChange({ value: canonical, error: null });
       }}
     />

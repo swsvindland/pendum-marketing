@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/components/site/metadata";
 import { notFound } from "next/navigation";
 import { calculatorPages } from "@/calculators/registry";
 import { calculators, getCalculator } from "@/content/calculators";
@@ -13,12 +14,11 @@ export async function generateMetadata({ params }: PageProps<"/calculators/[slug
   const { slug } = await params;
   const meta = getCalculator(slug);
   if (!meta) return {};
-  return {
+  return pageMetadata({
     title: meta.title,
     description: `${meta.description} Free, no sign-up, nothing stored.`,
-    alternates: { canonical: `/calculators/${meta.slug}` },
-    openGraph: { title: `${meta.title} · Vector`, description: meta.description },
-  };
+    path: `/calculators/${meta.slug}`,
+  });
 }
 
 export default async function CalculatorPage({ params }: PageProps<"/calculators/[slug]">) {

@@ -17,14 +17,11 @@ export function TdeePage({ meta }: { meta: CalculatorMeta }) {
             rounded form Vector Macros uses for a program&rsquo;s starting estimate. Imperial inputs are converted
             exactly (1 lb = 0.45359237 kg, 1 in = 2.54 cm) first.
           </p>
-          {/* w-0 min-w-full: the long lines scroll inside the formula instead of widening the method column. */}
-          <div className="w-0 min-w-full">
-            <Formula>
-              {`Resting (kcal/day) = 10 × weight (kg) + 6.25 × height (cm) − 5 × age (years) + s
+          <Formula>
+            {`Resting (kcal/day) = 10 × weight (kg) + 6.25 × height (cm) − 5 × age (years) + s
 s = +5 (male equation) or −161 (female equation)
 TDEE = round(resting × activity multiplier)`}
-            </Formula>
-          </div>
+          </Formula>
           <p>
             The published equation uses 9.99 for weight and 4.92 for age, with 166 kcal between the male and female
             forms. The rounded coefficients differ from it by a few kcal a day. The study measured 498 healthy adults

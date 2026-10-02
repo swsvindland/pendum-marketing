@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { GYM_DEFAULTS, groupPlates, plateLoading, type PlateUnit } from "@/lib/calc/plates";
 import { formatNumber, kgToLb, lbToKg } from "@/lib/units";
-import { Icon, Note, ReadoutRow, Text, Value, cn } from "@/vector";
-import { Select } from "@/vector/form";
+import { Note, ReadoutRow, Value } from "@/vector";
+import { ChipRow, Select } from "@/vector/form";
 import { EMPTY, MassField, UnitChoice, type Measure } from "../shared/fields";
 import { ToolLayout } from "../shared/frame";
 import { EmptyResult, HeroValue, ReadoutTable, ResultPanel } from "../shared/results";
@@ -25,9 +25,8 @@ const START: Record<PlateUnit, Setup> = {
 };
 
 /**
- * The plates on hand: a wrapping row of checkbox chips in the ChipRow look (36 tall, 1pt border-strong, radius 4;
- * selected is a signal fill with ink and a 12pt check in a reserved slot, so widths never shift). The fieldset is
- * the group; each chip is a real checkbox named "25 kg".
+ * The plates on hand: the kit's ChipRow (HeroUI CheckboxGroup), each chip a real checkbox named "25 kg". Keys are
+ * the plate sizes as strings; the order stays the gym's, heaviest first.
  */
 function PlateChips({
   unit,
@@ -41,37 +40,22 @@ function PlateChips({
   onChange: (plates: number[]) => void;
 }) {
   return (
-    <fieldset className="flex min-w-0 flex-col gap-2">
-      <legend className="mb-2 type-field-label text-foreground-secondary">Plates available</legend>
-      <div className="flex flex-wrap gap-2">
-        {sizes.map((size) => {
-          const on = value.includes(size);
-          return (
-            <label
-              key={size}
-              className={cn(
-                "relative flex min-h-9 cursor-pointer items-center gap-1.5 rounded-control border border-border-strong ps-2 pe-3 transition-colors duration-150 ease-standard",
-                "has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-focus",
-                on ? "bg-accent text-accent-foreground" : "bg-surface text-foreground hover:bg-surface-secondary"
-              )}
-            >
-              <input
-                type="checkbox"
-                checked={on}
-                onChange={() => onChange(on ? value.filter((p) => p !== size) : sizes.filter((p) => p === size || value.includes(p)))}
-                className="sr-only"
-              />
-              <Icon name="check" size={12} className={on ? "opacity-100" : "opacity-0"} />
-              <span className="type-readout-xs">{plain(size)}</span>
-              <span className="sr-only"> {unit}</span>
-            </label>
-          );
-        })}
-      </div>
-      <Text variant="caption" tone="muted">
-        Plates are loaded in pairs, one on each side. Any number of each is assumed.
-      </Text>
-    </fieldset>
+    <ChipRow
+      label="Plates available"
+      values={sizes.map((size) => ({
+        value: String(size),
+        mono: true,
+        label: (
+          <>
+            {plain(size)}
+            <span className="sr-only"> {unit}</span>
+          </>
+        ),
+      }))}
+      value={value.map(String)}
+      onChange={(keys) => onChange(keys.map(Number))}
+      hint="Plates are loaded in pairs, one on each side. Any number of each is assumed."
+    />
   );
 }
 

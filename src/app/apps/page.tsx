@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/components/site/metadata";
 import { AppCard } from "@/components/apps/app-card";
 import { listFormat } from "@/components/apps/model";
 import { PageHeader, Section } from "@/components/page";
@@ -9,11 +10,11 @@ const subscription = apps.filter((a) => a.model === "subscription");
 const purchase = apps.filter((a) => a.model === "purchase");
 const names = (list: typeof apps) => listFormat.format(list.map((a) => a.name));
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Apps",
   description: `${names(subscription)} is the subscription that syncs across devices. ${names(purchase)} are one-time purchases that work offline, with no account.`,
-  alternates: { canonical: "/apps" },
-};
+  path: "/apps",
+});
 
 /**
  * The series index: the subscription app first, across the column, then the one-time purchase apps as a grid of

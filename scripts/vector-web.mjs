@@ -3,15 +3,18 @@
 //
 //   node scripts/vector-web.mjs gen     tokens.json -> src/vector/tokens.css, ionicons -> src/vector/icon-paths.ts
 //   node scripts/vector-web.mjs pull    copy the canonical kit's tokens.json in, then gen
-//   node scripts/vector-web.mjs check   fail when the generated files are stale; warn when the kit has moved on
+//   node scripts/vector-web.mjs check   fail when the generated files are stale or page code breaks the kit rules;
+//                                       warn when the canonical kit has moved on
 //
 // src/vector/tokens.json is a snapshot of vector-design/kit/src/vector/tokens.json. Never edit it here: change the
 // kit, then `pull`. The native kit emits HeroUI/Uniwind CSS; this emits plain CSS custom properties plus a Tailwind v4
 // `@theme` block, so utilities like bg-surface, text-muted, border-border-strong and text-tint resolve to the tokens.
+// The variable names are HeroUI's (the kit's tokens are a HeroUI theme), so @heroui/react components pick them up:
+// these rules are unlayered and win over HeroUI's layered defaults.
 
 import { createHash } from "node:crypto";
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
+import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -108,24 +111,46 @@ function genCss(tokens) {
   const hcDark = pick("hcDark");
   const isShadow = (k) => k.endsWith("shadow");
 
+  // HeroUI reads these as plain variables: its theme derives --radius-field and --border-width-field from them,
+  // and its components use --disabled-opacity and --skeleton-animation directly. Values are the kit's (§4.4, §4.5,
+  // §5.7: skeletons are static).
+  const statics = [
+    ["radius", `${tokens.radius.radius}px`],
+    ["field-radius", `${tokens.radius["field-radius"]}px`],
+    ["border-width", tokens.static["border-width"]],
+    ["field-border-width", tokens.static["field-border-width"]],
+    ["disabled-opacity", tokens.static["opacity-disabled"]],
+    ["skeleton-animation", "none"],
+  ];
+  // HeroUI-derived colours the kit overrides (tokens.json twDerived, and the field focus edge the native
+  // COMPONENTS block points at --focus). Declared once: they follow the scheme through the vars they reference.
+  const derived = [
+    ...Object.entries(tokens.twDerived)
+      .filter(([k]) => !k.startsWith("$"))
+      .map(([k, v]) => [k, v]),
+    ["field-border-focus", "var(--focus)"],
+    ["field-focus", "var(--field-background)"],
+  ];
+
   const theme = [
-    // Only kit colours exist: app code cannot reach for a Tailwind palette hex.
-    "  --color-*: initial;",
+    // Kit colours as utilities. HeroUI's theme maps its own names too; restating them here keeps every token a
+    // utility and adds the Vector extras (tint, foreground-secondary, border-strong, cat-*, chart-*). Tailwind's
+    // palette stays defined because HeroUI's component CSS is compiled against it; `vector-web.mjs check` keeps
+    // page code off it.
     "  --color-white: #FFFFFF;",
     ...colors.filter(([k]) => !isShadow(k)).map(([k]) => `  --color-${k}: var(--${k});`),
-    // HeroUI-derived pressed states, mixed in OKLab as the browser does (design-system §2.2 web pins).
-    "  --color-accent-hover: color-mix(in oklab, var(--accent) 90%, var(--accent-foreground) 10%);",
-    "  --color-warning-hover: color-mix(in oklab, var(--warning) 90%, black);",
-    "  --color-field-hover: var(--surface-secondary);",
+    ...derived.map(([k]) => `  --color-${k}: var(--${k});`),
+    "  --color-accent-hover: var(--accent-hover);",
     "  --color-backdrop: var(--backdrop);",
     "",
-    "  --shadow-*: initial;",
     "  --shadow-overlay: var(--overlay-shadow);",
     "",
-    "  --radius-*: initial;",
-    ...Object.entries(tokens.radius).map(([k, v]) => `  --${k === "radius" ? "radius" : k}: ${v}px;`),
+    // HeroUI derives md…4xl as --radius × 0.75…4; the kit's ramp is flat, so nothing HeroUI draws becomes a pill.
+    ...Object.entries(tokens.radius)
+      .filter(([k]) => k !== "radius" && k !== "field-radius")
+      .map(([k, v]) => `  --${k}: ${v}px;`),
     "",
-    "  --text-*: initial;",
+    // The kit's scale for the sizes HeroUI's component CSS applies (text-xs, text-sm, text-base…).
     ...Object.entries(tokens.text).flatMap(([k, [size, line]]) => [
       `  --text-${k}: ${size}px;`,
       `  --text-${k}--line-height: ${line}px;`,
@@ -134,25 +159,21 @@ function genCss(tokens) {
     `  --tracking-tight: ${tokens.tracking.tight};`,
     `  --tracking-label: ${tokens.tracking.label};`,
     "",
-    "  --font-*: initial;",
     '  --font-sans: var(--font-inter), "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;',
     '  --font-mono: var(--font-plex-mono), "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;',
-    "",
-    `  --opacity-disabled: ${tokens.static["opacity-disabled"]};`,
     "",
     "  --container-form: 640px;",
     "  --container-data: 1040px;",
     "",
     "  --ease-standard: cubic-bezier(0.2, 0.8, 0.2, 1);",
     "  --ease-exit: cubic-bezier(0.4, 0, 1, 1);",
-    "  --animate-*: initial;",
   ];
 
   return [
     `/* ${banner(`src/vector/tokens.json (kit ${tokens.version})`)} */`,
     "",
     "/* Light is the default; dark follows the system unless the visitor picked an appearance (data-theme). */",
-    block(":root", [["kit-version", `"${tokens.version}"`], ...light]),
+    block(":root", [["kit-version", `"${tokens.version}"`], ...statics, ...light, ...derived]),
     "",
     "@media (prefers-color-scheme: dark) {",
     block(':root:not([data-theme="light"])', dark, "  "),
@@ -209,6 +230,82 @@ function genIcons() {
   ].join("\n");
 }
 
+
+/**
+ * Page-code rules (the native kit's `vector-kit check`, for the web): type is a role, colour is a token, shape is
+ * the kit's, and HeroUI is reached only through the kit. src/vector is the kit and is exempt; image routes and the
+ * manifest draw raster assets and may use hex.
+ */
+const PAGE_DIRS = ["src/app", "src/components", "src/calculators"];
+/** The kit's own stylesheet and the raster/meta routes (OG card, touch icon, manifest, browser theme colour). */
+const EXEMPT = [/^src\/app\/globals\.css$/];
+const ASSETS = [/opengraph-image\.tsx$/, /apple-icon\.tsx$/, /manifest\.ts$/, /components\/site\/brand\.tsx$/];
+const HEX_ALLOWED = [...ASSETS, /^src\/app\/layout\.tsx$/];
+const PALETTE =
+  "slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|black";
+/** Rules on class strings: string literals whose every word looks like a utility (no capitals, no sentence end). */
+const CLASS_RULES = [
+  { id: "size", re: /(?<![\w-])text-(xs|sm|base|lg|xl|[2-9]xl)(?![\w-])/, why: "a size class; use a type role (Text variant or type-*)" },
+  { id: "weight", re: /(?<![\w-])font-(thin|extralight|light|normal|medium|semibold|bold|extrabold|black)(?![\w-])/, why: "a weight class; roles set weight ([font-weight:500] for a rare change)" },
+  { id: "case", re: /(?<![\w-])(uppercase|lowercase|capitalize)(?![\w-])/, why: "a case class; the label role uppercases, strings stay sentence case" },
+  { id: "tracking", re: /(?<![\w-])tracking-[\w[]/, why: "a tracking class; roles set tracking" },
+  { id: "shadow", re: /(?<![\w-])shadow(-(sm|md|lg|xl|2xl|inner))?(?![\w-])/, why: "a shadow; content never casts one (§4.6)" },
+  { id: "radius", re: /(?<![\w-])rounded(-[trblse]{1,2})?(-(xs|sm|md|lg|xl|2xl|3xl|4xl|none))?(?![\w\[-])/, why: "a radius class; use rounded-control, rounded-panel or rounded-mark" },
+  { id: "palette", re: new RegExp(`(?<![\\w-])(bg|text|border|ring|outline|fill|stroke|divide|decoration|from|via|to)-(${PALETTE})(-\\d+)?(?![\\w-])`), why: "a Tailwind palette colour; use a token utility" },
+  { id: "gradient", re: /(?<![\w-])(bg-gradient|bg-linear|bg-radial|bg-conic)-/, why: "a gradient (§1: none anywhere)" },
+];
+/** Rules on whole lines. */
+const LINE_RULES = [
+  { id: "hex", re: /#[0-9a-fA-F]{6}\b|#[0-9a-fA-F]{3}\b(?![\w-])/, why: "a hex colour; app code never writes one", skip: HEX_ALLOWED },
+  { id: "raw-heroui", re: /from ["']@heroui\/(react|styles)["']/, why: "HeroUI outside the kit; import the kit component from @/vector" },
+];
+
+const STRING = /"([^"\\\n]*)"|'([^'\\\n]*)'|`([^`\\\n$]*)`/g;
+const classLike = (s) => {
+  const words = s.trim().split(/\s+/).filter(Boolean);
+  return words.length > 0 && words.every((w) => /^[a-z0-9!\-:[\]()/%.#_=&>*,'"@]+$/.test(w) && !/[.,]$/.test(w));
+};
+
+function* walk(dir) {
+  for (const name of readdirSync(dir)) {
+    const path = join(dir, name);
+    if (statSync(path).isDirectory()) yield* walk(path);
+    else if (/\.(tsx?|css)$/.test(name)) yield path;
+  }
+}
+
+function lintPages() {
+  const problems = [];
+  for (const dir of PAGE_DIRS) {
+    for (const path of walk(join(root, dir))) {
+      const rel = relative(root, path);
+      if (EXEMPT.some((re) => re.test(rel))) continue;
+      const asset = ASSETS.some((re) => re.test(rel));
+      readFileSync(path, "utf8")
+        .split("\n")
+        .forEach((line, i) => {
+          const code = line.trim();
+          if (code.startsWith("//") || code.startsWith("*") || code.startsWith("/*") || code.startsWith("{/*")) return;
+          for (const rule of LINE_RULES) {
+            if (rule.skip?.some((re) => re.test(rel))) continue;
+            const m = code.match(rule.re);
+            if (m) problems.push(`${rel}:${i + 1}  ${rule.id}  "${m[0]}" is ${rule.why}`);
+          }
+          if (asset) return;
+          for (const [, a, b, c] of code.matchAll(STRING)) {
+            const str = a ?? b ?? c ?? "";
+            if (!classLike(str)) continue;
+            for (const rule of CLASS_RULES) {
+              const m = str.match(rule.re);
+              if (m) problems.push(`${rel}:${i + 1}  ${rule.id}  "${m[0]}" is ${rule.why}`);
+            }
+          }
+        });
+    }
+  }
+  return problems;
+}
+
 const hash = (s) => createHash("sha256").update(s).digest("hex").slice(0, 12);
 
 function gen({ write }) {
@@ -255,7 +352,13 @@ if (cmd === "pull") {
       );
     }
   }
-  console.log(`Vector web kit ${tokens.version}: generated files are current.`);
+  const problems = lintPages();
+  if (problems.length) {
+    console.error(problems.join("\n"));
+    console.error(`${problems.length} page-code rule violation(s). See CLAUDE.md, "Rules that pages must follow".`);
+    process.exit(1);
+  }
+  console.log(`Vector web kit ${tokens.version}: generated files are current; page code follows the kit rules.`);
 } else {
   console.error(`Unknown command ${cmd}. Use gen, pull or check.`);
   process.exit(1);

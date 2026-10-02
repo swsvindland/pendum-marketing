@@ -12,7 +12,7 @@ import {
   type BodyFatCategory,
   type NavyEquation,
 } from "@/lib/calc/body-fat";
-import { cmToIn, formatNumber, kgToLb } from "@/lib/units";
+import { formatNumber, kgToLb } from "@/lib/units";
 import { Note, ReadoutRow, Value } from "@/vector";
 import { Choices } from "@/vector/form";
 import { EMPTY, HeightField, LengthField, MassField, UnitChoice, type Measure } from "../shared/fields";
@@ -35,20 +35,8 @@ const CAPTION: Record<BodyFatCategory, string> = {
   elevated: "Elevated body fat",
 };
 
-/**
- * A tape measurement in cm or in. The shared LengthField does the parsing and keeps the value across unit switches;
- * this only words its range error as a measurement ("Enter a neck measurement between 20 and 80 cm.").
- */
-function TapeField({
-  label,
-  noun,
-  units,
-  value,
-  onChange,
-  min,
-  max,
-  hint,
-}: {
+/** A tape measurement in cm or in, its range error worded as a measurement ("Enter a neck measurement…"). */
+function TapeField(props: {
   label: string;
   /** "a neck measurement" */
   noun: string;
@@ -59,22 +47,7 @@ function TapeField({
   max: number;
   hint: string;
 }) {
-  const metric = units === "metric";
-  const unit = metric ? "cm" : "in";
-  const lo = Math.ceil(metric ? min : cmToIn(min));
-  const hi = Math.floor(metric ? max : cmToIn(max));
-  const message = `Enter ${noun} between ${formatNumber(lo)} and ${formatNumber(hi)} ${unit}.`;
-  return (
-    <LengthField
-      label={label}
-      units={units}
-      value={value}
-      onChange={(m) => onChange(m.error ? { value: null, error: message } : m)}
-      min={min}
-      max={max}
-      hint={hint}
-    />
-  );
+  return <LengthField {...props} />;
 }
 
 export function BodyFatTool() {

@@ -20,16 +20,13 @@ export function MacrosPage({ meta }: { meta: CalculatorMeta }) {
             the rate becomes a daily difference at 7,700 kcal per kg. The calories left after protein are split
             between fat and carbs.
           </p>
-          {/* w-0 min-w-full: the long lines scroll inside the formula instead of widening the method column. */}
-          <div className="w-0 min-w-full">
-            <Formula>
-              {`rate (kg/week) = weight (kg) × pace (%) / 100, negative for a cut, 0 to maintain
+          <Formula>
+            {`rate (kg/week) = weight (kg) × pace (%) / 100, negative for a cut, 0 to maintain
 calories = round(maintenance + rate × 7,700 / 7)
 protein (g) = round(weight (kg) × protein (g/kg))
 fat (g) = round(max(0.6 × weight (kg), (calories − 4 × protein) × fat share / 9))
 carbs (g) = round((calories − 4 × protein − 9 × fat) / 4)`}
-            </Formula>
-          </div>
+          </Formula>
           <p>
             The <strong>fat share</strong> is 0.40 for Balanced, 0.25 for More carbs and 0.60 for More fat. Fat never
             drops below 0.6 g per kg, and carbs take the rest. Protein and carbs count 4 kcal per gram and fat 9, so

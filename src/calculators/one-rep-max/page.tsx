@@ -19,31 +19,24 @@ export function OneRepMaxPage({ meta }: { meta: CalculatorMeta }) {
             The estimate is the <strong>Epley</strong> equation on reps to failure. At 1 rep to failure it is the
             weight itself. Kilograms and pounds give the same answer in their own unit.
           </p>
-          {/* A zero-width wrapper at full minimum width keeps any long line in the Formula's own scroll at 375. */}
-          <div className="w-0 min-w-full">
-            <Formula>
-              {`reps to failure = reps + reps in reserve
+          <Formula>
+            {`reps to failure = reps + reps in reserve
 
 e1RM = weight × (1 + reps to failure / 30)
 e1RM = weight   (1 rep to failure)`}
-            </Formula>
-          </div>
+          </Formula>
           <p>
             The rep-max table runs Epley backwards. The load for r reps to failure is the e1RM divided by
             (1 + r / 30), and the e1RM itself at 1 rep. The percentage is that load as a share of the e1RM: 94 % for
             2 reps, 86 % for 5 and 75 % for 10.
           </p>
-          <div className="w-0 min-w-full">
-            <Formula>{`load(r) = e1RM / (1 + r / 30)    r = 2 to 12`}</Formula>
-          </div>
+          <Formula>{`load(r) = e1RM / (1 + r / 30)    r = 2 to 12`}</Formula>
           <p>
             <strong>Brzycki</strong> is shown for comparison up to 10 reps to failure, on the same reps to failure.
             From 2 to 9 reps it reads a little lower than Epley, and the two agree at 1 and at 10 reps. Past 10 the
             Brzycki denominator shrinks quickly and its estimate climbs, so it is left out.
           </p>
-          <div className="w-0 min-w-full">
-            <Formula>{`Brzycki = weight × 36 / (37 − reps to failure)`}</Formula>
-          </div>
+          <Formula>{`Brzycki = weight × 36 / (37 − reps to failure)`}</Formula>
           <p>
             Rep-based equations track measured maxes well on average but can miss for one person. LeSuer and
             colleagues compared seven equations, Epley and Brzycki among them, with measured one-rep maxes in
