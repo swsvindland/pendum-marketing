@@ -8,6 +8,8 @@ import type { App } from "./types";
 export const apps: App[] = [
   {
     slug: "omegafyt",
+    // TODO(owner): public builds exist (1.7.0, app-facts.json); confirm both store listings are live, then set
+    // stores.appStore and stores.googlePlay. Until then the page tells visitors to search the stores.
     released: true,
     name: "OmegaFyt",
     label: "OmegaFyt",

@@ -89,7 +89,11 @@ function QuantityInner({
     if (!draft || draft.inches !== undefined || (kind === "height" && draft.units !== units)) return "";
     return draft.text;
   });
-  const shown = check(text);
+  // A value converted on a unit switch is already valid in canonical units; its converted text can fall just
+  // outside the whole-number display bounds (20 kg is 44.09 lb under a 45 lb minimum), so it is not checked again
+  // until the visitor edits it. Only typed text is checked against the display bounds.
+  const [converted, setConverted] = useState(value.value !== null);
+  const shown = converted ? value : check(text);
   useSettle(shown, value, onChange);
   return (
     <Field
@@ -102,6 +106,7 @@ function QuantityInner({
       error={shown.error}
       onChange={(t) => {
         setText(t);
+        setConverted(false);
         onChange(check(t));
       }}
     />
@@ -130,7 +135,10 @@ function HeightImperial({ value, onChange, min, max, label }: QuantityProps) {
   });
   const [ft, setFt] = useState(start.ft);
   const [inches, setInches] = useState(start.inches);
-  const shown = checkHeightImperial(ft, inches, min, max);
+  // As in QuantityInner: a converted height (120 cm is 3 ft 11.2 in under a 4 ft 0 in minimum) stays valid until
+  // the visitor edits feet or inches.
+  const [converted, setConverted] = useState(value.value !== null);
+  const shown = converted ? value : checkHeightImperial(ft, inches, min, max);
   useSettle(shown, value, onChange);
   return (
     <fieldset className="flex min-w-0 flex-col gap-2">
@@ -146,6 +154,7 @@ function HeightImperial({ value, onChange, min, max, label }: QuantityProps) {
           value={ft}
           onChange={(t) => {
             setFt(t);
+            setConverted(false);
             onChange(checkHeightImperial(t, inches, min, max));
           }}
           placeholder="5"
@@ -159,6 +168,7 @@ function HeightImperial({ value, onChange, min, max, label }: QuantityProps) {
           value={inches}
           onChange={(t) => {
             setInches(t);
+            setConverted(false);
             onChange(checkHeightImperial(ft, t, min, max));
           }}
           placeholder="10"

@@ -34,9 +34,9 @@ export default function CalculatorsPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Calculators / Free"
+        eyebrow="Tools / Browser"
         title="Fitness calculators"
-        subtitle="Estimates for body composition, nutrition, strength, hydration and heart rate. Free, with no sign-up. Nothing you type is stored or sent."
+        subtitle="Estimates for body composition, nutrition, strength, hydration and heart rate. Free, with no sign-up. Nothing you type is sent anywhere."
       />
       <div className="mx-auto flex w-full max-w-data flex-col px-gutter py-10 md:py-12">
         {groups.map(({ category, items, tracked }) => (

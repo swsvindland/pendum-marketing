@@ -29,7 +29,6 @@ export function AppearanceChoice() {
   return (
     <Choices
       label="Appearance"
-      size="sm"
       value={value}
       onChange={setAppearance}
       values={[
