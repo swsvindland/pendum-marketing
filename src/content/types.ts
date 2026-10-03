@@ -33,6 +33,11 @@ export type StoreLinks = {
 
 export type App = {
   slug: AppSlug;
+  /**
+   * In the stores today. A released app with no link yet tells visitors to search the store; an unreleased one says
+   * "Coming soon". OmegaFyt has public builds (1.7.0); the four Vector apps have not shipped.
+   */
+  released: boolean;
   /** Full product name: "Vector Body", "OmegaFyt". */
   name: string;
   /** Home-screen label: "Body". */
@@ -77,5 +82,10 @@ export type CalculatorMeta = {
   category: CalculatorCategory;
   /** The app that tracks this over time; none when no app does. */
   app?: AppSlug;
+  /**
+   * The closing panel's heading when the app does not track this result itself, e.g. "Vector Lift tracks the
+   * estimated one-rep max behind your total". Defaults to "Track it over time in {app}".
+   */
+  track?: string;
   icon: IconName;
 };

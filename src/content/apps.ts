@@ -8,6 +8,7 @@ import type { App } from "./types";
 export const apps: App[] = [
   {
     slug: "omegafyt",
+    released: true,
     name: "OmegaFyt",
     label: "OmegaFyt",
     model: "subscription",
@@ -126,6 +127,7 @@ export const apps: App[] = [
   },
   {
     slug: "body",
+    released: false,
     name: "Vector Body",
     label: "Body",
     model: "purchase",
@@ -247,6 +249,7 @@ export const apps: App[] = [
   },
   {
     slug: "lift",
+    released: false,
     name: "Vector Lift",
     label: "Lift",
     model: "purchase",
@@ -370,6 +373,7 @@ export const apps: App[] = [
   },
   {
     slug: "macros",
+    released: false,
     name: "Vector Macros",
     label: "Macros",
     model: "purchase",
@@ -481,6 +485,7 @@ export const apps: App[] = [
   },
   {
     slug: "hydration",
+    released: false,
     name: "Vector Hydration",
     label: "Hydration",
     model: "purchase",
