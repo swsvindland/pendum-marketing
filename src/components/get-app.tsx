@@ -1,18 +1,27 @@
 import type { App } from "@/content/types";
-import { ButtonLink, Status, Text } from "@/vector";
+import { ButtonLink, Label, Status, Text, cn } from "@/vector";
 
-/** How an app is sold, as a status word (never a pill badge, §2.6). */
+/**
+ * How an app is sold, in words: a muted Label ("Subscription", "One-time purchase") with the price as readout meta
+ * once the owner sets one. A sales model is not a state, so it carries no status dot (§2.6) and spends none of the
+ * page's signal (§2.4).
+ */
 export function ModelStatus({ app, className }: { app: App; className?: string }) {
-  return app.model === "subscription" ? (
-    <Status state="live" label="Subscription" meta={app.price ?? undefined} className={className} />
-  ) : (
-    <Status state="ok" label="One-time purchase" meta={app.price ?? undefined} className={className} />
+  return (
+    <span className={cn("inline-flex items-center gap-2", className)}>
+      <Label>{app.model === "subscription" ? "Subscription" : "One-time purchase"}</Label>
+      {app.price ? <span className="type-readout-xs text-muted">{app.price}</span> : null}
+    </span>
   );
 }
 
+const stores = { appStore: "in the App Store", googlePlay: "on Google Play" } as const;
+const inStores = (key: string): key is keyof typeof stores => key in stores;
+
 /**
- * Store links for an app. A store without a URL yet renders as text ("App Store · Coming soon"), never as a dead
- * button. `primary` makes the first live link the page's one primary action.
+ * Store links for an app, never a dead button. `primary` makes the first live link the page's one primary action.
+ * A released app whose store link is not in the site yet says how to find it ("Search for OmegaFyt in the App
+ * Store"); an app that has not shipped lists each store as "Coming soon".
  */
 export function GetApp({ app, primary = false }: { app: App; primary?: boolean }) {
   const links = [
@@ -24,6 +33,9 @@ export function GetApp({ app, primary = false }: { app: App; primary?: boolean }
   ];
   const live = links.filter((l) => l.href);
   const pending = links.filter((l) => !l.href);
+  // A released app is in the stores: say where to look. The web address is only ever linked, never searched for.
+  const searchable = app.released ? pending.flatMap((l) => (inStores(l.key) ? [stores[l.key]] : [])) : [];
+  const comingSoon = pending.filter((l) => !(app.released && inStores(l.key)));
   return (
     <div className="flex flex-col gap-3">
       {live.length ? (
@@ -42,16 +54,21 @@ export function GetApp({ app, primary = false }: { app: App; primary?: boolean }
           ))}
         </div>
       ) : null}
-      {pending.length ? (
+      {searchable.length ? (
+        <Text variant="small" tone="secondary">
+          Search for {app.name} {searchable.join(" or ")}.
+        </Text>
+      ) : null}
+      {comingSoon.length ? (
         <ul className="flex flex-wrap gap-x-6 gap-y-2" aria-label="Availability">
-          {pending.map((l) => (
+          {comingSoon.map((l) => (
             <li key={l.key}>
               <Status state="idle" label={l.label} meta="Coming soon" />
             </li>
           ))}
         </ul>
       ) : null}
-      {!live.length ? (
+      {!app.released && !live.length ? (
         <Text variant="caption" tone="muted">
           Store links appear here at launch.
         </Text>

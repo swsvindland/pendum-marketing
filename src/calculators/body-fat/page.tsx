@@ -13,7 +13,7 @@ export function BodyFatPage({ meta }: { meta: CalculatorMeta }) {
           <p>
             Hodgdon and Beckett fitted these equations for the US Navy in 1984, against underwater weighing in 602
             men and 214 women. The US Army prints the same equations in AR 600-9 (2019), Appendix B. This calculator
-            uses them as Vector Body does, with the same limits.
+            computes them as Vector Body does.
           </p>
           <p>
             Every measurement is converted to inches (cm ÷ 2.54) and the logarithms are base 10. The male equation
@@ -29,16 +29,23 @@ Female
     − 97.684 × log10(height) − 78.387`}
           </Formula>
           <p>
-            A result is kept only when it falls between 0 and 75 %. Measurements that give anything else, or a
-            circumference term of zero or less (an abdomen no larger than the neck), give no estimate. With a
-            weight, fat mass is weight × body fat % ÷ 100 and lean mass is the rest.
+            As in Vector Body, a result is kept only when it falls between 0 and 75 %. Measurements that give
+            anything else, or a circumference term of zero or less (an abdomen no larger than the neck), give no
+            estimate. With a weight, fat mass is weight × body fat % ÷ 100 and lean mass is the rest.
           </p>
           <p>
-            The result is rounded to one decimal and placed in the <strong>ACE body-fat categories</strong> as
-            Vector Body groups them. For men: very low below 6 % (the essential fat range), lean from 6.0 to 13.9 %
-            (the athlete range), typical from 14.0 to 24.9 % (ACE fitness and average together) and elevated from
-            25.0 % (ACE obese). For women: very low below 14 %, lean from 14.0 to 20.9 %, typical from 21.0 to 31.9 %
-            and elevated from 32.0 %. These are general comparisons, not personal targets.
+            The result is rounded to one decimal and placed in the <strong>ACE body-fat categories</strong>, with
+            the edges Vector Body uses. For men: very low below 6 % (ACE’s essential fat range is 2 to 5 %), lean
+            from 6.0 to 13.9 % (the athlete range), typical from 14.0 to 24.9 % (ACE fitness and average together)
+            and elevated from 25.0 % (ACE obese). For women: very low below 14 % (essential fat is 10 to 13 %), lean
+            from 14.0 to 20.9 %, typical from 21.0 to 31.9 % and elevated from 32.0 %. Very low covers the essential
+            fat range and anything below it; the result says which. These are general comparisons, not personal
+            targets.
+          </p>
+          <p>
+            The category follows the one-decimal value, so the number and its word always agree. Vector Body
+            applies the same edges to the unrounded value, so for a result less than 0.05 below an edge (24.96 %
+            for a man, shown as 25.0 %) the app names the category below the one shown here.
           </p>
           <p>
             The standard error of the estimate is 3 to 4 percentage points of body fat, so read one result as a

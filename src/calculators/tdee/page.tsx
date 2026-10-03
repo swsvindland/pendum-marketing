@@ -13,19 +13,20 @@ export function TdeePage({ meta }: { meta: CalculatorMeta }) {
       method={
         <>
           <p>
-            Resting energy, or basal metabolic rate, comes from the <strong>Mifflin-St Jeor equation</strong> in the
-            rounded form Vector Macros uses for a program&rsquo;s starting estimate. Imperial inputs are converted
-            exactly (1 lb = 0.45359237 kg, 1 in = 2.54 cm) first.
+            Resting energy is resting energy expenditure (REE) as the <strong>Mifflin-St Jeor equation</strong> predicts
+            it, in the simplified form for each sex that Vector Macros uses for a program&rsquo;s starting estimate.
+            Imperial inputs are converted exactly (1 lb = 0.45359237 kg, 1 in = 2.54 cm) first.
           </p>
           <Formula>
-            {`Resting (kcal/day) = 10 × weight (kg) + 6.25 × height (cm) − 5 × age (years) + s
+            {`Resting energy (kcal/day) = 10 × weight (kg) + 6.25 × height (cm) − 5 × age (years) + s
 s = +5 (male equation) or −161 (female equation)
-TDEE = round(resting × activity multiplier)`}
+TDEE = round(resting energy × activity multiplier)`}
           </Formula>
           <p>
-            The published equation uses 9.99 for weight and 4.92 for age, with 166 kcal between the male and female
-            forms. The rounded coefficients differ from it by a few kcal a day. The study measured 498 healthy adults
-            aged 19 to 78 by indirect calorimetry.
+            The paper gives two forms. The full regression uses 9.99 for weight and 4.92 for age, with 166 kcal between
+            men and women. The simplified form above is published alongside it, and its authors report that it predicts
+            as well. Over the accepted inputs the two differ by less than 8 kcal a day of resting energy. The study
+            measured 498 healthy adults aged 19 to 78 by indirect calorimetry.
           </p>
           <p>
             The <strong>activity multipliers</strong> are the conventional factors, not part of the Mifflin study:
@@ -44,7 +45,7 @@ TDEE = round(resting × activity multiplier)`}
           </p>
         </>
       }
-      caveat="An estimate for adults 18 and over. The equation predicts resting energy from size and age, not body composition, and the activity multipliers are coarse. Vector Macros starts from this estimate, then a weekly check-in compares your logged intake with your trend weight and proposes a change, which you accept or keep."
+      caveat="An estimate for adults 18 and over who are not pregnant or breastfeeding. The equation predicts resting energy from size and age, not body composition, and the activity multipliers are coarse. Vector Macros starts from this estimate, then a weekly check-in compares your logged intake with your trend weight and proposes a change, which you accept or keep."
       sources={[
         {
           label:

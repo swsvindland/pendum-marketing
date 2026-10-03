@@ -50,13 +50,16 @@ function PanelRoot({ tone = "default", inset = "md", href, as: As = "div", class
 
 /**
  * Eyebrow at start and meta (readoutXS, muted) at end, over a full-bleed 1pt separator. Eyebrows are nouns or
- * live context in DOMAIN / OBJECT form ("Record / Weight"), never a restatement of the title.
+ * live context in DOMAIN / OBJECT form ("Record / Weight"), never a restatement of the title. Without a title the
+ * eyebrow is the panel's heading (§5.1: at `titleLevel`, carrying `id`), so the heading list reaches the panel;
+ * `heading={false}` keeps it plain when the panel's body holds its own heading.
  */
 function PanelHeader({
   eyebrow,
   meta,
   title,
   titleLevel = 3,
+  heading = true,
   action,
   id,
 }: {
@@ -64,13 +67,22 @@ function PanelHeader({
   meta?: ReactNode;
   title?: string;
   titleLevel?: 2 | 3 | 4;
+  /** Without a title: the eyebrow is the panel's heading. False when the body has a heading of its own. */
+  heading?: boolean;
   action?: ReactNode;
   id?: string;
 }) {
+  const eyebrowIsHeading = !title && heading;
   return (
     <div className="-mx-4 flex flex-col gap-2 border-b border-separator px-4 pb-3 min-[600px]:-mx-6 min-[600px]:px-6">
       <div className="flex min-h-4 items-center justify-between gap-3">
-        <Label as="span">{eyebrow}</Label>
+        {eyebrowIsHeading ? (
+          <Label as={`h${titleLevel}`} id={id}>
+            {eyebrow}
+          </Label>
+        ) : (
+          <Label as="span">{eyebrow}</Label>
+        )}
         {meta ? (
           <span className="type-readout-xs text-muted">{meta}</span>
         ) : null}

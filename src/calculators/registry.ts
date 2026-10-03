@@ -1,30 +1,27 @@
-import type { ComponentType } from "react";
+import type { Metadata } from "next";
+import { pageMetadata } from "@/components/site/metadata";
+import { getCalculator, type CalculatorSlug } from "@/content/calculators";
 import type { CalculatorMeta } from "@/content/types";
-import { BmiPage } from "./bmi/page";
-import { BodyFatPage } from "./body-fat/page";
-import { FfmiPage } from "./ffmi/page";
-import { TdeePage } from "./tdee/page";
-import { MacrosPage } from "./macros/page";
-import { ProteinPage } from "./protein/page";
-import { CalorieDeficitPage } from "./calorie-deficit/page";
-import { OneRepMaxPage } from "./one-rep-max/page";
-import { PlatesPage } from "./plates/page";
-import { StrengthScorePage } from "./strength-score/page";
-import { WaterPage } from "./water/page";
-import { HeartRateZonesPage } from "./heart-rate-zones/page";
 
-/** Slug → page body. Every slug in content/calculators.ts has one; the route 404s on anything else. */
-export const calculatorPages: Record<string, ComponentType<{ meta: CalculatorMeta }>> = {
-  bmi: BmiPage,
-  "body-fat": BodyFatPage,
-  ffmi: FfmiPage,
-  tdee: TdeePage,
-  macros: MacrosPage,
-  protein: ProteinPage,
-  "calorie-deficit": CalorieDeficitPage,
-  "one-rep-max": OneRepMaxPage,
-  plates: PlatesPage,
-  "strength-score": StrengthScorePage,
-  water: WaterPage,
-  "heart-rate-zones": HeartRateZonesPage,
-};
+// Each calculator has its own static route, src/app/calculators/<slug>/page.tsx, so a page references only its own
+// tool and ships no other calculator's code. content/calculators.ts stays the one source of titles, descriptions,
+// the sitemap and the lists; these helpers read it for a route.
+
+/** The content entry for a route. The slug is typed, so a route for a calculator that is not listed fails to compile. */
+export function calculatorMeta(slug: CalculatorSlug): CalculatorMeta {
+  const meta = getCalculator(slug);
+  if (!meta) throw new Error(`No calculator "${slug}" in content/calculators.ts`);
+  return meta;
+}
+
+/**
+ * The route's metadata: the title and the list description, plus what is true of every calculator. Units are
+ * remembered in this browser, so the line is about what is typed, not "nothing stored".
+ */
+export function calculatorMetadata(meta: CalculatorMeta): Metadata {
+  return pageMetadata({
+    title: meta.title,
+    description: `${meta.description} Free, with no sign-up. Nothing you type is sent anywhere.`,
+    path: `/calculators/${meta.slug}`,
+  });
+}

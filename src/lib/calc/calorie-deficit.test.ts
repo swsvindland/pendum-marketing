@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  APP_PACE_RANGE,
   DEFAULT_PACE,
   MAX_WEEKS,
   PACES,
@@ -8,6 +9,7 @@ import {
   daysToGoal,
   direction,
   goalDate,
+  maintenanceFloor,
   projectGoal,
   weeklyRate,
 } from "./calorie-deficit";
@@ -29,11 +31,20 @@ function closedForm(current: number, goal: number, pct: number) {
 }
 
 describe("goal date", () => {
-  it("offers Vector Macros' paces", () => {
+  it("offers paces on Vector Macros' slider, with its defaults", () => {
     expect(PACES.lose).toEqual([0.25, 0.5, 0.75, 1]);
     expect(PACES.gain).toEqual([0.1, 0.25, 0.5]);
     expect(PACES.lose).toContain(DEFAULT_PACE.lose);
     expect(PACES.gain).toContain(DEFAULT_PACE.gain);
+    // The slider runs cut 0.1–1.5% and bulk 0.05–0.5% in 0.05 steps; every pace offered is a stop on it.
+    for (const dir of ["lose", "gain"] as const) {
+      const [min, max] = APP_PACE_RANGE[dir];
+      for (const p of PACES[dir]) {
+        expect(p).toBeGreaterThanOrEqual(min);
+        expect(p).toBeLessThanOrEqual(max);
+        expect(Math.abs(p / 0.05 - Math.round(p / 0.05))).toBeLessThan(1e-9);
+      }
+    }
   });
 
   it("finds the direction", () => {
@@ -105,6 +116,18 @@ describe("goal date", () => {
     expect(2600 + dailyCalorieChange(weeklyRate(80, 75, 0.5))).toBe(2160);
     expect(2600 + dailyCalorieChange(weeklyRate(80, 85, 0.25))).toBe(2820);
     expect(dailyCalorieChange(0)).toBe(0);
+  });
+
+  it("states the maintenance a deficit needs above Vector Macros' 1,500 kcal floor", () => {
+    // −440 kcal a day needs a maintenance of 1,940 kcal for intake to stay at 1,500.
+    expect(maintenanceFloor(dailyCalorieChange(weeklyRate(80, 75, 0.5)))).toBe(1940);
+    // 350 kg at 1%: 3.5 kg a week is −3,850 kcal a day, so 5,350 kcal.
+    expect(dailyCalorieChange(weeklyRate(350, 300, 1))).toBe(-3850);
+    expect(maintenanceFloor(-3850)).toBe(5350);
+    // A surplus or no change has no floor to state.
+    expect(maintenanceFloor(220)).toBeNull();
+    expect(maintenanceFloor(0)).toBeNull();
+    expect(maintenanceFloor(Number.NaN)).toBeNull();
   });
 
   it("dates the goal in local calendar days", () => {

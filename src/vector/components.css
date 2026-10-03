@@ -2,13 +2,14 @@
  * Vector kit, web edition: corrections to HeroUI v3's component CSS, the web counterpart of the native kit's
  * COMPONENTS block (tokens.css in vector-design/kit). HeroUI's styles are in @layer components, so these rules sit
  * in the same layer later in source order: at equal specificity they win over HeroUI's slot styles, and they still
- * lose to utilities, so a kit wrapper's className can refine them. Plain declarations on HeroUI slot classes only.
- * Where HeroUI's selector is more specific, the override repeats it.
+ * lose to utilities, so a kit wrapper's className can refine them. Plain declarations on HeroUI slot classes, plus
+ * the kit's own hooks (`kit-*`) where HeroUI has no slot. Where HeroUI's selector is more specific, the override
+ * repeats it.
  */
 
 @layer components {
-  /* 1. Buttons (§5.3, §7). Press is a colour change only: no scale. 44 minimum (52 at lg), labels wrap,
-        Inter 500 15/20, radius 4. Kit glyphs size themselves (Icon sets width and height inline). */
+  /* 1. Buttons (§5.3, §7). Press is a colour change only: no scale. 44 minimum (52 at lg) including the 1pt edge,
+        labels wrap, Inter 500 15/20, radius 4. Kit glyphs size themselves (Icon sets width and height inline). */
   .button {
     height: auto;
     min-height: 44px;
@@ -36,6 +37,13 @@
     min-height: 52px;
     padding: 14px 20px;
   }
+  /* The secondary (outline) edge is inside the box: 11 + 20 + 11 + 2 × 1 = 44, beside a 44 primary. */
+  .button--outline {
+    padding-block: 11px;
+  }
+  .button--lg.button--outline {
+    padding-block: 13px;
+  }
   .button--icon-only,
   .button--icon-only.button--sm,
   .button--icon-only.button--lg {
@@ -48,7 +56,8 @@
   }
 
   /* 2. Fields (§5.5). The label above in fieldLabel and foreground-secondary (it does not turn red: the error says
-        what is wrong), a 44 input with the 1pt field edge, body type, and the error as a danger start rule. */
+        what is wrong), a 44 input with the 1pt field edge (9 + 24 + 9 + 2 × 1), body type, and the error as a
+        danger start rule over `small` foreground text (ErrorText, §5.7). */
   .textfield,
   .select {
     gap: 8px;
@@ -75,23 +84,33 @@
     border-inline-start: 2px solid var(--danger);
     font-size: 14px;
     line-height: 20px;
+    color: var(--foreground);
   }
   .input {
     min-height: 44px;
-    padding: 10px 12px;
+    padding: 9px 12px;
     font-size: 16px;
     line-height: 24px;
+    transition:
+      background-color 150ms var(--ease-standard),
+      border-color 150ms var(--ease-standard);
   }
   .input[data-invalid="true"] {
     outline: none;
     border-color: var(--danger);
   }
-  .select__trigger {
+  /* The trigger leaves room at the end for the 20pt down glyph (12 + 20 + 8). */
+  .select__trigger,
+  .select__trigger:has(.select__indicator) {
     width: 100%;
     min-height: 44px;
-    padding: 10px 40px 10px 12px;
+    padding-block: 9px;
+    padding-inline: 12px 40px;
     font-size: 16px;
     line-height: 24px;
+    transition:
+      background-color 150ms var(--ease-standard),
+      border-color 150ms var(--ease-standard);
   }
   .select__value {
     font-size: 16px;
@@ -100,10 +119,13 @@
   .select__indicator {
     inset-inline-end: 12px;
     color: var(--muted);
+    transition-duration: 150ms;
+    transition-timing-function: var(--ease-standard);
   }
 
   /* 3. Overlays (§4.6, §7): overlay surface with a 1pt border, radius 4, the overlay shadow, and a fade only (no
-        zoom, no slide). Items are 44 minimum with a tint check for the selected one. */
+        zoom, no slide from any placement): enter 200 standard, exit 150 on the exit curve. Items are 44 minimum,
+        hover and press are a surface-secondary fill with no scale, and the selected one has a 17pt tint check. */
   .select__popover,
   .popover {
     border: 1px solid var(--border);
@@ -111,8 +133,12 @@
   }
   .select__popover[data-entering="true"],
   .select__popover[data-exiting="true"],
+  .select__popover[data-entering="true"][data-placement],
+  .select__popover[data-exiting="true"][data-placement],
   .popover[data-entering="true"],
-  .popover[data-exiting="true"] {
+  .popover[data-exiting="true"],
+  .popover[data-entering="true"][data-placement],
+  .popover[data-exiting="true"][data-placement] {
     --tw-enter-scale: 1;
     --tw-exit-scale: 1;
     --tw-enter-translate-x: 0;
@@ -120,19 +146,58 @@
     --tw-exit-translate-x: 0;
     --tw-exit-translate-y: 0;
   }
-  .list-box-item {
+  .select__popover[data-entering="true"],
+  .popover[data-entering="true"] {
+    --tw-duration: 200ms;
+    --tw-ease: var(--ease-standard);
+    transition-duration: 200ms;
+    transition-timing-function: var(--ease-standard);
+  }
+  .select__popover[data-exiting="true"],
+  .popover[data-exiting="true"] {
+    --tw-duration: 150ms;
+    --tw-ease: var(--ease-exit);
+    transition-duration: 150ms;
+    transition-timing-function: var(--ease-exit);
+  }
+  .select__popover [data-slot="list-box"] {
+    padding: 4px;
+  }
+  .list-box-item,
+  .select__popover [data-slot="list-box-item"],
+  .list-box-item:has(.list-box-item__indicator) {
     min-height: 44px;
-    padding: 10px 12px;
+    padding-block: 10px;
+    padding-inline: 12px 40px;
     font-size: 16px;
     line-height: 24px;
     border-radius: var(--radius-mark);
   }
+  .list-box-item:active,
+  .list-box-item[data-pressed="true"] {
+    transform: none;
+  }
+  @media (hover: hover) {
+    .list-box-item:hover,
+    .list-box-item[data-hovered="true"] {
+      background-color: var(--surface-secondary);
+    }
+  }
+  .list-box-item[data-pressed="true"] {
+    background-color: var(--surface-secondary);
+  }
   .list-box-item__indicator {
+    inset-inline-end: 12px;
+    width: auto;
+    height: auto;
     color: var(--tint);
+    transition-duration: 150ms;
+    transition-timing-function: var(--ease-standard);
   }
 
-  /* 4. Accordion (§5.6 row geometry): rows 44 minimum, px-4 py-3, the question in bodyStrong, separators inset 16,
-        pressed and hovered rows in surface-secondary, the answer in body foreground-secondary. */
+  /* 4. Accordion, the kit's Disclosures (§5.6 row geometry): rows 44 minimum, px-4 py-3, the question in
+        bodyStrong, separators inset 16, pressed and hovered rows in surface-secondary, the panel opening over 200
+        standard. The answer is body foreground-secondary, its paragraphs a column 12 apart, with links in tint. */
   .accordion__trigger {
     min-height: 44px;
     padding: 12px 16px;
@@ -141,6 +206,7 @@
     line-height: 24px;
     font-weight: 500;
     color: var(--foreground);
+    transition: background-color 100ms var(--ease-standard);
   }
   @media (hover: hover) {
     .accordion__trigger:hover:not([aria-expanded="true"]) {
@@ -152,13 +218,30 @@
     transition-duration: 150ms;
     transition-timing-function: var(--ease-standard);
   }
+  .accordion__panel {
+    transition:
+      height 200ms var(--ease-standard),
+      opacity 200ms var(--ease-standard);
+  }
   .accordion__body {
     font-size: 16px;
     line-height: 24px;
   }
   .accordion__body-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
     padding: 0 16px 16px;
     color: var(--foreground-secondary);
+  }
+  .accordion__body-inner strong {
+    color: var(--foreground);
+    font-weight: 500;
+  }
+  .accordion__body-inner a {
+    color: var(--tint);
+    text-decoration-line: underline;
+    text-underline-offset: 4px;
   }
   .accordion__item::after {
     inset-inline-start: 16px;
@@ -166,11 +249,49 @@
     inset-inline-end: 0;
     border-radius: 0;
   }
+  /* plain: on the canvas between 1pt rules, flush with the text column; answers keep 32 clear of the glyph. */
+  .kit-disclosures--plain .accordion__trigger {
+    padding-inline: 0;
+  }
+  .kit-disclosures--plain .accordion__body-inner {
+    padding-inline: 0 32px;
+  }
+  .kit-disclosures--plain .accordion__item::after {
+    inset-inline-start: 0;
+  }
 
   /* 5. Groups. The kit lays out its own cells (Choices segments, ChipRow chips), so HeroUI's stacked-list spacing
         between items goes. */
   .checkbox-group [data-slot="checkbox"],
   .radio-group[data-orientation="vertical"] [data-slot="radio"] {
     margin-top: 0;
+  }
+
+  /* 6. Focus (§4.5): one look on every HeroUI control, a 2pt tint outline at offset 2, in place of HeroUI's
+        box-shadow ring. An outline survives forced-colors mode (which drops box-shadows and repaints the outline
+        in a system colour), and it does not depend on the shadow list HeroUI builds from --field-shadow. Rows that
+        span a clipping container (Disclosures in a panel, items in the scrolling Select list) draw it inside.
+        Choices and ChipRow cells set the same outline with utilities (form/cell.ts). */
+  .button:focus-visible:not([data-focused]),
+  .button[data-focus-visible="true"],
+  .accordion__trigger:focus-visible:not([data-focused]),
+  .accordion__trigger[data-focus-visible="true"],
+  .select__trigger:focus-visible:not([data-focused]),
+  .select__trigger[data-focus-visible="true"],
+  .input:focus,
+  .input[data-focused="true"],
+  .input[data-invalid="true"]:focus,
+  .input[data-invalid="true"][data-focused="true"] {
+    box-shadow: none;
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  .list-box-item:focus-visible:not([data-focused]),
+  .list-box-item[data-focus-visible="true"],
+  .kit-disclosures--panel .accordion__trigger:focus-visible:not([data-focused]),
+  .kit-disclosures--panel .accordion__trigger[data-focus-visible="true"] {
+    box-shadow: none;
+    outline: 2px solid var(--focus);
+    outline-offset: -2px;
   }
 }

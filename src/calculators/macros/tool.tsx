@@ -8,6 +8,7 @@ import {
   EXPENDITURE_LIMITS,
   PACES,
   PROTEIN_LEVELS,
+  fastestCutPace,
   macroEnergy,
   macroPlan,
   macroShares,
@@ -15,15 +16,26 @@ import {
   type Goal,
   type MacroPlan,
 } from "@/lib/calc/macros";
-import { DEFAULT_ACTIVITY, PROFILE_LIMITS, tdee, type Activity, type Sex } from "@/lib/calc/tdee";
+import { DEFAULT_ACTIVITY, PROFILE_LIMITS, tdee, type Activity } from "@/lib/calc/tdee";
 import { KG_PER_LB, formatNumber, formatSigned, kgToLb } from "@/lib/units";
 import { Callout, ReadoutRow, Rule, Value } from "@/vector";
-import { Choices, Select } from "@/vector/form";
-import { EMPTY, HeightField, MassField, NumberField, UnitChoice, type Measure } from "../shared/fields";
-import { ToolLayout } from "../shared/frame";
+import { Choices } from "@/vector/form/choices";
+import { Select } from "@/vector/form/select";
+import {
+  ActivitySelect,
+  AgeField,
+  EMPTY,
+  HeightField,
+  MassField,
+  NumberField,
+  SexChoice,
+  UnitChoice,
+  type Measure,
+  type Sex,
+} from "../shared/fields";
 import { EmptyResult, HeroValue, ReadoutTable, ResultPanel } from "../shared/results";
+import { ToolLayout } from "../shared/tool-layout";
 import { useUnits, type UnitSystem } from "../shared/use-units";
-import { ActivitySelect, AgeField, SexChoice } from "../tdee/profile-fields";
 import { SplitBar } from "./split-bar";
 
 const GOALS: readonly { value: Goal; label: string }[] = [
@@ -37,9 +49,12 @@ const PACE_HINT = {
   bulk: "Recommended 0.1–0.25% a week. A pace above 0.25% adds more fat alongside the muscle.",
 } as const;
 
+/** A weekly pace as the options read it: 0.5 → "0.5%". */
+const pct = (pace: number) => `${formatNumber(pace, 2, 0)}%`;
+
 /** "0.5" → 0.5% of body weight a week. */
 const paceOptions = (goal: "cut" | "bulk") =>
-  PACES[goal].options.map((p) => ({ value: String(p), label: `${formatNumber(p, 2, 0)}% of body weight a week` }));
+  PACES[goal].options.map((p) => ({ value: String(p), label: `${pct(p)} of body weight a week` }));
 
 /** Protein levels in g/kg, with g/lb first in imperial. */
 function proteinOptions(units: UnitSystem) {
@@ -53,7 +68,21 @@ const kcal = (n: number) => formatNumber(n);
 const RANGE = `${kcal(CALORIE_LIMITS.min)}–${kcal(CALORIE_LIMITS.max)} kcal a day`;
 
 /** Why no targets were generated, as a title and a sentence that says what to change. */
-function blockedMessage(plan: MacroPlan, goal: Goal, estimated: boolean): { title: string; body: string } {
+function blockedMessage(
+  plan: MacroPlan,
+  {
+    goal,
+    pace,
+    estimated,
+    fastestCut,
+  }: {
+    goal: Goal;
+    pace: number;
+    estimated: boolean;
+    /** The fastest cut pace offered here that keeps a week of cutting at or above BMI 18.5, or null. */
+    fastestCut: number | null;
+  }
+): { title: string; body: string } {
   const outside = { title: "Outside the coached range" };
   const maintenance = estimated ? "Your maintenance estimate" : "Your maintenance";
   switch (plan.blocked) {
@@ -62,11 +91,23 @@ function blockedMessage(plan: MacroPlan, goal: Goal, estimated: boolean): { titl
         title: "Cut not offered",
         body: "At your height and weight, BMI is under 18.5. A cut below that range needs professional guidance, so no cut targets are generated. Choose Maintain or Bulk.",
       };
+    case "goal-underweight":
+      return fastestCut === null
+        ? {
+            title: "Cut not offered",
+            body: "At your height and weight, a week at any pace offered here takes your BMI under 18.5. Vector Macros does not set a cut goal under BMI 18.5, so no cut targets are generated. Choose Maintain or Bulk.",
+          }
+        : {
+            title: "Pace not offered",
+            body: `A week at ${pct(pace)} of body weight takes your BMI under 18.5. Vector Macros does not set a cut goal under BMI 18.5, so no targets are generated at this pace. Choose ${pct(fastestCut)} a week or slower.`,
+          };
     case "expenditure-low":
     case "expenditure-high":
       return {
         ...outside,
-        body: `${maintenance} is ${kcal(Math.round(plan.expenditure))} kcal a day. Vector Macros starts programs from ${kcal(EXPENDITURE_LIMITS.min)}–${kcal(EXPENDITURE_LIMITS.max)} kcal a day, so no targets are generated from it.`,
+        body: `${maintenance} is ${kcal(Math.round(plan.expenditure))} kcal a day. Vector Macros starts programs from ${kcal(EXPENDITURE_LIMITS.min)}–${kcal(EXPENDITURE_LIMITS.max)} kcal a day, so no targets are generated from it.${
+          estimated ? " If you know your maintenance calories, enter them." : ""
+        }`,
       };
     case "calories-low":
       return {
@@ -110,12 +151,14 @@ export function MacrosTool() {
       ? tdee({ sex, age: age.value, heightCm: h, weightKg: w, activity })
       : null;
   const entered = maintenance.value;
-  const expenditure = entered ?? estimate;
+  // An invalid entry waits for a correction; the estimate stands in only when the field is empty.
+  const expenditure = maintenance.error ? null : (entered ?? estimate);
+  const weeklyPace = goal === "maintain" ? 0 : Number(pace);
   const plan =
     expenditure !== null && w !== null && h !== null
       ? macroPlan({
           goal,
-          pace: goal === "maintain" ? 0 : Number(pace),
+          pace: weeklyPace,
           weightKg: w,
           heightCm: h,
           proteinPerKg: Number(protein),
@@ -124,11 +167,19 @@ export function MacrosTool() {
         })
       : null;
   const t = plan?.targets ?? null;
-  const blocked = plan && !t ? blockedMessage(plan, goal, entered === null) : null;
+  const blocked =
+    plan && !t && w !== null && h !== null
+      ? blockedMessage(plan, {
+          goal,
+          pace: weeklyPace,
+          estimated: entered === null,
+          fastestCut: plan.blocked === "goal-underweight" ? fastestCutPace(w, h) : null,
+        })
+      : null;
 
   const mass = (kg: number) => (units === "metric" ? kg : kgToLb(kg));
   const massUnit = units === "metric" ? "kg" : "lb";
-  const paceLabel = goal === "maintain" ? null : `${formatNumber(Number(pace), 2, 0)}% of body weight a week`;
+  const paceLabel = goal === "maintain" ? null : `${pct(weeklyPace)} of body weight a week`;
   const caption = goal === "maintain" ? "Maintenance" : `${goal === "cut" ? "Cut" : "Bulk"} at ${paceLabel}`;
 
   const maintenanceRow =
@@ -214,11 +265,17 @@ export function MacrosTool() {
           }
         >
           {!plan ? (
-            <EmptyResult>
-              {entered !== null
-                ? "Enter your height and weight to see your targets."
-                : "Enter your sex, age, height and weight to see your targets."}
-            </EmptyResult>
+            maintenance.error ? (
+              <EmptyResult code="Check input">
+                Correct the maintenance calories, or leave them empty to use the estimate from your profile.
+              </EmptyResult>
+            ) : (
+              <EmptyResult>
+                {entered !== null
+                  ? "Enter your height and weight to see your targets."
+                  : "Enter your sex, age, height and weight to see your targets."}
+              </EmptyResult>
+            )
           ) : !t ? (
             <>
               <Callout tone="warning" title={blocked?.title}>

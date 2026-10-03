@@ -1,14 +1,23 @@
 "use client";
 
 import { useState } from "react";
-import { DEFAULT_ACTIVITY, PROFILE_LIMITS, restingEnergy, tdeeByActivity, type Activity, type Sex } from "@/lib/calc/tdee";
+import { DEFAULT_ACTIVITY, PROFILE_LIMITS, restingEnergy, tdeeByActivity, type Activity } from "@/lib/calc/tdee";
 import { formatNumber } from "@/lib/units";
-import { Icon, ReadoutRow, Value } from "@/vector";
-import { EMPTY, HeightField, MassField, UnitChoice, type Measure } from "../shared/fields";
-import { ToolLayout } from "../shared/frame";
+import { ReadoutRow, Value } from "@/vector";
+import {
+  ActivitySelect,
+  AgeField,
+  EMPTY,
+  HeightField,
+  MassField,
+  SexChoice,
+  UnitChoice,
+  type Measure,
+  type Sex,
+} from "../shared/fields";
 import { EmptyResult, HeroValue, ReadoutTable, ResultPanel } from "../shared/results";
+import { ToolLayout } from "../shared/tool-layout";
 import { useUnits } from "../shared/use-units";
-import { ActivitySelect, AgeField, SexChoice } from "./profile-fields";
 
 export function TdeeTool() {
   const [units, setUnits] = useUnits();
@@ -72,7 +81,7 @@ export function TdeeTool() {
                 caption={`Estimated maintenance, ${level.label.toLowerCase()}`}
               />
               <div>
-                <ReadoutRow label="Resting energy (BMR)">
+                <ReadoutRow label="Resting energy">
                   <Value value={formatNumber(resting)} unit="kcal/day" size="s" />
                 </ReadoutRow>
               </div>
@@ -80,16 +89,9 @@ export function TdeeTool() {
                 caption="TDEE at each activity level"
                 columns={["Activity", "Multiplier", "TDEE"]}
                 highlight={chosen}
-                rows={levels.map((l, i) => [
-                  <span key="label" className="inline-flex items-center gap-2">
-                    {l.label}
-                    {i === chosen ? (
-                      <>
-                        <Icon name="check" size={16} tone="tint" />
-                        <span className="sr-only"> (your level)</span>
-                      </>
-                    ) : null}
-                  </span>,
+                highlightLabel="your level"
+                rows={levels.map((l) => [
+                  l.label,
                   <Value key="multiplier" value={formatNumber(l.multiplier, 3, 1)} size="s" tone="secondary" />,
                   <Value key="kcal" value={formatNumber(l.kcal)} unit="kcal" size="s" />,
                 ])}

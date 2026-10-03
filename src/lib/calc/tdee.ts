@@ -34,8 +34,9 @@ export function activityLevel(activity: Activity) {
 }
 
 /**
- * Resting energy in kcal/day, unrounded: the simplified Mifflin-St Jeor equation the app uses,
- * 10 × kg + 6.25 × cm − 5 × years, plus 5 for the male equation or minus 161 for the female one.
+ * Resting energy expenditure in kcal/day, unrounded: the simplified Mifflin-St Jeor form for each sex, published with
+ * the full regression and used by the app. 10 × kg + 6.25 × cm − 5 × years, plus 5 for the male equation or minus
+ * 161 for the female one. Over PROFILE_LIMITS it is within 7.65 kcal of the full regression.
  */
 export function restingEnergy(p: Profile): number {
   return 10 * p.weightKg + 6.25 * p.heightCm - 5 * p.age + (p.sex === "male" ? 5 : -161);

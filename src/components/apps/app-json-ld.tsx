@@ -32,7 +32,13 @@ function offerFor(price: string | null) {
 
 /**
  * SoftwareApplication structured data for an app page, rendered as a plain script tag (Next's JSON-LD guide).
- * `<` is escaped so a string in the content can never close the tag. `offers` is left out while the price is null.
+ * `<` is escaped so a string in the content can never close the tag.
+ *
+ * Kept minimal and valid schema.org on purpose. Google's Software App rich result needs `offers.price` and also an
+ * `aggregateRating` or `review`; the site has no ratings and never invents one, so Search Console lists these
+ * items as not eligible for that rich result whether or not a price is set. The markup still names the app, its
+ * category, systems and page for search engines. `offers` is left out while the price is null, never set to 0:
+ * an unset price is not a free app.
  */
 export function AppJsonLd({ app }: { app: App }) {
   const offers = offerFor(app.price);

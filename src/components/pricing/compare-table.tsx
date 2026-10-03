@@ -13,7 +13,9 @@ type Row = { topic: string; subscription: Cell; purchase: Cell };
 
 /**
  * Every cell is checked against docs/sources/app-facts.json. Where the four Vector apps differ (backups, the
- * watch apps) the note says which app does what, so no row claims more than every app ships.
+ * watch apps) the note says which app does what, so no row claims more than every app ships. The first column is
+ * the app, OmegaFyt, not the OmegaFyt Pro plan: the web version is never sold as part of a plan, and its address
+ * is not public yet, so it is described rather than marked as a yes.
  */
 const rows: Row[] = [
   {
@@ -33,12 +35,16 @@ const rows: Row[] = [
   },
   {
     topic: "Devices",
-    subscription: { text: "iPhone, Android and the web", note: "The same account on all three." },
+    subscription: { text: "iPhone and Android", note: "The same account on both." },
     purchase: { text: "iPhone and Android", note: "Lift and Hydration add an Apple Watch app." },
   },
   {
     topic: "Web access",
-    subscription: { text: "Yes", mark: "yes", note: "The same account and records in a browser." },
+    // TODO(owner): once the web address is public (apps.ts stores.web), drop "The address is published at launch."
+    subscription: {
+      text: "Same account in a browser",
+      note: "The address is published at launch. The web version has no checkout.",
+    },
     purchase: { text: "No", mark: "no", note: "There is no web version." },
   },
   {
@@ -85,7 +91,7 @@ const rows: Row[] = [
 ];
 
 const columns = [
-  { key: "subscription", label: "OmegaFyt Pro" },
+  { key: "subscription", label: "OmegaFyt" },
   { key: "purchase", label: "Vector apps" },
 ] as const;
 
@@ -125,7 +131,7 @@ export function CompareTable() {
     <div className="overflow-clip rounded-panel border border-border bg-surface">
       <table role="table" className="block w-full border-separate border-spacing-0 md:table md:table-fixed">
         <caption className="sr-only">
-          OmegaFyt Pro compared with the four Vector apps: Body, Lift, Macros and Hydration.
+          OmegaFyt compared with the four Vector apps: Body, Lift, Macros and Hydration.
         </caption>
         <thead role="rowgroup" className="sticky top-16 z-10 block bg-surface md:table-header-group">
           <tr role="row" className="grid grid-cols-2 md:table-row">

@@ -7,26 +7,19 @@ import {
   GLASS_ML,
   WATER_LIMITS,
   WATER_REFERENCES,
-  cups,
-  glasses,
   waterEstimate,
+  waterReadout,
   type ReferenceBody,
-  type Sex,
 } from "@/lib/calc/water";
-import { formatNumber, formatSigned, mlToFlOz } from "@/lib/units";
+import { formatNumber, formatSigned } from "@/lib/units";
 import { Heading, Note, ReadoutRow, Text, Value } from "@/vector";
-import { Choices } from "@/vector/form";
-import { EMPTY, MassField, NumberField, type Measure } from "../shared/fields";
-import { ToolLayout } from "../shared/frame";
+import { Choices } from "@/vector/form/choices";
+import { EMPTY, MassField, NumberField, SexChoice, type Measure, type Sex } from "../shared/fields";
 import { EmptyResult, HeroValue, ReadoutTable, ResultPanel } from "../shared/results";
+import { ToolLayout } from "../shared/tool-layout";
 import { useUnits, type UnitSystem } from "../shared/use-units";
 
 type Climate = "temperate" | "hot";
-
-const SEXES: readonly { value: Sex | ""; label: string }[] = [
-  { value: "female", label: "Female" },
-  { value: "male", label: "Male" },
-];
 
 const CLIMATES: readonly { value: Climate; label: string }[] = [
   { value: "temperate", label: "Temperate" },
@@ -45,7 +38,6 @@ function WaterUnitChoice({ units, onChange }: { units: UnitSystem; onChange: (u:
   return (
     <Choices
       label="Units"
-      size="sm"
       value={units}
       onChange={onChange}
       values={[
@@ -81,16 +73,18 @@ export function WaterTool() {
       : null;
 
   const metric = units === "metric";
-  /** A volume for a row: mL to the nearest 10, or whole US fl oz. */
-  const volume = (ml: number) => (metric ? formatNumber(Math.round(ml / 10) * 10) : formatNumber(Math.round(mlToFlOz(ml))));
-  const added = (ml: number) => (metric ? formatSigned(Math.round(ml / 10) * 10) : formatSigned(mlToFlOz(ml)));
-  const volumeUnit = metric ? "mL" : "fl oz";
-  /** A daily amount: litres to one decimal, or whole US fl oz. */
-  const daily = (ml: number) => (metric ? formatNumber(ml / 1000, 1, 1) : formatNumber(Math.round(mlToFlOz(ml))));
-  const dailyDiff = (ml: number) => (metric ? formatSigned(ml / 1000, 1) : formatSigned(mlToFlOz(ml)));
+  // Every number as shown, worked from the shown values, so the parts, the total and the differences agree.
+  const shown = estimate && sex ? waterReadout(estimate, sex, metric ? "metric" : "us") : null;
+  /** A part: mL to the nearest 10, or US fl oz to 0.1. */
+  const partDigits = metric ? 0 : 1;
+  const part = (n: number) => formatNumber(n, partDigits, partDigits);
+  const partUnit = metric ? "mL" : "fl oz";
+  /** A daily amount: liters to 0.1, or whole US fl oz. */
+  const dailyDigits = metric ? 1 : 0;
+  const daily = (n: number) => formatNumber(n, dailyDigits, dailyDigits);
   const dailyUnit = metric ? "L" : "fl oz";
 
-  const bound = estimate?.bound && sex ? WATER_REFERENCES[estimate.bound] : null;
+  const bound = estimate?.bound ? WATER_REFERENCES[estimate.bound] : null;
 
   return (
     <ToolLayout
@@ -99,14 +93,7 @@ export function WaterTool() {
         <>
           <WaterUnitChoice units={units} onChange={setUnits} />
           <ChoiceWithNote note="Chooses the reference intakes that bound the estimate.">
-            <Choices
-              label="Sex"
-              values={SEXES}
-              value={sex}
-              onChange={(v) => {
-                if (v) setSex(v);
-              }}
-            />
+            <SexChoice value={sex} onChange={setSex} />
           </ChoiceWithNote>
           <MassField
             label="Body weight"
@@ -137,12 +124,10 @@ export function WaterTool() {
           eyebrow="Result / Fluid"
           meta="Per day"
           announce={
-            estimate
-              ? `About ${daily(estimate.total)} ${metric ? "liters" : "fluid ounces"} a day from drinks, an estimate.`
-              : undefined
+            shown ? `About ${daily(shown.total)} ${metric ? "liters" : "fluid ounces"} a day from drinks, an estimate.` : undefined
           }
         >
-          {!estimate || !sex ? (
+          {!shown || !sex ? (
             exercise.error ? (
               <EmptyResult code="Check input">Correct the exercise time, or leave it empty, to see the estimate.</EmptyResult>
             ) : (
@@ -151,29 +136,29 @@ export function WaterTool() {
           ) : (
             <>
               <HeroValue
-                value={daily(estimate.total)}
+                value={daily(shown.total)}
                 unit={dailyUnit}
                 caption="Fluid from drinks each day. An estimate, not a requirement."
               />
               <div>
                 <ReadoutRow label="Baseline for your weight">
-                  <Value value={volume(estimate.ml)} unit={volumeUnit} size="s" />
+                  <Value value={part(shown.baseline)} unit={partUnit} size="s" />
                 </ReadoutRow>
                 <ReadoutRow label="Exercise">
-                  <Value value={added(estimate.exercise)} unit={volumeUnit} size="s" />
+                  <Value value={formatSigned(shown.exercise, partDigits)} unit={partUnit} size="s" />
                 </ReadoutRow>
                 <ReadoutRow label="Hot climate">
-                  <Value value={added(estimate.heat)} unit={volumeUnit} size="s" />
+                  <Value value={formatSigned(shown.heat, partDigits)} unit={partUnit} size="s" />
                 </ReadoutRow>
                 <ReadoutRow label={metric ? `Glasses of ${formatNumber(GLASS_ML)} mL` : `Cups of ${formatNumber(CUP_FL_OZ)} fl oz`}>
-                  <Value value={formatNumber(metric ? glasses(estimate.total) : cups(estimate.total), 1, 1)} size="s" />
+                  <Value value={formatNumber(shown.servings, 1, 1)} size="s" />
                 </ReadoutRow>
               </div>
-              {bound && estimate.bound ? (
+              {bound && estimate?.bound && shown.note ? (
                 <Note>
-                  At your weight, {formatNumber(DRINKS_ML_PER_KG)} mL per kg gives {volume(estimate.perKg)} {volumeUnit},{" "}
+                  At your weight, {formatNumber(DRINKS_ML_PER_KG)} mL per kg gives {part(shown.note.perKg)} {partUnit},{" "}
                   {estimate.bound === "efsa" ? "below" : "above"} the {bound.label} figure for {PEOPLE[sex]}, so the
-                  baseline is {bound.label}’s {volume(estimate.ml)} {volumeUnit}.
+                  baseline is {bound.label}’s {part(shown.note.bound)} {partUnit}.
                 </Note>
               ) : null}
 
@@ -188,13 +173,13 @@ export function WaterTool() {
                     [
                       "Total water",
                       ...REFERENCE_KEYS.map((key) => (
-                        <Value key={key} value={daily(WATER_REFERENCES[key][sex].total)} unit={dailyUnit} size="s" tone="secondary" />
+                        <Value key={key} value={daily(shown.references[key].total)} unit={dailyUnit} size="s" tone="secondary" />
                       )),
                     ],
                     [
                       "From drinks",
                       ...REFERENCE_KEYS.map((key) => (
-                        <Value key={key} value={daily(WATER_REFERENCES[key][sex].drinks)} unit={dailyUnit} size="s" />
+                        <Value key={key} value={daily(shown.references[key].drinks)} unit={dailyUnit} size="s" />
                       )),
                     ],
                     [
@@ -202,7 +187,7 @@ export function WaterTool() {
                       ...REFERENCE_KEYS.map((key) => (
                         <Value
                           key={key}
-                          value={dailyDiff(estimate.total - WATER_REFERENCES[key][sex].drinks)}
+                          value={formatSigned(shown.references[key].difference, dailyDigits)}
                           unit={dailyUnit}
                           size="s"
                         />

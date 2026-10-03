@@ -12,10 +12,10 @@ import {
   repsToFailure,
 } from "@/lib/calc/one-rep-max";
 import { formatNumber, kgToLb, lbToKg } from "@/lib/units";
-import { Icon, Note, ReadoutRow, Value } from "@/vector";
+import { Note, ReadoutRow, Value } from "@/vector";
 import { EMPTY, MassField, NumberField, UnitChoice, type Measure } from "../shared/fields";
-import { ToolLayout } from "../shared/frame";
 import { EmptyResult, HeroValue, ReadoutTable, ResultPanel } from "../shared/results";
+import { ToolLayout } from "../shared/tool-layout";
 import { useUnits } from "../shared/use-units";
 
 // 1 lb as the floor, so the range reads "1 to 500 kg" and "1 to 1,102 lb".
@@ -35,7 +35,12 @@ export function OneRepMaxTool() {
   const rows = estimate !== null ? repMaxTable(estimate) : [];
   const mass = (kg: number) => (units === "metric" ? kg : kgToLb(kg));
   const massUnit = units === "metric" ? "kg" : "lb";
+  // The table counts reps to failure, so the visitor's set is the row for reps + reserve (5 with 2 in reserve: 7).
   const own = toFailure !== null && toFailure <= REP_MAX_ROWS ? toFailure - 1 : undefined;
+  const ownLabel =
+    reps.value !== null && rir.value
+      ? `your set, ${formatNumber(reps.value)} ${reps.value === 1 ? "rep" : "reps"} with ${formatNumber(rir.value)} in reserve`
+      : "your set";
 
   return (
     <ToolLayout
@@ -100,19 +105,12 @@ export function OneRepMaxTool() {
                 <Note>Brzycki is left out at this many reps to failure. The method says why.</Note>
               ) : null}
               <ReadoutTable
-                caption="Estimated rep maxes from 1 to 12 reps"
-                columns={["Reps", "Load", "% of 1RM"]}
+                caption="Estimated rep maxes from 1 to 12 reps to failure"
+                columns={["Reps to failure", "Load", "% of 1RM"]}
                 highlight={own}
-                rows={rows.map((row, i) => [
-                  <span key="reps" className="inline-flex items-center gap-2">
-                    <Value value={formatNumber(row.reps)} size="s" />
-                    {i === own ? (
-                      <>
-                        <Icon name="check" size={16} tone="tint" />
-                        <span className="sr-only"> (your set)</span>
-                      </>
-                    ) : null}
-                  </span>,
+                highlightLabel={ownLabel}
+                rows={rows.map((row) => [
+                  <Value key="reps" value={formatNumber(row.reps)} size="s" />,
                   <Value key="load" value={formatNumber(mass(row.load), 1)} unit={massUnit} size="s" />,
                   <Value key="percent" value={formatNumber(row.fraction * 100)} unit="%" size="s" tone="secondary" />,
                 ])}

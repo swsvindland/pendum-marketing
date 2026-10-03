@@ -1,5 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { macroEnergy, macroPlan, macroShares, splitMacros, targetCalories, weeklyRate, type DietStyle, type MacroInput } from "./macros";
+import {
+  cutGuard,
+  fastestCutPace,
+  macroEnergy,
+  macroPlan,
+  macroShares,
+  splitMacros,
+  targetCalories,
+  weeklyRate,
+  type DietStyle,
+  type MacroInput,
+} from "./macros";
 import { tdee } from "./tdee";
 
 /** The profile in Vector Macros' tests: 180 cm, 80 kg, 1.6 g/kg, balanced. */
@@ -79,12 +90,35 @@ describe("macroPlan", () => {
   });
 
   it("does not generate a cut below a BMI of 18.5", () => {
-    // 59.9 kg at 180 cm is BMI 18.49; 60 kg is 18.52.
+    // 59.9 kg at 180 cm is BMI 18.49.
     expect(macroPlan({ ...base, goal: "cut", pace: 0.5, weightKg: 59.9, expenditure: 2200 }).blocked).toBe("underweight");
-    expect(macroPlan({ ...base, goal: "cut", pace: 0.5, weightKg: 60, expenditure: 2200 }).blocked).toBeNull();
     // Maintenance and a bulk stay open at the same weight.
     expect(macroPlan({ ...base, weightKg: 59.9, expenditure: 2200 }).blocked).toBeNull();
     expect(macroPlan({ ...base, goal: "bulk", pace: 0.25, weightKg: 59.9, expenditure: 2200 }).blocked).toBeNull();
+  });
+
+  it("does not generate a cut whose first week ends under a BMI of 18.5", () => {
+    // The app refuses a goal under BMI 18.5; here the goal is the weight after a week at the pace.
+    // 54 kg at 170 cm is BMI 18.69. A week at 1% ends at 53.46 kg, BMI 18.498; at 0.75%, 53.595 kg, BMI 18.545.
+    const lean = { ...base, goal: "cut" as const, weightKg: 54, heightCm: 170, expenditure: 2400 };
+    expect(macroPlan({ ...lean, pace: 1 })).toMatchObject({ blocked: "goal-underweight", targets: null });
+    // −0.405 kg × 7700 / 7 = −445.5; 2400 − 445.5 = 1954.5 → 1955. P = 86; F = (1955 − 344) × 0.40 / 9 = 71.6 → 72;
+    // C = (1955 − 344 − 648) / 4 = 240.75 → 241.
+    expect(macroPlan({ ...lean, pace: 0.75 }).targets).toEqual({ calories: 1955, protein: 86, fat: 72, carbs: 241 });
+    expect(fastestCutPace(54, 170)).toBe(0.75);
+    expect(cutGuard(54, 170, 1)).toBe("goal-underweight");
+    expect(cutGuard(54, 170, 0.75)).toBeNull();
+    // 60 kg at 180 cm is BMI 18.52; a week even at 0.25% ends at 59.85 kg, BMI 18.47, so no pace offered here fits.
+    expect(macroPlan({ ...base, goal: "cut", pace: 0.25, weightKg: 60, expenditure: 2200 }).blocked).toBe("goal-underweight");
+    expect(fastestCutPace(60, 180)).toBeNull();
+    // Under BMI 18.5 now is its own reason, and no pace fits either.
+    expect(cutGuard(59.9, 180, 0.25)).toBe("underweight");
+    expect(fastestCutPace(59.9, 180)).toBeNull();
+    // Every pace fits the app's test profile.
+    expect(fastestCutPace(80, 180)).toBe(1);
+    // A bulk and maintenance are not guarded.
+    expect(macroPlan({ ...base, goal: "bulk", pace: 0.25, weightKg: 60, expenditure: 2200 }).blocked).toBeNull();
+    expect(macroPlan({ ...base, weightKg: 60, expenditure: 2200 }).blocked).toBeNull();
   });
 
   it("keeps calories within 1,500–5,000 kcal, edges included", () => {

@@ -1,0 +1,81 @@
+"use client";
+
+import { Label } from "@heroui/react/label";
+import { Radio } from "@heroui/react/radio";
+import { RadioGroup } from "@heroui/react/radio-group";
+import { cn } from "../cn";
+import { Icon } from "../icon";
+import { cell } from "./cell";
+
+// The inner radius of the 4pt container under its 1pt edge, for the first and last cells.
+const startCorners = "rounded-s-[calc(var(--radius-control)-1px)]";
+const endCorners = "rounded-e-[calc(var(--radius-control)-1px)]";
+
+/**
+ * Choices (§5.5): the one segmented control, on HeroUI's RadioGroup (radios, arrow keys move the selection). A 1pt
+ * border-strong edge, radius 4, equal cells with 1pt dividers (logical, so they mirror under RTL by themselves).
+ * Selected is a signal fill, #071017 label at 600 and a 12pt check in a reserved leading slot, so widths never
+ * shift. At most 4 options (6 when `mono`). The container does not clip: the end cells round their own corners,
+ * so the 2pt focus outline (offset 2) shows on every side.
+ */
+export function Choices<T extends string>({
+  label,
+  showLabel = true,
+  values,
+  value,
+  onChange,
+  size = "md",
+  mono = false,
+  className,
+}: {
+  label: string;
+  showLabel?: boolean;
+  values: readonly { value: T; label: string }[];
+  value: T;
+  onChange: (value: T) => void;
+  size?: "md" | "sm";
+  mono?: boolean;
+  className?: string;
+}) {
+  return (
+    <RadioGroup
+      value={value}
+      onChange={(v) => onChange(v as T)}
+      orientation="horizontal"
+      className={cn("flex min-w-0 flex-col gap-2", className)}
+    >
+      <Label className={cn(!showLabel && "sr-only")}>{label}</Label>
+      <div className="grid auto-cols-fr grid-flow-col divide-x divide-border-strong rounded-control border border-border-strong">
+        {values.map((option, i) => (
+          <Radio key={option.value} value={option.value} className="min-w-0 items-stretch gap-0">
+            <Radio.Content
+              className={({ isSelected, isFocusVisible }) =>
+                cn(
+                  cell({ isSelected, isFocusVisible }),
+                  "px-2 text-center",
+                  size === "sm" ? "min-h-9" : "min-h-11",
+                  i === 0 && startCorners,
+                  i === values.length - 1 && endCorners
+                )
+              }
+            >
+              {({ isSelected }) => (
+                <>
+                  <Icon name="check" size={12} className={isSelected ? "opacity-100" : "opacity-0"} />
+                  <span
+                    className={cn(
+                      mono ? "type-readout-xs" : size === "sm" ? "type-small" : "type-h4",
+                      isSelected && !mono && "[font-weight:600]"
+                    )}
+                  >
+                    {option.label}
+                  </span>
+                </>
+              )}
+            </Radio.Content>
+          </Radio>
+        ))}
+      </div>
+    </RadioGroup>
+  );
+}

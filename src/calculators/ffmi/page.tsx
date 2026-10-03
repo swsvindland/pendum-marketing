@@ -36,6 +36,12 @@ normalized = FFMI + 6.1 × (1.8 − height)`}
             women aged 18 to 34, in 5,635 white adults in Switzerland measured by bioelectrical impedance.
           </p>
           <p>
+            The band follows the one-decimal value, so the number and its word always agree. Vector Body applies
+            the same bands to the unrounded FFMI, so a result that rounds onto a band edge from outside it can be
+            named differently there: 20.04 for a man shows as 20.0 and is typical here, and higher lean mass in the
+            app.
+          </p>
+          <p>
             FFMI is only as good as the body-fat figure behind it. An error of 3 points of body fat moves FFMI by
             about 0.7 for a person with a BMI of 24.
           </p>

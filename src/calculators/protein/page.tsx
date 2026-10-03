@@ -25,7 +25,8 @@ Lose fat      1.6–2.4   2.2
 RDA           0.8
 
 lean mass = weight × (1 − fat % / 100)
-deficit: 2.3–3.1 g per kg lean mass`}
+deficit: 2.3–3.1 g per kg lean mass
+         (shown when 3.1 × lean mass > target)`}
           </Formula>
           <p>
             <strong>Maintain.</strong> The International Society of Sports Nutrition puts 1.4 to 2.0 g/kg a day as
@@ -34,14 +35,22 @@ deficit: 2.3–3.1 g per kg lean mass`}
           </p>
           <p>
             <strong>Build muscle.</strong> The same meta-analysis placed that point at 1.62 g/kg, with a 95%
-            confidence interval reaching 2.20 g/kg, so 1.6 to 2.2 g/kg covers most people who train. The target is
-            2.0 g/kg, the setting nearest the middle of that range.
+            confidence interval of 1.03 to 2.20 g/kg, so the authors suggest about 2.2 g/kg for people seeking the
+            most lean mass from resistance training. Schoenfeld and Aragon use the same 1.6 to 2.2 g/kg range. The
+            target is 2.0 g/kg, the setting nearest the middle of that range.
           </p>
           <p>
-            <strong>Lose fat.</strong> In a calorie deficit, recommendations for people who train run from 1.6 to
-            2.4 g/kg (Hector and Phillips). Needs rise with a bigger deficit and with leanness, so the target is
-            2.2 g/kg. A review of lean, resistance-trained people in a deficit found 2.3 to 3.1 g per kg of lean
-            mass (Helms and colleagues). Enter a body-fat percentage to see that range in grams.
+            <strong>Lose fat.</strong> In a calorie deficit, recommendations for athletes run from 1.6 to 2.4 g/kg
+            (Hector and Phillips). Needs rise with a bigger deficit and with leanness, so the target is 2.2 g/kg. A
+            review of lean, resistance-trained athletes in a deficit found 2.3 to 3.1 g per kg of lean mass (Helms
+            and colleagues). Enter a body-fat percentage to see that range in grams; it is shown when its top is
+            above the target, which is the case below about 29% body fat.
+          </p>
+          <p>
+            <strong>High body fat.</strong> Every range here is per kg of total body weight. When the target comes
+            to more than 3.1 g per kg of lean mass, the top of the Helms range, the result says so: that happens past
+            about 29% body fat for Lose fat, 35% for Build muscle and 48% for Maintain. In that case, base the number
+            on a goal weight.
           </p>
           <p>
             <strong>Per meal.</strong> About 0.4 g/kg a meal over four or more meals reaches 1.6 g/kg a day
@@ -54,7 +63,7 @@ deficit: 2.3–3.1 g per kg lean mass`}
           </p>
         </>
       }
-      caveat="For healthy adults who train. People with kidney disease, or on a medical or prescribed diet, should ask a clinician before raising protein. Pregnancy and breastfeeding change protein needs."
+      caveat="For healthy adults who train. The ranges come from studies of people who train and scale with total body weight, so with a high body-fat percentage they run high: base the number on a goal weight instead. People with kidney disease, or on a medical or prescribed diet, should ask a clinician before raising protein. Pregnancy and breastfeeding change protein needs."
       sources={[
         {
           label:

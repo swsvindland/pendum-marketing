@@ -14,7 +14,7 @@ export function AppPrivacy({ app }: { app: App }) {
       <div className="mx-auto grid max-w-data items-start gap-8 px-gutter py-12 md:py-16 lg:grid-cols-[1fr_1.2fr] lg:gap-10">
         <div className="flex flex-col gap-3">
           <Icon name="lock" size={24} tone="foreground" className="mb-1" />
-          <Label>{offline ? "Privacy / Records" : "Privacy / Account"}</Label>
+          <Label>{`Privacy / ${app.name}`}</Label>
           <Heading level={2} id="privacy-title">
             {offline ? "Your records live on your phone" : "One account, synced through a server"}
           </Heading>

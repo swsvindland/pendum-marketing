@@ -37,6 +37,8 @@ function PlanPanel({
       <Panel.Header
         eyebrow={eyebrow}
         meta={<Value value={String(count)} unit={count === 1 ? "app" : "apps"} size="xs" tone="muted" />}
+        // The plan name (h2) in the body is the panel's heading, so the eyebrow stays plain.
+        heading={false}
       />
       <Panel.Body className="gap-6">
         <div className="flex flex-col gap-4">
@@ -84,8 +86,10 @@ function PlanPanel({
 
 /**
  * The two models side by side (one column on phones). Every line comes from docs/sources/app-facts.json:
- * OmegaFyt Pro is bought only in the iOS and Android apps, its plans and any trial come from the store, and the
- * Vector apps have no account, no server and no network code.
+ * OmegaFyt Pro is bought only in the iPhone and Android apps, its plans and any trial come from the store, and the
+ * Vector apps have no account, no server and no network code. "Included" lists only what the subscription buys
+ * in the public 1.7.0 build: not the free guided setup, and not the web version, which the fact sheet says is never
+ * sold as part of a plan.
  */
 export function PlanPanels() {
   const omegafyt = subscriptionApp;
@@ -101,8 +105,8 @@ export function PlanPanels() {
           price={priceText(omegafyt)}
           summary="Training and nutrition, planned and tracked together in one account."
           included={[
-            { icon: "sync", text: "One account with the same records on iPhone, Android and the web" },
-            { icon: "energy", text: "A guided plan with calorie and macro targets from your trend weight" },
+            { icon: "sync", text: "One account with the same records on iPhone and Android" },
+            { icon: "energy", text: "Daily calorie and macro targets that follow your 7-day trend weight" },
             { icon: "lift", text: "Training programs with sets that progress each week" },
             { icon: "food", text: "Food database search and barcode scan" },
             { icon: "chart", text: "Reports for body, strength and energy expenditure" },

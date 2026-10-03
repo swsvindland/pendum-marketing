@@ -26,7 +26,8 @@ days       = ceil(weeks × 7)
 goal date  = today + days
 
 first week = min(distance, step)
-kcal a day = first week × 7,700 / 7`}
+kcal a day = first week × 7,700 / 7
+maintenance ≥ 1,500 + kcal a day   (lose)`}
           </Formula>
           <p>
             For 80 kg to 75 kg at 0.5% a week, the first step is 0.4 kg. After 12 weeks the weight is 75.33 kg, the
@@ -46,10 +47,19 @@ kcal a day = first week × 7,700 / 7`}
             kilogram lost also depends on body fat: it is lower for leaner people, who lose more lean tissue (Hall
             2008). The NIDDK Body Weight Planner models both for a longer plan.
           </p>
-          <p>At 520 weeks or more, no date is shown, as in the app.</p>
+          <p>
+            <strong>Limits.</strong> Vector Macros does not set a daily target under 1,500 kcal, and it does not plan
+            a cut when the current or goal weight is a BMI under 18.5. This page asks for neither your maintenance nor
+            your height, so it applies neither. For a cut it states the maintenance the pace needs to keep intake at
+            1,500 kcal or more: for the example, 1,500 + 440 = 1,940 kcal a day.
+          </p>
+          <p>
+            At 520 weeks or more, no date is shown, as in the app. Under a week, the time is given in days. A change
+            that rounds to 0.00 kg or lb counts as no change.
+          </p>
         </>
       }
-      caveat="An estimate for planning, not a prediction. Water, food in the gut and changes in daily activity move the scale from week to week. For adults who are not pregnant or breastfeeding. A medical condition or a low starting weight calls for a clinician."
+      caveat="An estimate for planning, not a prediction. Water, food in the gut and changes in daily activity move the scale from week to week. For adults who are not pregnant or breastfeeding. A medical condition, a low starting weight or a goal weight under the healthy range for your height (a BMI under 18.5) calls for a clinician."
       sources={[
         {
           label: "NIDDK. Body Weight Planner.",

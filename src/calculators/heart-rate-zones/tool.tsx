@@ -4,10 +4,10 @@ import { useState } from "react";
 import { HR_LIMITS, estimateMaxHr, foxMaxHr, heartRateZones } from "@/lib/calc/heart-rate-zones";
 import { formatNumber } from "@/lib/units";
 import { Heading, Note, ReadoutRow, Value } from "@/vector";
-import { Choices } from "@/vector/form";
-import { EMPTY, NumberField, type Measure } from "../shared/fields";
-import { ToolLayout } from "../shared/frame";
+import { Choices } from "@/vector/form/choices";
+import { AgeField, EMPTY, NumberField, type Measure } from "../shared/fields";
 import { EmptyResult, HeroValue, ReadoutTable, ResultPanel } from "../shared/results";
+import { ToolLayout } from "../shared/tool-layout";
 
 type MaxSource = "estimate" | "known";
 
@@ -36,11 +36,7 @@ export function HeartRateZonesTool() {
       inputsEyebrow="Input / Age and heart rate"
       inputs={
         <>
-          <NumberField
-            label="Age"
-            unit="years"
-            integer
-            noun="an age"
+          <AgeField
             min={HR_LIMITS.age.min}
             max={HR_LIMITS.age.max}
             value={age}
@@ -51,12 +47,9 @@ export function HeartRateZonesTool() {
             label="Maximum heart rate"
             values={SOURCES}
             value={source}
-            onChange={(s) => {
-              // The measured field unmounts with "Estimate from age"; an invalid entry would come back as an error
-              // over an empty field, so it is cleared. A valid one is kept and shown again.
-              if (measured.error) setMeasured(EMPTY);
-              setSource(s);
-            }}
+            // The measured field unmounts with "Estimate from age" and keeps its Measure: a valid entry, or an
+            // invalid one's draft, is shown again (and checked again) when "I know mine" comes back.
+            onChange={setSource}
           />
           {known ? (
             <NumberField

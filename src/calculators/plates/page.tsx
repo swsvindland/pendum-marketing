@@ -12,7 +12,7 @@ export function PlatesPage({ meta }: { meta: CalculatorMeta }) {
         <>
           <p>
             The calculator loads a barbell the way Vector Lift does. Plates go on in pairs, one on each side, and
-            pairs of every plate you mark as available are assumed. A load is the bar plus both sides.
+            any number of pairs of each plate you mark as available is assumed. A load is the bar plus both sides.
           </p>
           <Formula>{`load = bar + 2 × (plates on one side)`}</Formula>
           <p>
@@ -25,6 +25,12 @@ export function PlatesPage({ meta }: { meta: CalculatorMeta }) {
             Every sum is worked in hundredths of the unit, so 2.5 and 1.25 add up exactly. The calculator lists every
             load the plates can make and takes the one nearest the target; when two are equally near, it takes the
             lighter. A target under the empty bar has nothing to load.
+          </p>
+          <p>
+            Here the calculator differs from Vector Lift on purpose. Lift searches loads only up to the target
+            × 1.25 + 10, so with only large plates it can settle on a lighter load when a heavier one is nearer: a
+            95 lb target on a 45 lb bar with only 45 lb plates gives 45 lb in Lift and 135 lb here. When a 5 kg or
+            5 lb plate or a lighter one is available, as in both default sets, the two give the same load.
           </p>
           <p>
             Each side uses the fewest plates that make the load, heaviest first against the collar. That can differ

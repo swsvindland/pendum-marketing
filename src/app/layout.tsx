@@ -1,25 +1,12 @@
 import type { Metadata, Viewport } from "next";
-import localFont from "next/font/local";
-import { appearanceScript } from "@/components/appearance";
 import { InlineScript } from "@/components/inline-script";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { site } from "@/content/site";
+import { fontVariables } from "@/fonts";
+import { appearanceScript } from "@/vector/appearance";
+import { VectorProvider } from "@/vector/provider";
 import "./globals.css";
-
-// The kit's two bundled faces (design-system §3.1): Inter (variable, 400/500/600) and IBM Plex Mono Regular.
-const inter = localFont({
-  src: "../fonts/Inter.ttf",
-  variable: "--font-inter",
-  weight: "100 900",
-  display: "swap",
-});
-const plexMono = localFont({
-  src: "../fonts/IBMPlexMono-Regular.ttf",
-  variable: "--font-plex-mono",
-  weight: "400",
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
@@ -28,6 +15,8 @@ export const metadata: Metadata = {
   applicationName: site.name,
   openGraph: { type: "website", siteName: site.name, title: site.title, description: site.description },
   twitter: { card: "summary_large_image" },
+  // A build with no real origin (site.ts falls back to localhost) is never indexed.
+  ...(site.indexable ? {} : { robots: { index: false, follow: false } }),
 };
 
 export const viewport: Viewport = {
@@ -39,22 +28,24 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${inter.variable} ${plexMono.variable}`} suppressHydrationWarning>
+    <html lang="en" className={fontVariables} suppressHydrationWarning>
       <head>
         <InlineScript html={appearanceScript} />
       </head>
       <body className="flex min-h-dvh flex-col">
-        <a
-          href="#main"
-          className="sr-only z-50 rounded-control bg-surface px-4 py-3 type-button text-tint focus:not-sr-only focus:fixed focus:start-4 focus:top-4 focus:border focus:border-border-strong"
-        >
-          Skip to content
-        </a>
-        <SiteHeader />
-        <main id="main" className="flex flex-1 flex-col">
-          {children}
-        </main>
-        <SiteFooter />
+        <VectorProvider>
+          <a
+            href="#main"
+            className="sr-only z-50 rounded-control bg-surface type-button text-tint focus:not-sr-only focus:fixed focus:start-4 focus:top-4 focus:inline-flex focus:min-h-11 focus:items-center focus:border focus:border-border-strong focus:px-4"
+          >
+            Skip to content
+          </a>
+          <SiteHeader />
+          <main id="main" className="flex flex-1 flex-col">
+            {children}
+          </main>
+          <SiteFooter />
+        </VectorProvider>
       </body>
     </html>
   );

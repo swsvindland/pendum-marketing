@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import {
+  LEAN_MASS_DEFICIT,
   MEAL_COUNTS,
   PER_MEAL_G_PER_KG,
   PROTEIN_GOALS,
@@ -13,13 +14,16 @@ import {
 } from "@/lib/calc/protein";
 import { KG_PER_LB, formatNumber, kgToLb } from "@/lib/units";
 import { Heading, Note, ReadoutRow, Value } from "@/vector";
-import { Choices } from "@/vector/form";
+import { Choices } from "@/vector/form/choices";
 import { EMPTY, MassField, NumberField, UnitChoice, type Measure } from "../shared/fields";
-import { ToolLayout } from "../shared/frame";
+import { ToolLayout } from "../shared/tool-layout";
 import { EmptyResult, HeroValue, ReadoutTable, ResultPanel } from "../shared/results";
 import { useUnits } from "../shared/use-units";
 
-const GOALS = (Object.keys(PROTEIN_GOALS) as ProteinGoal[]).map((value) => ({ value, label: PROTEIN_GOALS[value].label }));
+// Typed with "" so the Choices can start with no goal selected; the result waits for one.
+const GOALS: readonly { value: ProteinGoal | ""; label: string }[] = (Object.keys(PROTEIN_GOALS) as ProteinGoal[]).map(
+  (value) => ({ value, label: PROTEIN_GOALS[value].label })
+);
 
 const CAPTION: Record<ProteinGoal, string> = {
   maintain: "A day, to keep the muscle you have.",
@@ -33,12 +37,11 @@ const range = (min: number, max: number, digits = 0) => `${formatNumber(min, dig
 export function ProteinTool() {
   const [units, setUnits] = useUnits();
   const [weight, setWeight] = useState<Measure>(EMPTY);
-  const [goal, setGoal] = useState<ProteinGoal>("build");
+  const [goal, setGoal] = useState<ProteinGoal | "">("");
   const [bodyFat, setBodyFat] = useState<Measure>(EMPTY);
 
-  const result = weight.value !== null ? proteinRange(weight.value, goal) : null;
-  const lean = weight.value !== null && bodyFat.value !== null ? leanMassView(weight.value, bodyFat.value, goal) : null;
-  const spec = PROTEIN_GOALS[goal];
+  const result = weight.value !== null && goal ? proteinRange(weight.value, goal) : null;
+  const lean = weight.value !== null && bodyFat.value !== null && goal ? leanMassView(weight.value, bodyFat.value, goal) : null;
   const metric = units === "metric";
   const massUnit = metric ? "kg" : "lb";
   const rateUnit = metric ? "g/kg" : "g/lb";
@@ -54,7 +57,14 @@ export function ProteinTool() {
         <>
           <UnitChoice units={units} onChange={setUnits} />
           <MassField label="Body weight" units={units} value={weight} onChange={setWeight} min={35} max={350} />
-          <Choices label="Goal" values={GOALS} value={goal} onChange={setGoal} />
+          <Choices
+            label="Goal"
+            values={GOALS}
+            value={goal}
+            onChange={(v) => {
+              if (v) setGoal(v);
+            }}
+          />
           <NumberField
             label="Body fat"
             unit="%"
@@ -75,14 +85,18 @@ export function ProteinTool() {
             result ? `${result.min} to ${result.max} grams of protein a day, with a target of ${result.target} grams.` : undefined
           }
         >
-          {!result || weight.value === null ? (
-            <EmptyResult>Enter your body weight to see your daily protein range.</EmptyResult>
+          {!result || !goal || weight.value === null ? (
+            <EmptyResult>Enter your body weight and choose a goal to see your daily protein range.</EmptyResult>
           ) : (
             <>
               <HeroValue value={range(result.min, result.max)} unit="g" caption={CAPTION[goal]} />
               <div>
                 <ReadoutRow label={metric ? "Per kg of body weight" : "Per lb of body weight"}>
-                  <Value value={range(rate(spec.min), rate(spec.max), rateDigits)} unit={rateUnit} size="s" />
+                  <Value
+                    value={range(rate(PROTEIN_GOALS[goal].min), rate(PROTEIN_GOALS[goal].max), rateDigits)}
+                    unit={rateUnit}
+                    size="s"
+                  />
                 </ReadoutRow>
                 <ReadoutRow label="Daily target">
                   <Value value={formatNumber(result.target)} unit="g" size="s" />
@@ -115,8 +129,16 @@ export function ProteinTool() {
               </div>
               {lean?.deficit ? (
                 <Note>
-                  Lean, trained people in a deficit may need more, up to the lean-mass range. The need rises with
-                  leanness and with the size of the deficit.
+                  Lean, trained people in a deficit may need more than the target, up to {formatNumber(lean.deficit.max)} g
+                  a day at the top of the lean-mass range. The need rises with leanness and with the size of the deficit.
+                </Note>
+              ) : null}
+              {lean?.pastLeanTop ? (
+                <Note>
+                  The {formatNumber(result.target)} g target is more than{" "}
+                  {formatNumber(rate(LEAN_MASS_DEFICIT.max), rateDigits)} {rateUnit} of lean mass ({formatNumber(lean.leanTop)} g),
+                  the top of the range Helms and colleagues found for lean athletes in a deficit. With a high body-fat
+                  percentage, base the number on a goal weight: enter it as your body weight.
                 </Note>
               ) : null}
 

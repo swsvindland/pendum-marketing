@@ -14,7 +14,7 @@ const connected: Difference[] = [
   {
     icon: "person",
     title: "One account",
-    body: "Sign in on your phone or in a browser, and your records are there.",
+    body: "Sign in on iPhone or Android, and your records are there.",
   },
   {
     icon: "cloud",
@@ -23,8 +23,9 @@ const connected: Difference[] = [
   },
   {
     icon: "globe",
-    title: "iPhone, Android and the web",
-    body: "The same account opens in a web browser.",
+    title: "iPhone and Android",
+    // TODO(owner): the web address is not public yet. Once it is (apps.ts stores.web), say it opens there.
+    body: "A web version opens the same account in a browser. Its address is published at launch.",
   },
   {
     icon: "sync",
@@ -127,7 +128,7 @@ export function OwnershipModels() {
   return (
     <Section
       id="models"
-      eyebrow="Plans / Ownership"
+      eyebrow="Subscription / One-time purchase"
       title="Two ways to own it"
       intro="A subscription that keeps one account in step across your devices, or apps you buy once that keep their records on your phone."
     >

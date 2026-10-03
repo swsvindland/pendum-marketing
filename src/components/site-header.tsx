@@ -13,7 +13,7 @@ export function SiteHeader() {
         <div className="flex items-center gap-2">
           <NavLinks items={nav} />
           <ButtonLink href="/calculators" variant="secondary" className="hidden sm:inline-flex">
-            Free calculators
+            Try a calculator
           </ButtonLink>
           <MobileNav items={nav} />
         </div>

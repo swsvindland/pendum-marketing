@@ -38,12 +38,12 @@ export function HomeHero() {
   return (
     <PageHeader
       hero
-      eyebrow="Fitness apps / Vector series"
+      eyebrow="Fitness apps / iPhone and Android"
       title="Precise fitness tracking. Subscribe, or buy once."
       subtitle={
         <>
-          OmegaFyt is a subscription with one account that syncs across iPhone, Android and the web. Vector Body,
-          Lift, Macros and Hydration are each a one-time purchase: they work offline and need no account.
+          OmegaFyt is a subscription with one account that syncs across iPhone and Android. Vector Body, Lift,
+          Macros and Hydration are each a one-time purchase: they work offline and need no account.
         </>
       }
       actions={

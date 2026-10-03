@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: PageProps<"/apps/[slug]">): P
 
 /**
  * One app: header with the store links and the specimen, what it does, what it works with, where it keeps
- * records, the spec sheet and its caveats, then the calculators and the rest of the series.
+ * records, the spec sheet and its caveats, then the calculators and the other apps.
  */
 export default async function AppPage({ params }: PageProps<"/apps/[slug]">) {
   const { slug } = await params;
@@ -39,8 +39,9 @@ export default async function AppPage({ params }: PageProps<"/apps/[slug]">) {
       <AppJsonLd app={app} />
       <AppHeader app={app} />
 
+      {/* No eyebrow on Features: "Features" over "What it does" would only restate the heading (§10). */}
       {app.features.length ? (
-        <Section id="features" eyebrow={`${app.label} / Features`} title="What it does">
+        <Section id="features" title="What it does">
           <FeatureGrid items={app.features} fallbackIcon={app.glyph} />
         </Section>
       ) : null}

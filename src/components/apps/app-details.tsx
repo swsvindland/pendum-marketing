@@ -1,8 +1,9 @@
 import type { ReactNode } from "react";
 import { Section } from "@/components/page";
+import { listFormat } from "@/components/site/format";
 import type { App } from "@/content/types";
 import { Callout, Panel, ReadoutRow, Text, Value } from "@/vector";
-import { listFormat, modelLabel } from "./model";
+import { modelLabel } from "./model";
 
 /**
  * A ReadoutRow for a value that is a sentence: the label above and the text below, start-aligned, on the same
@@ -23,12 +24,16 @@ function ProseRow({ label, children }: { label: string; children: ReactNode }) {
 
 /**
  * The spec sheet: how the app is sold, the account, platforms, languages and units as readout rows in a panel,
- * beside the caveats that travel with its claims ("Good to know"). Two columns from 1024, stacked below.
+ * beside the caveats that travel with its claims ("Good to know"). Two columns from 1024, stacked below. The
+ * section has no eyebrow: the heading says all there is to say (§10).
+ *
+ * An app with a web version (stores.web present) gets a Web row. Until its address is set, the row describes it
+ * and says when the address comes, so nothing reads as a place to open today.
  */
 export function AppDetails({ app }: { app: App }) {
   const languages = app.languages;
   return (
-    <Section id="details" eyebrow={`${app.label} / Specification`} title="Details" bordered>
+    <Section id="details" title="Details" bordered>
       <div className="grid items-start gap-6 lg:grid-cols-2">
         <Panel>
           <Panel.Body>
@@ -54,6 +59,13 @@ export function AppDetails({ app }: { app: App }) {
                     {listFormat.format(app.platforms)}
                   </Text>
                 </ReadoutRow>
+              ) : null}
+              {app.stores.web !== undefined ? (
+                <ProseRow label="Web">
+                  {app.stores.web
+                    ? "The same account in a web browser. It has no checkout."
+                    : "The same account in a web browser. The address is published at launch."}
+                </ProseRow>
               ) : null}
               {languages.length === 1 ? (
                 <ReadoutRow label="Language">

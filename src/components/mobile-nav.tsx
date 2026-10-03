@@ -3,14 +3,22 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
-import { Icon, IconButton, cn } from "@/vector";
+import { IconButton } from "@/vector/button";
+import { cn } from "@/vector/cn";
+import { Icon } from "@/vector/icon";
+import { navCurrent } from "./nav-links";
 
-/** Under 768: a menu button that opens the nav as a full-width panel under the header. Escape closes it. */
+/**
+ * Under 768: a menu button that opens the nav as a full-width panel under the header. It closes on Escape (focus
+ * returns to the button), on a tap outside, when focus moves on past it, on a link (the current page's too) and on
+ * navigation. The button keeps one name, "Menu"; aria-expanded says whether it is open.
+ */
 export function MobileNav({ items }: { items: readonly { href: string; label: string }[] }) {
   const [open, setOpen] = useState(false);
   const [openedAt, setOpenedAt] = useState<string | null>(null);
   const pathname = usePathname();
   const id = useId();
+  const root = useRef<HTMLDivElement>(null);
   const button = useRef<HTMLButtonElement>(null);
 
   // Navigating closes the menu (the path it was opened on is no longer the current one).
@@ -24,16 +32,31 @@ export function MobileNav({ items }: { items: readonly { href: string; label: st
         button.current?.focus();
       }
     };
+    const onPointerDown = (e: PointerEvent) => {
+      if (!root.current?.contains(e.target as Node)) setOpen(false);
+    };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.removeEventListener("pointerdown", onPointerDown);
+    };
   }, [shown]);
 
   return (
-    <div className="md:hidden">
+    <div
+      ref={root}
+      className="md:hidden"
+      onBlur={(e) => {
+        // Focus moved to something outside the button and the panel (not to another window).
+        const next = e.relatedTarget as Node | null;
+        if (shown && next && !e.currentTarget.contains(next)) setOpen(false);
+      }}
+    >
       <IconButton
         ref={button}
         icon={shown ? "close" : "menu"}
-        label={shown ? "Close menu" : "Open menu"}
+        label="Menu"
         aria-expanded={shown}
         aria-controls={id}
         onPress={() => {
@@ -49,15 +72,16 @@ export function MobileNav({ items }: { items: readonly { href: string; label: st
       >
         <ul className="flex flex-col px-gutter py-2">
           {items.map((item) => {
-            const current = pathname === item.href || pathname.startsWith(`${item.href}/`);
+            const { inSection, ariaCurrent } = navCurrent(pathname, item.href);
             return (
               <li key={item.href} className="border-t border-separator first:border-t-0">
                 <Link
                   href={item.href}
-                  aria-current={current ? "page" : undefined}
+                  aria-current={ariaCurrent}
+                  onClick={() => setOpen(false)}
                   className={cn(
                     "flex min-h-12 items-center justify-between type-body-strong",
-                    current ? "text-tint" : "text-foreground"
+                    inSection ? "text-tint" : "text-foreground"
                   )}
                 >
                   {item.label}

@@ -1,6 +1,8 @@
 // Plates for a barbell load, as Vector Lift loads a bar (lift-track src/lib/loads.ts: defaultGym, achievableLoads,
 // roundLoad, platesPerSide). Loads are in the gym's own unit, kg or lb, because plates do not convert; inside, every
-// sum is in hundredths of that unit so 2.5 + 1.25 adds up exactly. Pairs of every available plate are assumed.
+// sum is in hundredths of that unit so 2.5 + 1.25 adds up exactly. Any number of pairs of each available plate is
+// assumed. One deliberate difference: the nearest-load search always reaches the next load above the target (see
+// roundLoad), where Lift's stops at target × 1.25 + 10.
 
 export type PlateUnit = "kg" | "lb";
 
@@ -38,14 +40,27 @@ export function achievableLoads(bar: number, plates: number[], upTo: number): nu
 }
 
 /**
+ * How far up the search for a load runs. Vector Lift stops at target × 1.25 + 10, which can leave out the next load
+ * above the target when only large plates are available (a 45 lb bar with only 45s: 95 lb finds 45, not the nearer
+ * 135). Any number of the lightest plate can go on, so the next load above the target is at most target + 2 × that
+ * plate; the search reaches whichever is further. With a lightest plate of 5 or under, as in both default sets,
+ * that is inside Lift's + 10 and the limit is Lift's own.
+ */
+export function searchLimit(target: number, plates: number[]): number {
+  const lightest = plates.reduce((min, p) => (p > 0 ? Math.min(min, p) : min), Infinity);
+  const lift = target * 1.25 + 10;
+  return Number.isFinite(lightest) ? Math.max(lift, target + 2 * lightest) : lift;
+}
+
+/**
  * The load nearest the target that the bar and plates can make, as Vector Lift's `roundLoad` does for a barbell.
  * "nearest" breaks ties toward the lighter load; "down" never exceeds the target, or gives the lightest load (the
- * empty bar) when nothing is at or under it. Searches loads up to target × 1.25 + 10. 0 when the target is not
- * positive.
+ * empty bar) when nothing is at or under it. The search always includes the next load above the target (see
+ * searchLimit). 0 when the target is not positive.
  */
 export function roundLoad(target: number, bar: number, plates: number[], mode: "nearest" | "down" = "nearest"): number {
   if (!(target > 0)) return 0;
-  const loads = achievableLoads(bar, plates, target * 1.25 + 10);
+  const loads = achievableLoads(bar, plates, searchLimit(target, plates));
   let best = loads[0];
   for (const load of loads) {
     if (mode === "down") {

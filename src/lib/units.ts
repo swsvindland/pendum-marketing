@@ -63,10 +63,14 @@ function formatter(min: number, max: number) {
   return f;
 }
 
-/** A display number with grouping and a typographic minus (U+2212), as the kit's format does. */
+/**
+ * A display number with grouping and a typographic minus (U+2212), as the kit's format does. A negative that rounds
+ * to zero (−0.04 at 0 digits, −0) shows as zero, with no sign.
+ */
 export function formatNumber(n: number, digits = 0, minDigits = digits): string {
   const s = formatter(minDigits, digits).format(n);
-  return s.startsWith("-") ? `−${s.slice(1)}` : s;
+  if (!s.startsWith("-")) return s;
+  return /[1-9]/.test(s) ? `−${s.slice(1)}` : s.slice(1);
 }
 
 /** A signed change: "+0.5", "−0.3", "0". */

@@ -1,11 +1,36 @@
 import type { ReactNode } from "react";
 import { getApp } from "@/content/apps";
-import { calculators, categoryLabel } from "@/content/calculators";
+import { calculators, categoryLabel, categoryOrder } from "@/content/calculators";
 import type { CalculatorMeta } from "@/content/types";
-import { AppIcon, ButtonLink, Heading, Label, LinkButton, ListRow, Panel, RowList, Text } from "@/vector";
+import { AppIcon, ButtonLink, Heading, LinkButton, ListRow, Panel, RowList, Text } from "@/vector";
 import { PageHeader } from "@/components/page";
 
+// Server only: the frame reads the site content. Client tools import ToolLayout from ./tool-layout, never this file;
+// the re-export is for the pages' Formula and for tools not yet moved over.
+export { Formula, ToolLayout } from "./tool-layout";
+
 export type Source = { label: string; href?: string };
+
+/** Related calculators: up to 4 that share the category or the app, and never fewer than 3. */
+const RELATED_MIN = 3;
+const RELATED_MAX = 4;
+
+/**
+ * The calculators that share this one's category or app, then, to reach RELATED_MIN, one from each other category
+ * in the content's order, round by round. Water and heart rate are alone in theirs and share no app.
+ */
+function relatedTo(meta: CalculatorMeta) {
+  const others = calculators.filter((c) => c.slug !== meta.slug);
+  const close = others.filter((c) => c.category === meta.category || (meta.app !== undefined && c.app === meta.app));
+  const rest = categoryOrder
+    .filter((category) => category !== meta.category)
+    .map((category) => others.filter((c) => c.category === category && !close.includes(c)));
+  const spread: CalculatorMeta[] = [];
+  for (let round = 0; rest.some((list) => round < list.length); round++)
+    for (const list of rest) if (list[round]) spread.push(list[round]);
+  const count = Math.max(RELATED_MIN, Math.min(RELATED_MAX, close.length));
+  return { items: [...close, ...spread].slice(0, count), close: close.length > 0 };
+}
 
 /**
  * One calculator page: the header, the tool (inputs then result, side by side from 1024), how it is calculated,
@@ -31,7 +56,7 @@ export function CalculatorFrame({
   caveat?: string;
 }) {
   const app = meta.app ? getApp(meta.app) : undefined;
-  const related = calculators.filter((c) => c.slug !== meta.slug && (c.category === meta.category || c.app === meta.app)).slice(0, 4);
+  const related = relatedTo(meta);
   return (
     <>
       <PageHeader eyebrow={`Calculator / ${categoryLabel[meta.category]}`} title={meta.title} subtitle={intro} />
@@ -40,7 +65,6 @@ export function CalculatorFrame({
       <section aria-labelledby="method-title" className="border-t border-border">
         <div className="mx-auto grid max-w-data grid-cols-[minmax(0,1fr)] gap-10 px-gutter py-12 md:py-16 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
           <div className="flex flex-col gap-4">
-            <Label>Method</Label>
             <Heading level={2} id="method-title">
               How it is calculated
             </Heading>
@@ -54,7 +78,7 @@ export function CalculatorFrame({
             ) : null}
           </div>
           <div className="flex flex-col gap-4">
-            <Label as="h2">Sources</Label>
+            <Heading level={3}>Sources</Heading>
             <ol className="flex flex-col gap-3">
               {sources.map((s) => (
                 <li key={s.label} className="type-small text-foreground-secondary">
@@ -72,17 +96,17 @@ export function CalculatorFrame({
         </div>
       </section>
 
-      <section aria-labelledby="next-title" className="border-t border-border">
+      <div className="border-t border-border">
         <div className="mx-auto grid max-w-data gap-6 px-gutter py-12 md:py-16 lg:grid-cols-2">
           {app ? (
-            <Panel>
+            <Panel as="section" aria-labelledby="next-title">
               <Panel.Header eyebrow={app.model === "purchase" ? "Track / Offline" : "Track / Synced"} />
               <Panel.Body>
                 <div className="flex items-center gap-4">
                   <AppIcon src={app.icon.light} dark={app.icon.dark} alt="" size={56} />
                   <div className="flex flex-col">
                     <Heading level={2} variant="h3" id="next-title">
-                      Track it over time in {app.name}
+                      {meta.track ?? `Track it over time in ${app.name}`}
                     </Heading>
                     <Text variant="small" tone="muted">
                       {app.model === "purchase" ? "One-time purchase. No account." : "Subscription. Syncs across devices."}
@@ -98,7 +122,7 @@ export function CalculatorFrame({
               </Panel.Footer>
             </Panel>
           ) : (
-            <Panel>
+            <Panel as="section" aria-labelledby="next-title">
               <Panel.Header eyebrow="Track / Apps" />
               <Panel.Body>
                 <Heading level={2} variant="h3" id="next-title">
@@ -115,12 +139,14 @@ export function CalculatorFrame({
               </Panel.Footer>
             </Panel>
           )}
-          <Panel inset="none">
+          <Panel as="section" inset="none" aria-labelledby="related-title">
             <div className="px-4 pt-4 min-[600px]:px-6 min-[600px]:pt-6">
-              <Label as="h2">Related calculators</Label>
+              <Heading level={2} variant="h3" id="related-title">
+                {related.close ? "Related calculators" : "More calculators"}
+              </Heading>
             </div>
             <RowList className="mt-2">
-              {related.map((c) => (
+              {related.items.map((c) => (
                 <ListRow key={c.slug} title={c.title} description={c.description} icon={c.icon} href={`/calculators/${c.slug}`} />
               ))}
             </RowList>
@@ -131,40 +157,7 @@ export function CalculatorFrame({
             </div>
           </Panel>
         </div>
-      </section>
+      </div>
     </>
-  );
-}
-
-/** The tool layout: inputs in a Panel at start, the result at end (stacked under 1024). */
-export function ToolLayout({
-  inputs,
-  result,
-  inputsEyebrow = "Input / Measurements",
-}: {
-  inputs: ReactNode;
-  result: ReactNode;
-  inputsEyebrow?: string;
-}) {
-  return (
-    <div className="grid items-start gap-6 lg:grid-cols-2">
-      <Panel as="section" aria-labelledby="inputs-title">
-        <Panel.Header eyebrow={inputsEyebrow} />
-        <h2 id="inputs-title" className="sr-only">
-          Your details
-        </h2>
-        <Panel.Body className="gap-4">{inputs}</Panel.Body>
-      </Panel>
-      {result}
-    </div>
-  );
-}
-
-/** A formula in Plex Mono on a surface-secondary band, scrollable rather than wrapped. */
-export function Formula({ children }: { children: ReactNode }) {
-  return (
-    <pre className="overflow-x-auto rounded-control border border-border bg-surface-secondary px-4 py-3 type-readout-xs text-foreground">
-      <code>{children}</code>
-    </pre>
   );
 }

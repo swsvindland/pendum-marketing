@@ -1,11 +1,13 @@
 import type { ReactNode } from "react";
-import { Disclosures, LinkButton, Text } from "@/vector";
+import { LinkButton, Text } from "@/vector";
+import { Disclosures } from "@/vector/disclosure";
 import { purchasePriced } from "./models";
 
 type Question = { question: string; answer: ReactNode };
 
 /**
- * Answers only what docs/sources/app-facts.json supports: purchases happen in the iOS and Android apps, any
+ * Answers only what docs/sources/app-facts.json and the owner's decisions support: purchases happen in the
+ * iPhone and Android apps, the four Vector apps are single purchases (docs/sources/owner-decisions.md), any
  * trial comes from the store, an account without the subscription meets the paywall, and deleting the account
  * removes its records from the server. No retention period, refund rule or trial length is stated.
  */
@@ -54,11 +56,11 @@ const questions: Question[] = [
     ),
   },
   {
-    question: "Do the Vector apps ever need a subscription?",
+    question: "Do the Vector apps need a subscription?",
     answer: (
       <Text tone="secondary">
-        No. Body, Lift, Macros and Hydration are each a one-time purchase. They have no account and no server, so
-        there is nothing to renew.
+        No. Body, Lift, Macros and Hydration are each sold as a one-time purchase. They have no account and no
+        server, so there is nothing to renew.
       </Text>
     ),
   },

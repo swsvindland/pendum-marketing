@@ -18,10 +18,11 @@ export type ProteinGoalSpec = {
  * Per goal, g per kg of body weight per day:
  * - maintain 1.4–2.0 (ISSN 2017, enough for most exercising people), target 1.6 (Morton et al. 2018: past about
  *   1.6 g/kg, added protein gave no further average gain in lean mass; Vector Macros' default);
- * - build 1.6–2.2 (Morton et al. 2018: breakpoint 1.62, upper 95% CI 2.20), target 2.0 (the Vector Macros setting
- *   nearest the middle of that range);
- * - lose 1.6–2.4 (Hector and Phillips 2018, energy restriction with training), target 2.2 (the upper part, since
- *   needs rise with a bigger deficit and with leanness; Helms et al. 2014).
+ * - build 1.6–2.2 (Morton et al. 2018: breakpoint 1.62, 95% CI 1.03–2.20, and the authors suggest about 2.2 for
+ *   people seeking the most from training; Schoenfeld and Aragon 2018 use the same bounds), target 2.0 (the Vector
+ *   Macros setting nearest the middle of that range);
+ * - lose 1.6–2.4 (Hector and Phillips 2018: the current recommendation for athletes losing weight), target 2.2 (the
+ *   upper part, since needs rise with a bigger deficit and with leanness; Helms et al. 2014).
  */
 export const PROTEIN_GOALS: Record<ProteinGoal, ProteinGoalSpec> = {
   maintain: { label: "Maintain", min: 1.4, max: 2.0, target: 1.6 },
@@ -29,7 +30,7 @@ export const PROTEIN_GOALS: Record<ProteinGoal, ProteinGoalSpec> = {
   lose: { label: "Lose fat", min: 1.6, max: 2.4, target: 2.2 },
 };
 
-/** Lean, resistance-trained people in a deficit: 2.3–3.1 g per kg of fat-free mass (Helms et al. 2014). */
+/** Lean, resistance-trained athletes in a deficit: 2.3–3.1 g per kg of fat-free mass (Helms et al. 2014). */
 export const LEAN_MASS_DEFICIT = { min: 2.3, max: 3.1 } as const;
 
 /** Recommended dietary allowance for adults, g/kg/day (IOM 2005). A floor against deficiency, not a training target. */
@@ -41,7 +42,11 @@ export const PER_MEAL_G_PER_KG = 0.4;
 /** The meal counts the per-meal split is shown for. */
 export const MEAL_COUNTS = [3, 4, 5] as const;
 
-/** Whole grams for a body weight and a g/kg rate. */
+/**
+ * Whole grams for a body weight and a g/kg rate: Math.round(weight × g/kg), the expression Vector Macros uses. Kept
+ * as is for parity, so an exact half that binary floating point stores a hair low (82.5 × 1.4) rounds down, as it
+ * does in the app.
+ */
 export const grams = (weightKg: number, gPerKg: number) => Math.round(weightKg * gPerKg);
 
 const valid = (n: number) => Number.isFinite(n) && n > 0;
@@ -81,22 +86,35 @@ export type LeanMassResult = {
   leanKg: number;
   /** The body-weight range in grams, expressed per kg of lean mass (unrounded). */
   perLeanKg: { min: number; max: number };
-  /** Helms et al. 2014 range for a deficit, whole grams. Only for the lose goal. */
+  /** The top of the Helms et al. 2014 range for this lean mass (3.1 g per kg of it), whole grams. */
+  leanTop: number;
+  /**
+   * Helms et al. 2014 range for a deficit, whole grams. Only for the lose goal, and only when its top is above the
+   * target: the range is for lean athletes, and past about 29% body fat it falls below the body-weight target.
+   */
   deficit: { min: number; max: number } | null;
+  /**
+   * The target is more than `leanTop`: more per kg of lean mass than Helms and colleagues found for lean athletes in
+   * a deficit, which a range per kg of total weight reaches with a high body-fat percentage.
+   */
+  pastLeanTop: boolean;
 };
 
 /**
  * The lean-mass view of a result: lean mass, the gram range per kg of it, and for a fat-loss goal the
- * 2.3–3.1 g/kg lean-mass range in grams. null when the body fat is not usable.
+ * 2.3–3.1 g/kg lean-mass range in grams when it reaches above the target. null when the body fat is not usable.
  */
 export function leanMassView(weightKg: number, bodyFatPct: number, goal: ProteinGoal): LeanMassResult | null {
   const lean = leanMass(weightKg, bodyFatPct);
   const range = proteinRange(weightKg, goal);
   if (lean === null || range === null) return null;
+  const leanTop = grams(lean, LEAN_MASS_DEFICIT.max);
   return {
     leanKg: lean,
     perLeanKg: { min: range.min / lean, max: range.max / lean },
-    deficit: goal === "lose" ? { min: grams(lean, LEAN_MASS_DEFICIT.min), max: grams(lean, LEAN_MASS_DEFICIT.max) } : null,
+    leanTop,
+    deficit: goal === "lose" && leanTop > range.target ? { min: grams(lean, LEAN_MASS_DEFICIT.min), max: leanTop } : null,
+    pastLeanTop: range.target > leanTop,
   };
 }
 

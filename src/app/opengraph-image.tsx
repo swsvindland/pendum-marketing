@@ -80,7 +80,7 @@ export default function OpengraphImage() {
         >
           <div style={{ fontSize: 72, lineHeight: "80px", letterSpacing: "-0.03em" }}>Fitness apps, precise by design</div>
           <div style={{ fontSize: 32, lineHeight: "44px", color: brand.secondary, maxWidth: 940 }}>
-            A subscription that syncs, or one-time purchases that keep every record on your phone.
+            A subscription that syncs, or one-time purchases that keep their records on your phone.
           </div>
         </div>
 

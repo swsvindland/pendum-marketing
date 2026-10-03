@@ -35,7 +35,7 @@ export default function PrivacyPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Privacy / Summary"
+        eyebrow="Data / Website and apps"
         title="Privacy at a glance"
         subtitle="What this website and the five apps do with your data, in plain words."
         actions={
@@ -101,7 +101,7 @@ export default function PrivacyPage() {
 
       <Section
         id="website"
-        eyebrow="Site / Data"
+        eyebrow="Data / Cookies and storage"
         title="This website"
         intro="There is nothing to sign up for. The site works without an account and without cookies."
         bordered
@@ -167,11 +167,9 @@ export default function PrivacyPage() {
           </Panel>
 
           <Panel>
-            <Panel.Header eyebrow="Health / Sync" title="Health sync is opt-in" />
+            <Panel.Header eyebrow="Health / Sync" title="Off until you turn it on" />
             <Panel.Body>
-              <Text tone="secondary">
-                Sync with Apple Health or Health Connect is off until you turn it on. When it is on:
-              </Text>
+              <Text tone="secondary">Apple Health on iPhone, Health Connect on Android. When sync is on:</Text>
               <TermList
                 items={[
                   {
@@ -200,11 +198,10 @@ export default function PrivacyPage() {
           </Panel>
 
           <Panel>
-            <Panel.Header eyebrow="Data / Backup" title="Backups" />
+            <Panel.Header eyebrow="Data / Backup" title="Encrypted files, no server" />
             <Panel.Body>
               <Text tone="secondary">
                 Vector Lift and Vector Macros save encrypted backup files where you choose, through the share sheet.
-                There is no backup server.
               </Text>
               <div>
                 <ReadoutRow label="Encryption">
@@ -233,16 +230,13 @@ export default function PrivacyPage() {
           </Panel>
 
           <Panel>
-            <Panel.Header eyebrow="Analysis / On device" title="On-device AI only" />
+            <Panel.Header eyebrow="Analysis / On device" title="No cloud fallback" />
             <Panel.Body>
-              <Text tone="secondary">Where the apps use AI, they use the phone’s own model, with no cloud fallback.</Text>
+              <Text tone="secondary">Where the apps use AI, the model runs on the phone.</Text>
+              {/* Vector Lift's on-device features are not verified on devices yet (app-facts lift.notYetShipped), so
+                  it is not listed here until they ship. */}
               <TermList
                 items={[
-                  {
-                    term: "Vector Lift",
-                    detail:
-                      "Apple Foundation Models on iPhone, never Private Cloud Compute, and Gemini Nano on Android. The app’s copy of a program photo is deleted once it is read.",
-                  },
                   {
                     term: "Vector Macros",
                     detail:
@@ -311,7 +305,7 @@ export default function PrivacyPage() {
                   "The iPhone and Android apps send usage events, screen names, taps and error reports to PostHog, which also runs feature flags. Events leave out weight, height, sex and measurements, and include plan choices such as goal, weekly pace, plan length and training days. Taps record which control was used, never the text on it. There is no session replay. OmegaFyt in a browser sends no analytics.",
                   "Health sync is off until you turn it on, and it turns off in Settings. It reads weight and steps and writes weight and daily calories, protein, carbs and fat. Weigh-ins it imports are saved to the OmegaFyt server.",
                   "The camera is used to scan barcodes. Microphone access is turned off.",
-                  "A few preferences, such as the rest timer and health sync settings, are kept on the device.",
+                  "A few preferences, such as health sync and rest timer settings, are kept on the device.",
                   <>
                     To delete your account, open Settings and choose <strong>Delete account</strong>. Your data on the
                     OmegaFyt server is deleted first, then your sign-in.

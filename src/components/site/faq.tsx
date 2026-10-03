@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Disclosures } from "@/vector";
+import { Disclosures } from "@/vector/disclosure";
 
 export type Question = { question: string; answer: ReactNode };
 

@@ -28,7 +28,8 @@ e1RM = weight   (1 rep to failure)`}
           <p>
             The rep-max table runs Epley backwards. The load for r reps to failure is the e1RM divided by
             (1 + r / 30), and the e1RM itself at 1 rep. The percentage is that load as a share of the e1RM: 94 % for
-            2 reps, 86 % for 5 and 75 % for 10.
+            2 reps, 86 % for 5 and 75 % for 10. The table counts reps to failure, so the row marked as your set is
+            your reps plus your reserve: 7 for 5 reps with 2 in reserve.
           </p>
           <Formula>{`load(r) = e1RM / (1 + r / 30)    r = 2 to 12`}</Formula>
           <p>

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  belowEssentialFat,
   bodyFatBands,
   bodyFatCategory,
   fatMass,
@@ -122,6 +123,25 @@ describe("bodyFatCategory", () => {
     // Each band's edges agree with the category function.
     for (const eq of ["male", "female"] as const)
       for (const b of bodyFatBands(eq)) if (b.from !== null) expect(bodyFatCategory(b.from, eq)).toBe(b.category);
+  });
+});
+
+describe("belowEssentialFat", () => {
+  it("is the part of the very-low band under ACE's essential fat range (men 2–5 %, women 10–13 %)", () => {
+    expect(belowEssentialFat(1.9, "male")).toBe(true);
+    expect(belowEssentialFat(1.95, "male")).toBe(false); // shows 2.0
+    expect(belowEssentialFat(5.9, "male")).toBe(false);
+    expect(belowEssentialFat(9.9, "female")).toBe(true);
+    expect(belowEssentialFat(10, "female")).toBe(false);
+    expect(belowEssentialFat(13.9, "female")).toBe(false);
+  });
+
+  it("covers results the equation can give inside the tool's input ranges", () => {
+    // Female, height 180, neck 40, waist 60, hips 80 cm: 1.19 %, very low and below essential fat.
+    const v = navyBodyFat("female", { heightCm: 180, neckCm: 40, waistCm: 60, hipsCm: 80 })!;
+    expect(v).toBeCloseTo(1.194, 3);
+    expect(bodyFatCategory(v, "female")).toBe("veryLow");
+    expect(belowEssentialFat(v, "female")).toBe(true);
   });
 });
 

@@ -5,9 +5,9 @@ import { Heading, Label, LinkButton, ListRow, Panel, RowList, Text } from "@/vec
 import { modelLabel } from "./model";
 
 /**
- * The close of an app page, two columns from 1024: the free calculators that go with the app, and the other apps
- * in the series with how each is sold, plus a link to compare the two models. Links only; the page's one primary
- * stays the store link in the header.
+ * The close of an app page, two columns from 1024: the free calculators that go with the app, and the other
+ * Vector apps (OmegaFyt and the series) with how each is sold, plus a link to compare the two models. Links only;
+ * the page's one primary stays the store link in the header. "Series" means the four one-time apps only.
  */
 export function AppRelated({ app }: { app: App }) {
   const calculators = app.calculators.map(getCalculator).filter((c): c is CalculatorMeta => Boolean(c));
@@ -18,7 +18,7 @@ export function AppRelated({ app }: { app: App }) {
         {calculators.length ? (
           <section aria-labelledby="calculators-title" className="flex flex-col gap-4">
             <div className="flex flex-col gap-2">
-              <Label>Calculators / Free</Label>
+              <Label>Tools / Browser</Label>
               <Heading level={2} id="calculators-title">
                 Free calculators
               </Heading>
@@ -46,9 +46,9 @@ export function AppRelated({ app }: { app: App }) {
         ) : null}
         <section aria-labelledby="other-apps-title" className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
-            <Label>Apps / Series</Label>
+            <Label>Apps / Models</Label>
             <Heading level={2} id="other-apps-title">
-              Other apps in the series
+              More from Vector
             </Heading>
             <Text tone="secondary">A subscription that syncs, or a one-time purchase.</Text>
           </div>

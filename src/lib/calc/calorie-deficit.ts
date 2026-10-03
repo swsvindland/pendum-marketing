@@ -6,7 +6,10 @@
 
 export type Direction = "lose" | "gain";
 
-/** Weekly paces offered, % of body weight a week (Vector Macros' preset picks for each direction). */
+/**
+ * Weekly paces offered on the site, % of body weight a week. Vector Macros sets the pace on a slider (cut 0.1–1.5%,
+ * bulk 0.05–0.5%, in 0.05 steps) with the same recommended bands; every pace here is a point on that slider.
+ */
 export const PACES: Record<Direction, readonly number[]> = {
   lose: [0.25, 0.5, 0.75, 1],
   gain: [0.1, 0.25, 0.5],
@@ -18,11 +21,17 @@ export const DEFAULT_PACE: Record<Direction, number> = { lose: 0.5, gain: 0.25 }
 /** The band Vector Macros marks as recommended, % a week. */
 export const RECOMMENDED_PACE: Record<Direction, readonly [number, number]> = { lose: [0.5, 1], gain: [0.1, 0.25] };
 
+/** Vector Macros' slider range, % a week (macro-track src/lib/program.ts PACES). */
+export const APP_PACE_RANGE: Record<Direction, readonly [number, number]> = { lose: [0.1, 1.5], gain: [0.05, 0.5] };
+
 /** Energy in a kilogram of body-weight change, kcal (the 3,500 kcal/lb rule of thumb, 32.2 MJ/kg). */
 export const KCAL_PER_KG = 7700;
 
 /** At this many weeks or more, no goal date is shown. */
 export const MAX_WEEKS = 520;
+
+/** The lowest daily calorie target Vector Macros sets (its programMacros refuses less), kcal. */
+export const MIN_INTAKE_KCAL = 1500;
 
 const valid = (n: number) => Number.isFinite(n) && n > 0;
 
@@ -45,6 +54,15 @@ export function weeklyRate(currentKg: number, goalKg: number, pacePct: number): 
 /** Daily calorie change for a weekly rate (kg/week), whole kcal: rate × 7700 / 7. Negative is a deficit. */
 export function dailyCalorieChange(rateKgPerWeek: number): number {
   return Math.round((rateKgPerWeek * KCAL_PER_KG) / 7);
+}
+
+/**
+ * The maintenance a deficit needs for intake to stay at MIN_INTAKE_KCAL or more: 1,500 − change. The site has no
+ * expenditure, so it states this instead of applying Vector Macros' floor. null for a surplus or no change.
+ */
+export function maintenanceFloor(dailyChangeKcal: number): number | null {
+  if (!Number.isFinite(dailyChangeKcal) || dailyChangeKcal >= 0) return null;
+  return MIN_INTAKE_KCAL - dailyChangeKcal;
 }
 
 export type Projection = {

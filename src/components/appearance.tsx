@@ -1,50 +1,37 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
-import { Choices } from "@/vector/form";
+import { useLayoutEffect, useSyncExternalStore } from "react";
+import {
+  appliedAppearance,
+  applyAppearance,
+  setAppearance,
+  storedAppearance,
+  subscribeAppearance,
+  type Appearance,
+} from "@/vector/appearance";
+import { Choices } from "@/vector/form/choices";
 
-type Appearance = "system" | "light" | "dark";
-const KEY = "vector-appearance";
-
-function read(): Appearance {
-  try {
-    const v = localStorage.getItem(KEY);
-    return v === "light" || v === "dark" ? v : "system";
-  } catch {
-    return "system";
-  }
-}
-
-const listeners = new Set<() => void>();
-function subscribe(fn: () => void) {
-  listeners.add(fn);
-  return () => listeners.delete(fn);
-}
-
-function write(value: Appearance) {
-  try {
-    if (value === "system") localStorage.removeItem(KEY);
-    else localStorage.setItem(KEY, value);
-  } catch {
-    // Storage blocked: the choice lasts for this page only.
-  }
-  if (value === "system") document.documentElement.removeAttribute("data-theme");
-  else document.documentElement.setAttribute("data-theme", value);
-  listeners.forEach((fn) => fn());
-}
-
-/** Runs in <head> before first paint, so a stored appearance never flashes (see layout.tsx). */
-export const appearanceScript = `(function(){try{var t=localStorage.getItem("${KEY}");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}})()`;
-
-/** Appearance: System / Light / Dark (glossary, §10). */
+/**
+ * Appearance: System / Light / Dark (glossary, §10). The control shows what is applied on <html> (data-theme), not
+ * what storage says, so it agrees with the page when storage is blocked, after a choice in another tab, and once
+ * the head script has run. Before hydration the server's System shows; the page itself is already right.
+ */
 export function AppearanceChoice() {
-  const value = useSyncExternalStore(subscribe, read, () => "system" as Appearance);
+  const value = useSyncExternalStore(subscribeAppearance, appliedAppearance, () => "system" as Appearance);
+
+  // In development React's Strict Mode remount clears the attribute the head script set; put the stored choice
+  // back before paint (a no-op in production, where nothing clears it).
+  useLayoutEffect(() => {
+    const stored = storedAppearance();
+    if (stored !== "system" && appliedAppearance() !== stored) applyAppearance(stored);
+  }, []);
+
   return (
     <Choices
       label="Appearance"
       size="sm"
       value={value}
-      onChange={write}
+      onChange={setAppearance}
       values={[
         { value: "system", label: "System" },
         { value: "light", label: "Light" },

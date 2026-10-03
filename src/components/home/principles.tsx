@@ -1,10 +1,9 @@
 import { Section } from "@/components/page";
+import { listFormat } from "@/components/site/format";
 import { apps } from "@/content/apps";
 import { Heading, Icon, Text, type IconName } from "@/vector";
 
 type Principle = { icon: IconName; title: string; body: string };
-
-const listFormat = new Intl.ListFormat("en", { style: "long", type: "conjunction" });
 
 /**
  * The languages sentence comes from the app data, so it names only the apps that ship more than one language and
@@ -18,13 +17,16 @@ function languageSentence() {
   return ` ${names} ${translated.length > 1 ? "offer" : "offers"} ${count} interface languages.`;
 }
 
-/** Four short items from the design system's character (design-system §1), each true of the shipped apps. */
+/**
+ * Four short items from the design system's character (design-system §1). Each title holds for all five apps;
+ * where a claim is true of the four Vector apps only (no account, no server, no analytics), the body names them.
+ */
 export function Principles() {
   const items: Principle[] = [
     {
       icon: "lock",
-      title: "Private by default",
-      body: "The Vector apps have no account, no server and no analytics. Records are kept in a database on your phone, and Health sync is off until you turn it on.",
+      title: "Health sync is opt-in",
+      body: "In every app, Apple Health and Health Connect sync is off until you turn it on. Vector Body, Lift, Macros and Hydration also have no account, no server and no analytics, and keep their records in a database on your phone.",
     },
     {
       icon: "ruler",

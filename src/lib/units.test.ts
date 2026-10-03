@@ -58,4 +58,11 @@ describe("formatting", () => {
     expect(formatSigned(-0.31, 1)).toBe("−0.3");
     expect(formatSigned(0.01, 1)).toBe("0.0");
   });
+  it("never shows a negative zero", () => {
+    expect(formatNumber(-0.04, 0)).toBe("0");
+    expect(formatNumber(-0.004, 2)).toBe("0.00");
+    expect(formatNumber(-0, 1)).toBe("0.0");
+    expect(formatNumber(-0.05, 1)).toBe("−0.1");
+    expect(formatNumber(-1234.5, 1)).toBe("−1,234.5");
+  });
 });

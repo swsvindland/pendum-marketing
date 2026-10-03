@@ -49,8 +49,8 @@
   --separator: #E9EEF1;
   --focus: var(--tint);
   --link: var(--tint);
-  --surface-shadow: none;
-  --field-shadow: none;
+  --surface-shadow: 0 0 #0000;
+  --field-shadow: 0 0 #0000;
   --overlay-shadow: 0 16px 48px rgba(20, 40, 50, 0.14);
   --tint: #007088;
   --tint-foreground: #FFFFFF;
@@ -112,8 +112,8 @@
     --separator: #1B2931;
     --focus: var(--tint);
     --link: var(--tint);
-    --surface-shadow: none;
-    --field-shadow: none;
+    --surface-shadow: 0 0 #0000;
+    --field-shadow: 0 0 #0000;
     --overlay-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
     --tint: #22D3EE;
     --tint-foreground: #071017;
@@ -170,8 +170,8 @@
   --separator: #1B2931;
   --focus: var(--tint);
   --link: var(--tint);
-  --surface-shadow: none;
-  --field-shadow: none;
+  --surface-shadow: 0 0 #0000;
+  --field-shadow: 0 0 #0000;
   --overlay-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
   --tint: #22D3EE;
   --tint-foreground: #071017;

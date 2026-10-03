@@ -1,6 +1,7 @@
 // Daily calorie and macro targets for a cut, maintenance or a bulk, as Vector Macros generates a program's starting
 // targets (macro-track src/lib/program.ts: goalRate, startingTargets, programMacros). The calculator has no goal
-// weight, so the weekly rate is the pace alone and maintenance is a rate of 0.
+// weight, so the weekly rate is the pace alone and maintenance is a rate of 0. The app also refuses a cut goal under
+// BMI 18.5 and stops a cut at its goal; here the nearest goal a pace describes, one week away, stands in for it.
 
 export type Goal = "cut" | "maintain" | "bulk";
 export type DietStyle = "balanced" | "more-carbs" | "more-fat";
@@ -38,13 +39,33 @@ export const PACES = {
 export const CALORIE_LIMITS = { min: 1500, max: 5000 } as const;
 /** Maintenance (expenditure) the app accepts, kcal/day. */
 export const EXPENDITURE_LIMITS = { min: 1200, max: 5000 } as const;
-/** No cut is generated below this BMI. */
+/** No cut is generated below this BMI, now or at the goal. */
 export const MIN_CUT_BMI = 18.5;
 
 /** Weekly weight change in kg: weight × pace / 100, negative for a cut, 0 for maintenance. */
 export function weeklyRate(goal: Goal, weightKg: number, pacePercent: number): number {
   if (goal === "maintain") return 0;
   return ((weightKg * pacePercent) / 100) * (goal === "cut" ? -1 : 1);
+}
+
+/** BMI, unrounded, as the app's guard checks it. */
+const bmiOf = (weightKg: number, heightCm: number) => weightKg / (heightCm / 100) ** 2;
+
+/**
+ * Why the app would not coach a cut at this pace, or null. It refuses one when BMI is under 18.5 now or at the goal
+ * weight, and caps the weekly rate at the distance to the goal. With no goal weight here, the goal is the weight
+ * after one week at the pace: the app gives the same targets for that goal, and refuses it under BMI 18.5.
+ */
+export function cutGuard(weightKg: number, heightCm: number, pacePercent: number): "underweight" | "goal-underweight" | null {
+  if (bmiOf(weightKg, heightCm) < MIN_CUT_BMI) return "underweight";
+  if (bmiOf(weightKg + weeklyRate("cut", weightKg, pacePercent), heightCm) < MIN_CUT_BMI) return "goal-underweight";
+  return null;
+}
+
+/** The fastest cut pace offered here that `cutGuard` allows at this height and weight, or null when none is. */
+export function fastestCutPace(weightKg: number, heightCm: number): number | null {
+  const allowed = PACES.cut.options.filter((p) => cutGuard(weightKg, heightCm, p) === null);
+  return allowed.length > 0 ? allowed[allowed.length - 1] : null;
 }
 
 /** Daily calories for a weekly rate: maintenance + rate × 7,700 / 7, rounded to a whole kcal. */
@@ -86,9 +107,17 @@ export type MacroInput = {
 
 /**
  * Why no targets are generated, in the order the app checks: maintenance outside 1,200–5,000 kcal; a cut at a BMI
- * under 18.5; calories outside 1,500–5,000 kcal; carbs below zero.
+ * under 18.5 (`underweight`) or one whose week at the pace ends under it (`goal-underweight`); calories outside
+ * 1,500–5,000 kcal; carbs below zero.
  */
-export type MacroBlock = "expenditure-low" | "expenditure-high" | "underweight" | "calories-low" | "calories-high" | "carbs";
+export type MacroBlock =
+  | "expenditure-low"
+  | "expenditure-high"
+  | "underweight"
+  | "goal-underweight"
+  | "calories-low"
+  | "calories-high"
+  | "carbs";
 
 export type MacroPlan = {
   expenditure: number;
@@ -105,15 +134,16 @@ export type MacroPlan = {
 export function macroPlan(input: MacroInput): MacroPlan {
   const { goal, pace, weightKg, heightCm, proteinPerKg, diet, expenditure } = input;
   const rateKgPerWeek = weeklyRate(goal, weightKg, pace);
-  const bmi = weightKg / (heightCm / 100) ** 2;
+  const bmi = bmiOf(weightKg, heightCm);
   const calories = targetCalories(expenditure, rateKgPerWeek);
   const plan = { expenditure, rateKgPerWeek, calories, bmi };
   const blocked = (reason: MacroBlock): MacroPlan => ({ ...plan, targets: null, blocked: reason });
 
   if (expenditure < EXPENDITURE_LIMITS.min) return blocked("expenditure-low");
   if (expenditure > EXPENDITURE_LIMITS.max) return blocked("expenditure-high");
-  // The app checks the unrounded BMI, and only when the rate is a loss.
-  if (rateKgPerWeek < 0 && bmi < MIN_CUT_BMI) return blocked("underweight");
+  // The app checks the unrounded BMI, now and at the goal, and only when the rate is a loss.
+  const guard = rateKgPerWeek < 0 ? cutGuard(weightKg, heightCm, pace) : null;
+  if (guard) return blocked(guard);
   if (calories < CALORIE_LIMITS.min) return blocked("calories-low");
   if (calories > CALORIE_LIMITS.max) return blocked("calories-high");
   const targets = splitMacros(calories, weightKg, proteinPerKg, diet);

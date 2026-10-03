@@ -4,8 +4,10 @@ import { getApp } from "@/content/apps";
 import { AppIcon, ButtonLink, Heading, Icon, Meta, Note, Panel, Text } from "@/vector";
 
 /**
- * OmegaFyt: the app card (identity, platforms, how it is sold, the link) beside its four headline features. The
- * cross-device point is the section's own claim: one account, read and written from phone or browser.
+ * OmegaFyt: the app card (identity, platforms, how it is sold, the link) beside its four headline features (the
+ * first four in apps.ts, which lead with what the public 1.7.0 build already has). The cross-device point is the
+ * section's own claim: one account on each phone. The web version is described, not offered, until its address
+ * is public.
  */
 export function OmegaFytSection() {
   const app = getApp("omegafyt");
@@ -17,12 +19,13 @@ export function OmegaFytSection() {
       id="omegafyt"
       bordered
       eyebrow="Apps / Subscription"
-      title="One account on iPhone, Android and the web"
-      intro="OmegaFyt plans training and nutrition together and keeps both on your account. Log a workout on your phone, then read the report in a browser."
+      title="One account on iPhone and Android"
+      intro="OmegaFyt tracks training and nutrition together and keeps both on your account, so the same records open on each phone you sign in on. A web version opens the same account in a browser; its address is published at launch."
     >
       <div className="grid gap-6 lg:grid-cols-3">
         <Panel as="article" aria-labelledby="omegafyt-card-title">
-          <Panel.Header eyebrow="Plan / Connected" meta={<ModelStatus app={app} />} />
+          {/* The app name below is the card's heading, so the eyebrow stays plain. */}
+          <Panel.Header eyebrow="Plan / Connected" meta={<ModelStatus app={app} />} heading={false} />
           <Panel.Body>
             <div className="flex items-start gap-4">
               <AppIcon src={app.icon.light} dark={app.icon.dark} alt="" size={56} />

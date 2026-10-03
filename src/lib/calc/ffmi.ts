@@ -1,6 +1,8 @@
 // Fat-free mass index, as Vector Body computes it (body-track src/lib/metrics.ts composition), the height-
 // normalized FFMI of Kouri et al. (1995), and Vector Body's simplified comparison bands
-// (src/lib/metric-context.ts).
+// (src/lib/metric-context.ts). The band is judged on the one-decimal value shown, where the app judges the
+// unrounded value, so the two differ for an FFMI from 16.95 to under 17 and from over 20 to under 20.05 for men
+// (13.95 to under 14 and over 17 to under 17.05 for women).
 
 export type Sex = "male" | "female";
 
@@ -39,7 +41,10 @@ export const FFMI_TYPICAL: Record<Sex, readonly [number, number]> = {
   female: [14, 17],
 };
 
-/** Category of an FFMI, judged on the one-decimal value so the shown number and its word always agree. */
+/**
+ * Category of an FFMI, judged on the one-decimal value so the shown number and its word always agree. Vector Body
+ * judges the unrounded value: 20.04 is typical here (shown 20.0) and higher there.
+ */
 export function ffmiCategory(value: number, sex: Sex): FfmiCategory {
   const v = roundFfmi(value);
   const [from, to] = FFMI_TYPICAL[sex];

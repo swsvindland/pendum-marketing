@@ -1,7 +1,10 @@
 import type { CalculatorCategory, CalculatorMeta } from "./types";
 
-/** The free calculators. Each slug has a page under /calculators/[slug] and a component in components/calculators. */
-export const calculators: CalculatorMeta[] = [
+/**
+ * The free calculators, in list order: the source of every calculator's title, meta description, sitemap entry and
+ * list row. Each slug has its own route, src/app/calculators/<slug>/page.tsx, rendering src/calculators/<slug>.
+ */
+const entries = [
   {
     slug: "bmi",
     title: "BMI calculator",
@@ -81,6 +84,8 @@ export const calculators: CalculatorMeta[] = [
     description: "The plates to load on each side of the bar for a target weight, in kilograms or pounds.",
     category: "strength",
     app: "lift",
+    // Lift does not track a plate count over time; it shows the plates for each barbell set as you train.
+    track: "Vector Lift shows the plates per side for your next barbell set",
     icon: "lift",
   },
   {
@@ -90,6 +95,8 @@ export const calculators: CalculatorMeta[] = [
     description: "DOTS and Wilks scores for comparing a powerlifting total across body weights.",
     category: "strength",
     app: "lift",
+    // Lift has no DOTS or Wilks score; it charts an estimated one-rep max for each exercise.
+    track: "Vector Lift tracks the estimated one-rep max behind your total",
     icon: "chart",
   },
   {
@@ -109,7 +116,12 @@ export const calculators: CalculatorMeta[] = [
     category: "cardio",
     icon: "pulse",
   },
-];
+] as const satisfies readonly CalculatorMeta[];
+
+/** A listed calculator's slug. Each route names its calculator with this type, so an unlisted one fails to compile. */
+export type CalculatorSlug = (typeof entries)[number]["slug"];
+
+export const calculators: readonly CalculatorMeta[] = entries;
 
 export const categoryLabel: Record<CalculatorCategory, string> = {
   body: "Body composition",
@@ -121,6 +133,6 @@ export const categoryLabel: Record<CalculatorCategory, string> = {
 
 export const categoryOrder: CalculatorCategory[] = ["body", "nutrition", "strength", "hydration", "cardio"];
 
-export function getCalculator(slug: string) {
+export function getCalculator(slug: string): CalculatorMeta | undefined {
   return calculators.find((c) => c.slug === slug);
 }

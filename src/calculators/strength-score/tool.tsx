@@ -4,18 +4,13 @@ import { useState } from "react";
 import { DOTS, STRENGTH_LIMITS, WILKS, dots, roundPoints, wilks, type Sex } from "@/lib/calc/strength-score";
 import { formatNumber, kgToLb } from "@/lib/units";
 import { Note, ReadoutRow, Value } from "@/vector";
-import { Choices } from "@/vector/form";
-import { EMPTY, MassField, UnitChoice, type Measure } from "../shared/fields";
-import { ToolLayout } from "../shared/frame";
+import { Choices } from "@/vector/form/choices";
+import { EMPTY, MassField, SexChoice, UnitChoice, type Measure } from "../shared/fields";
 import { EmptyResult, HeroValue, ResultPanel } from "../shared/results";
+import { ToolLayout } from "../shared/tool-layout";
 import { useUnits } from "../shared/use-units";
 
 type Entry = "total" | "lifts";
-
-const SEXES: readonly { value: Sex | ""; label: string }[] = [
-  { value: "female", label: "Female" },
-  { value: "male", label: "Male" },
-];
 
 const ENTRIES: readonly { value: Entry; label: string }[] = [
   { value: "total", label: "Total" },
@@ -27,8 +22,15 @@ const COEFFICIENTS: Record<Sex, string> = { male: "Men’s coefficients", female
 /** Points to two decimals, as OpenPowerlifting shows them. */
 const points = (n: number) => formatNumber(roundPoints(n), 2);
 
-/** A weight to one decimal at most: "612.5", "1,200". */
-const weight = (n: number) => formatNumber(n, 1, 0);
+/**
+ * A weight to two decimals at most, as the apps show loads: "612.5", "82.55", "1,200". Meet body weights are
+ * recorded to the hundredth, and the readout states the value the scores use.
+ */
+const weight = (n: number) => formatNumber(n, 2, 0);
+
+/** "a", "a and b", "a, b and c". */
+const joined = (items: string[]) =>
+  items.length < 2 ? items.join("") : `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
 
 export function StrengthScoreTool() {
   const [units, setUnits] = useUnits();
@@ -57,20 +59,32 @@ export function StrengthScoreTool() {
     ready &&
     [DOTS[sex], WILKS[sex]].some(({ min, max }) => bodyWeight.value! < min || bodyWeight.value! > max);
 
+  // The empty result names only what is still missing or not valid yet: a sex to choose, then the weights.
+  const weights: [string, Measure][] =
+    entry === "total"
+      ? [["total", total]]
+      : [
+          ["squat", squat],
+          ["bench press", bench],
+          ["deadlift", deadlift],
+        ];
+  const unentered = weights.filter(([, m]) => m.value === null).map(([name]) => name);
+  const missing = [
+    ...(bodyWeight.value === null ? ["body weight"] : []),
+    ...(entry === "lifts" && unentered.length === 3 ? ["three lifts"] : unentered),
+  ];
+  const enter = `your ${joined(missing)}`;
+  const waiting = sex
+    ? `Enter ${enter} to see your DOTS and Wilks scores.`
+    : `Choose a sex${missing.length ? `, then enter ${enter}` : ""} to see your DOTS and Wilks scores.`;
+
   return (
     <ToolLayout
       inputsEyebrow="Input / Lifter"
       inputs={
         <>
           <UnitChoice units={units} onChange={setUnits} />
-          <Choices
-            label="Sex"
-            values={SEXES}
-            value={sex}
-            onChange={(v) => {
-              if (v) setSex(v);
-            }}
-          />
+          <SexChoice value={sex} onChange={setSex} />
           <MassField
             label="Body weight"
             units={units}
@@ -132,9 +146,7 @@ export function StrengthScoreTool() {
           }
         >
           {dotsPoints === null || wilksPoints === null || totalKg === null ? (
-            <EmptyResult>
-              {`${sex ? "Enter" : "Choose a sex, then enter"} your body weight and ${entry === "total" ? "total" : "your three lifts"} to see your DOTS and Wilks scores.`}
-            </EmptyResult>
+            <EmptyResult>{waiting}</EmptyResult>
           ) : (
             <>
               <HeroValue value={points(dotsPoints)} caption="DOTS points" />

@@ -1,14 +1,17 @@
-import { Accordion } from "@heroui/react";
+import { Accordion } from "@heroui/react/accordion";
 import type { ReactNode } from "react";
 import { cn } from "./cn";
+import { Icon } from "./icon";
 
 export type DisclosureItem = { id?: string; question: string; answer: ReactNode };
 
 /**
  * Questions that open in place (FAQ), on HeroUI's Accordion (React Aria disclosure: the trigger is a button with
- * aria-expanded, the question a heading). Row geometry from §5.6 (components.css): 44 minimum, px-4 py-3, 1pt
- * separators inset 16, a down glyph that turns when open. `panel` draws the rows in a Panel; `plain` sits on the
- * canvas between 1pt rules. Several can be open at once.
+ * aria-expanded, the question a heading). Its own entry point (@/vector/disclosure), so only pages with questions
+ * load the Accordion. Row geometry from §5.6 (components.css, section 4): 44 minimum, px-4 py-3, 1pt separators
+ * inset 16, the kit `down` glyph that turns when open, answers as a 12-gap column. `panel` draws the rows in a
+ * Panel (focus drawn inside, since the panel clips); `plain` sits on the canvas between 1pt rules, flush with the
+ * text column. Several can be open at once.
  */
 export function Disclosures({
   items,
@@ -26,30 +29,25 @@ export function Disclosures({
     <Accordion
       allowsMultipleExpanded
       className={cn(
+        "kit-disclosures",
         look === "panel"
-          ? "overflow-hidden rounded-panel border border-border bg-surface"
-          : "border-y border-separator [&_.accordion\_\_item::after]:start-0",
+          ? "kit-disclosures--panel overflow-hidden rounded-panel border border-border bg-surface"
+          : "kit-disclosures--plain border-y border-separator",
         className
       )}
     >
       {items.map((item) => (
         <Accordion.Item key={item.id ?? item.question} id={item.id ?? item.question}>
           <Accordion.Heading level={headingLevel}>
-            <Accordion.Trigger className={cn(look === "plain" && "px-0")}>
+            <Accordion.Trigger>
               <span className="text-start">{item.question}</span>
-              <Accordion.Indicator />
+              <Accordion.Indicator>
+                <Icon name="down" size={16} />
+              </Accordion.Indicator>
             </Accordion.Trigger>
           </Accordion.Heading>
           <Accordion.Panel>
-            <Accordion.Body
-              className={cn(
-                "[&_.accordion\_\_body-inner]:flex [&_.accordion\_\_body-inner]:flex-col [&_.accordion\_\_body-inner]:gap-3",
-                "[&_strong]:text-foreground [&_strong]:[font-weight:500] [&_a]:text-tint [&_a]:underline [&_a]:underline-offset-4",
-                look === "plain" && "[&_.accordion\_\_body-inner]:px-0 [&_.accordion\_\_body-inner]:pe-8"
-              )}
-            >
-              {item.answer}
-            </Accordion.Body>
+            <Accordion.Body>{item.answer}</Accordion.Body>
           </Accordion.Panel>
         </Accordion.Item>
       ))}

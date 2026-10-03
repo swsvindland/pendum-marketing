@@ -3,10 +3,8 @@ import { PageHeader, Section } from "@/components/page";
 import { KitControls } from "./controls";
 import {
   AppIcon,
-  Button,
   ButtonLink,
   Callout,
-  Disclosures,
   Heading,
   Icon,
   Label,
@@ -22,6 +20,8 @@ import {
   Text,
   Value,
 } from "@/vector";
+import { Button } from "@/vector/button";
+import { Disclosures } from "@/vector/disclosure";
 
 export const metadata: Metadata = { title: "Kit", robots: { index: false } };
 

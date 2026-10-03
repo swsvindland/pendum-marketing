@@ -14,18 +14,15 @@ export const apps: App[] = [
     model: "subscription",
     tagline: "Training and nutrition, planned and tracked together",
     summary:
-      "OmegaFyt plans your calorie targets and training, then tracks workouts, food, body measurements, supplements and soreness against that plan. One account keeps the same records on iPhone, Android and the web.",
+      "OmegaFyt tracks workouts, food, body measurements, supplements and soreness against calorie targets that follow your trend weight. One account keeps the same records on iPhone and Android.",
     icon: { light: "/apps/omegafyt.png" },
     glyph: "sync",
-    platforms: ["iPhone", "Android", "Web"],
+    // TODO(owner): add "Web" once the web address is public and set in stores.web. Until then the site describes
+    // the web version (same account in a browser, address published at launch) and never lists it as a platform.
+    platforms: ["iPhone", "Android"],
+    // The public 1.7.0 build has every feature up to the TODO below, so lists that show the first few (home, /apps)
+    // only show what is in the stores today.
     features: [
-      // TODO(owner): the program builder, saved gyms and the rest timer ship in 1.8.0 with the matching backend
-      // deploy. Confirm both are live before launch.
-      {
-        title: "Programs built for your gym",
-        body: "Choose a gym, 2 to 6 training days, 30 to 90 minute sessions and up to three muscles to bring up. The program uses only that gym’s equipment, or you can start a ready-made program or build your own.",
-        icon: "lift",
-      },
       {
         title: "Sets that progress weekly",
         body: "Each set shows a recommended weight and rep count based on the same day last week. Volume can rise by one set a week up to a cap, and the last week is a lighter deload.",
@@ -52,14 +49,21 @@ export const apps: App[] = [
         icon: "chart",
       },
       {
-        title: "Rest timer on every set",
-        body: "A rest timer starts when you log a set, timed to the exercise or the type of lift. It keeps its end time when the app closes.",
-        icon: "timer",
-      },
-      {
         title: "Supplements and soreness",
         body: "Tick off supplements across seven time slots each day. Rate 14 muscle groups for soreness and see the day on a front and back body map.",
         icon: "check",
+      },
+      // TODO(owner): the program builder, saved gyms and the rest timer ship in 1.8.0 with the matching backend
+      // deploy. Confirm both are live before launch.
+      {
+        title: "Programs built for your gym",
+        body: "Choose a gym, 2 to 6 training days, 30 to 90 minute sessions and up to three muscles to bring up. The program uses only that gym’s equipment, or you can start a ready-made program or build your own.",
+        icon: "lift",
+      },
+      {
+        title: "Rest timer on every set",
+        body: "A rest timer starts when you log a set, timed to the exercise or the type of lift. It keeps its end time when the app closes.",
+        icon: "timer",
       },
     ],
     integrations: [
@@ -79,19 +83,15 @@ export const apps: App[] = [
         icon: "pulse",
       },
       {
-        title: "Rest notifications",
-        body: "On iPhone and Android, a notification says when rest is over while the app is in the background, if notifications are allowed.",
-        icon: "notification",
-      },
-      {
         title: "Barcode camera",
         body: "The camera reads EAN-13, EAN-8, UPC-A and UPC-E codes on food packaging. The app does not use the microphone.",
         icon: "camera",
       },
+      // TODO(owner): ships with the 1.8.0 rest timer (see features).
       {
-        title: "Same account in a browser",
-        body: "Your account also opens on the web, with Home, Workout, Eat, Supplements, Reports and Settings. Health sync and purchases are on iPhone and Android only.",
-        icon: "globe",
+        title: "Rest notifications",
+        body: "On iPhone and Android, a notification says when rest is over while the app is in the background, if notifications are allowed.",
+        icon: "notification",
       },
     ],
     privacy: [
@@ -116,7 +116,7 @@ export const apps: App[] = [
     },
     caveats: [
       "Calorie and macro targets, energy expenditure, body fat and one-rep max are estimates, not medical advice.",
-      "Subscriptions are bought in the iPhone and Android apps. The web app has no checkout.",
+      "Subscriptions are bought in the iPhone and Android apps. The web version has no checkout.",
       "OmegaFyt needs an account and a network connection. There is no offline mode.",
       "Health sync, steps and rest notifications are on iPhone and Android only. There is no iPad version.",
       "English only, with numbers and dates in your device’s regional format.",
@@ -129,6 +129,8 @@ export const apps: App[] = [
     slug: "body",
     released: false,
     name: "Vector Body",
+    // TODO(owner): the rename to Vector Body is pending sign-off and the build still says VECTOR BODY. The label is
+    // the planned home-screen name, so the site does not show it.
     label: "Body",
     model: "purchase",
     tagline: "Weight trend, tape measurements and progress photos",
@@ -421,7 +423,7 @@ export const apps: App[] = [
       },
       {
         title: "Calorie shifting",
-        body: "Give one to six chosen weekdays more calories. The other days give up the same total, so the week stays on budget.",
+        body: "In a program, give one to six chosen weekdays more calories. The other days give up the same total, so the week stays on budget.",
         icon: "swap",
       },
     ],
@@ -455,7 +457,7 @@ export const apps: App[] = [
     privacy: [
       "No account and no sign-in.",
       "No analytics or crash reporting. The app’s own code makes no network requests, and food search runs on catalogs stored on the phone.",
-      "Your diary lives in a database on your phone. The app deletes its copy of meal and label photos after reading them.",
+      "Your diary lives in a database on your phone. Meal photos are deleted from the app’s cache when the photo logger closes, and label photos once they are read.",
       "Health sync is off until you turn it on.",
       "Backups are encrypted files, protected by a password you choose and saved where you choose. There is no backup server, and the password cannot be recovered.",
       "On Android, text recognition, the barcode scanner and Gemini Nano are Google system components that follow Google’s own terms.",
@@ -475,9 +477,9 @@ export const apps: App[] = [
     caveats: [
       "Coaching uses the app’s own approximate method, which is not clinically validated. Targets, expenditure and trend weight are estimates for general tracking, not medical advice.",
       "Coaching is for adults 18 and over who are not pregnant or breastfeeding. Medical nutrition needs and eating disorder care need professional guidance.",
-      "Photo logging works only on phones with Apple Intelligence or Gemini Nano. Its foods and portions are estimates for you to review.",
+      "Photo logging needs an eligible iPhone with Apple Intelligence, on iOS 27 for photos and iOS 26 or later for descriptions, or an Android phone with Gemini Nano. Its foods and portions are estimates for you to review.",
       "Packaged food data comes from Open Food Facts under ODbL 1.0, and generic foods from the USDA. Community label data can contain errors.",
-      "The download is large, about 240 MB, because the food catalogs ship with the app.",
+      "The food catalogs ship with the app, so it needs a lot of storage. The catalogs alone take about 590 MB on the phone, and an Android install takes about twice that.",
     ],
     stores: { appStore: null, googlePlay: null },
     price: null,
@@ -487,6 +489,8 @@ export const apps: App[] = [
     slug: "hydration",
     released: false,
     name: "Vector Hydration",
+    // TODO(owner): the rename is pending sign-off; the build still says VECTOR HYDRATION with the label HYDRATE.
+    // The label is the planned home-screen name, so the site does not show it.
     label: "Hydration",
     model: "purchase",
     tagline: "Fluids, caffeine and alcohol, logged in one tap",

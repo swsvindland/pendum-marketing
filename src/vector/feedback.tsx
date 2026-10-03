@@ -42,14 +42,12 @@ export function Callout({
   );
 }
 
-/** Callout danger with no title. Renders nothing when empty. */
+/** Callout danger with no title: the danger start rule, the message in `small` foreground (§5.7). Empty: nothing. */
 export function ErrorText({ message, id }: { message?: string | null; id?: string }) {
   if (!message) return null;
   return (
     <div id={id} className="flex flex-col gap-1 border-s-2 border-danger ps-3">
-      <Text variant="small" tone="danger">
-        {message}
-      </Text>
+      <Text variant="small">{message}</Text>
     </div>
   );
 }
@@ -60,10 +58,13 @@ const dotClass = {
   attention: "bg-warning",
   error: "bg-danger",
   idle: "border border-border-strong",
-  off: "bg-muted",
+  off: "border border-muted",
 } as const;
 
-/** A 6pt dot, then the status word in the Label style, then optional meta. Never a pill, never pulses. */
+/**
+ * A 6pt dot (a fill for live, ok, attention and error; a 1pt outline for idle and off), then the status word as a
+ * muted Label, then optional meta. Never a pill, never pulses. The colour is never the only signal: the word says it.
+ */
 export function Status({
   state,
   label,
@@ -78,7 +79,7 @@ export function Status({
   return (
     <span className={cn("inline-flex items-center gap-2", className)}>
       <span aria-hidden className={cn("size-1.5 shrink-0 rounded-full", dotClass[state])} />
-      <Label tone={state === "off" || state === "idle" ? "muted" : "default"}>{label}</Label>
+      <Label>{label}</Label>
       {meta ? <span className="type-readout-xs text-muted">{meta}</span> : null}
     </span>
   );

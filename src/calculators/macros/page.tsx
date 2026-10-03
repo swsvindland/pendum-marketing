@@ -39,19 +39,26 @@ carbs (g) = round((calories − 4 × protein − 9 × fat) / 4)`}
             mini-cut of 2 to 4 weeks.
           </p>
           <p>
-            The <strong>protein levels</strong> (1.4, 1.6, 2.0 and 2.2 g/kg) follow the ISSN position stand: 1.4 to 2.0
-            g/kg a day is sufficient for most people who exercise, and higher intakes can help keep lean mass during a
-            calorie deficit. 1.6 g/kg is the default.
+            The <strong>protein levels</strong> are the four Vector Macros offers: 1.4, 1.6, 2.0 and 2.2 g/kg, with 1.6
+            g/kg the default. The ISSN position stand finds 1.4 to 2.0 g/kg a day sufficient for most people who
+            exercise, and says 2.3 to 3.1 g/kg may be needed to maximize lean-mass retention in resistance-trained
+            people during a calorie deficit. The levels here stop at 2.2 g/kg, below that range.
           </p>
           <p>
             Targets are generated only between 1,500 and 5,000 kcal a day, from a maintenance of 1,200 to 5,000 kcal,
-            and only while carbs stay at zero or above. A cut is not generated when BMI is under 18.5. These are the
-            limits Vector Macros uses: product limits, not individual safety thresholds.
+            and only while carbs stay at zero or above. These are the limits Vector Macros uses: product limits, not
+            individual safety thresholds.
           </p>
           <p>
-            For example, 80 kg cutting at 0.5% a week from a maintenance of 2,600 kcal loses 0.4 kg a week, or 440 kcal a
-            day, so calories are 2,160. Protein at 1.6 g/kg is 128 g. Balanced fat is (2,160 − 512) × 0.40 / 9 = 73 g,
-            which leaves 248 g of carbs.
+            Vector Macros also refuses a cut when BMI is under 18.5 or the goal weight is under BMI 18.5, and it caps
+            the weekly rate at the distance to the goal weight. This calculator has no goal weight, so the weight after one week at the chosen
+            pace stands in for the goal: a cut is not generated when BMI is under 18.5 now, or would be after that week.
+            When the cut is generated, its targets are the ones the app gives for that goal.
+          </p>
+          <p>
+            For example, at 180 cm and 80 kg, cutting at 0.5% a week from a maintenance of 2,600 kcal loses 0.4 kg a
+            week, or 440 kcal a day, so calories are 2,160. Protein at 1.6 g/kg is 128 g. Balanced fat is (2,160 − 512) ×
+            0.40 / 9 = 73 g, which leaves 248 g of carbs.
           </p>
           <p>
             <strong>7,700 kcal per kg</strong> (3,500 per lb) is a short-term approximation. The energy in a kilogram
@@ -77,8 +84,9 @@ carbs (g) = round((calories − 4 × protein − 9 × fat) / 4)`}
           href: "https://pubmed.ncbi.nlm.nih.gov/17848938/",
         },
         {
-          label: "NIDDK. Body Weight Planner.",
-          href: "https://www.niddk.nih.gov/health-information/weight-management/body-weight-planner",
+          label:
+            "Hall KD, Sacks G, Chandramohan D, et al. Quantification of the effect of energy imbalance on bodyweight. Lancet. 2011;378(9793):826–837.",
+          href: "https://pubmed.ncbi.nlm.nih.gov/21872751/",
         },
         { label: "CDC. Adult BMI categories.", href: "https://www.cdc.gov/bmi/adult-calculator/bmi-categories.html" },
       ]}

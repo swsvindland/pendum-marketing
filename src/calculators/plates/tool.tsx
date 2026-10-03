@@ -4,10 +4,11 @@ import { useState } from "react";
 import { GYM_DEFAULTS, groupPlates, plateLoading, type PlateUnit } from "@/lib/calc/plates";
 import { formatNumber, kgToLb, lbToKg } from "@/lib/units";
 import { Note, ReadoutRow, Value } from "@/vector";
-import { ChipRow, Select } from "@/vector/form";
+import { ChipRow } from "@/vector/form/chip-row";
+import { Select } from "@/vector/form/select";
 import { EMPTY, MassField, UnitChoice, type Measure } from "../shared/fields";
-import { ToolLayout } from "../shared/frame";
 import { EmptyResult, HeroValue, ReadoutTable, ResultPanel } from "../shared/results";
+import { ToolLayout } from "../shared/tool-layout";
 import { useUnits } from "../shared/use-units";
 
 // 1 lb as the floor, so the range reads "1 to 500 kg" and "1 to 1,102 lb".
@@ -65,23 +66,36 @@ const plateHeight = (plate: number, heaviest: number) => 28 + 72 * Math.min(1, p
 const plateWidth = (plate: number, heaviest: number) => 6 + 8 * Math.min(1, plate / heaviest);
 
 /**
+ * Plates drawn on the sleeve at most. Even at their 4 px minimum, 20 plates and the count after them fit the
+ * narrowest sleeve (about 210 px at 320 wide). The default plates need at most 14 a side; only a set of small
+ * plates alone asks for more (2.5 lb plates alone: 211 a side for 1,100 lb).
+ */
+const DRAWN_PLATES = 20;
+
+/**
  * One end of the bar, drawn from the side: the shaft, the collar, then the sleeve with the plates heaviest first
- * against the collar. Neutral marks only, radius 2. Decorative: the table beside it states every plate.
+ * against the collar. Past DRAWN_PLATES the drawing stops and states how many more go on ("+191"). Neutral marks
+ * only, radius 2. Decorative: the table beside it states every plate.
  */
 function BarEnd({ side, heaviest }: { side: number[]; heaviest: number }) {
+  const drawn = side.slice(0, DRAWN_PLATES);
+  const more = side.length - drawn.length;
   return (
     <div aria-hidden className="flex h-28 items-center">
       <span className="h-1.5 w-8 shrink-0 bg-border-strong" />
       <span className="h-8 w-2 shrink-0 rounded-mark bg-foreground-secondary" />
-      <div className="relative flex h-full min-w-0 flex-1 items-center gap-0.5 ps-0.5">
+      <div className="relative flex h-full min-w-0 flex-1 items-center gap-0.5 overflow-hidden ps-0.5">
         <span className="absolute inset-x-0 top-1/2 h-3 -translate-y-1/2 rounded-mark border border-border-strong bg-surface" />
-        {side.map((plate, i) => (
+        {drawn.map((plate, i) => (
           <span
             key={i}
             className="relative min-w-1 shrink rounded-mark bg-foreground-secondary"
             style={{ height: `${plateHeight(plate, heaviest)}%`, width: plateWidth(plate, heaviest) }}
           />
         ))}
+        {more > 0 ? (
+          <span className="relative shrink-0 bg-surface px-1 type-readout-xs text-muted">+{formatNumber(more)}</span>
+        ) : null}
       </div>
     </div>
   );

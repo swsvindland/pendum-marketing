@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { GYM_DEFAULTS, achievableLoads, groupPlates, perSideSums, plateLoading, platesPerSide, roundLoad } from "./plates";
+import {
+  GYM_DEFAULTS,
+  achievableLoads,
+  groupPlates,
+  perSideSums,
+  plateLoading,
+  platesPerSide,
+  roundLoad,
+  searchLimit,
+} from "./plates";
 
 const kg = GYM_DEFAULTS.kg;
 const lb = GYM_DEFAULTS.lb;
@@ -32,6 +41,52 @@ describe("roundLoad", () => {
     expect(roundLoad(70, 20, [20])).toBe(60);
     // No plates: the bar alone.
     expect(roundLoad(70, 20, [])).toBe(20);
+  });
+
+  it("reaches the next load above the target, past Lift's search limit", () => {
+    // Lift searches up to target × 1.25 + 10 and would give the lighter, further load in each of these.
+    // 45 lb bar, 45s only: 95 lb lies between 45 (50 under) and 135 (40 over).
+    expect(roundLoad(95, 45, [45])).toBe(135);
+    // 35 lb bar, 45s only: 85 lb lies between 35 (50 under) and 125 (40 over).
+    expect(roundLoad(85, 35, [45])).toBe(125);
+    // 45 lb bar, 45s and 35s: 82 lb lies between 45 (37 under) and 115 (33 over).
+    expect(roundLoad(82, 45, [45, 35])).toBe(115);
+    // 20 kg bar, 25s only: 46 kg lies between 20 (26 under) and 70 (24 over).
+    expect(roundLoad(46, 20, [25])).toBe(70);
+    // 10 kg bar, 20s only: 31 kg lies between 10 (21 under) and 50 (19 over).
+    expect(roundLoad(31, 10, [20])).toBe(50);
+  });
+
+  it("finds the nearest load for sparse plate sets, by brute force", () => {
+    const cases = [
+      { bar: 45, plates: [45] },
+      { bar: 35, plates: [45] },
+      { bar: 45, plates: [45, 35] },
+      { bar: 20, plates: [25] },
+      { bar: 10, plates: [20] },
+      { bar: 20, plates: [25, 15] },
+    ];
+    for (const { bar, plates } of cases) {
+      // Every load from 0 to 20 of each plate a side, ascending; a tie keeps the lighter (earlier) load.
+      const loads = new Set<number>();
+      for (let a = 0; a <= 20; a++)
+        for (let b = 0; b <= (plates.length > 1 ? 20 : 0); b++) loads.add(bar + 2 * (a * plates[0] + b * (plates[1] ?? 0)));
+      const sorted = [...loads].sort((x, y) => x - y);
+      for (let target = 1; target <= 300; target++) {
+        const nearest = sorted.reduce((best, load) => (Math.abs(load - target) < Math.abs(best - target) ? load : best));
+        expect(roundLoad(target, bar, plates)).toBe(nearest);
+      }
+    }
+  });
+
+  it("searches exactly as far as Lift with every default plate", () => {
+    // The lightest default plate (1.25 kg, 2.5 lb) needs at most 2.5 or 5 above the target, inside Lift's + 10.
+    for (let target = 1; target <= 1102; target++) {
+      expect(searchLimit(target, kg.plates)).toBe(target * 1.25 + 10);
+      expect(searchLimit(target, lb.plates)).toBe(target * 1.25 + 10);
+    }
+    // With no plates there is nothing to reach; Lift's limit stands.
+    expect(searchLimit(70, [])).toBe(97.5);
   });
 });
 

@@ -8,7 +8,7 @@ import { PlanPanels } from "@/components/pricing/plan-panel";
 import { ButtonLink, LinkButton } from "@/vector";
 
 const description =
-  "OmegaFyt Pro is a subscription with an account that syncs across iPhone, Android and the web. Vector Body, Lift, Macros and Hydration are one-time purchases that work offline, with no account.";
+  "OmegaFyt is the subscription, with one account that keeps your records in step on iPhone and Android. Vector Body, Lift, Macros and Hydration are one-time purchases that work offline, with no account.";
 
 export const metadata: Metadata = pageMetadata({ title: "Pricing", description, path: "/pricing" });
 
@@ -21,9 +21,9 @@ export default function PricingPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Pricing / Models"
+        eyebrow="Subscription / One-time purchase"
         title="Two ways to pay"
-        subtitle="OmegaFyt is a subscription with an account that syncs across iPhone, Android and the web. The four Vector apps are one-time purchases that work offline, with no account."
+        subtitle="OmegaFyt is a subscription with an account that syncs across iPhone and Android. The four Vector apps are one-time purchases that work offline, with no account."
         actions={
           <>
             <ButtonLink href="/apps" variant="primary" icon="forward" iconPosition="end">
@@ -41,8 +41,8 @@ export default function PricingPage() {
       <Section
         id="compare"
         eyebrow="Compare / Models"
-        title="Side by side"
-        intro="What each model means for your account, your records and how you pay. Where the Vector apps differ from each other, the note says which app does what."
+        title="Account, records and payment"
+        intro="Where the Vector apps differ from each other, the note says which app does what."
         bordered
       >
         <CompareTable />

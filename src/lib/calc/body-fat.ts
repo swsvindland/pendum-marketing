@@ -1,6 +1,8 @@
-// US Navy circumference body-fat estimate and the ACE body-fat categories, as Vector Body computes and labels them
-// (body-track src/lib/metrics.ts bodyFat, src/lib/metric-context.ts). Lengths are cm here; the equations take
-// inches, so each term is divided by 2.54 first, exactly as the app does.
+// US Navy circumference body-fat estimate, as Vector Body computes it (body-track src/lib/metrics.ts bodyFat), and
+// the ACE body-fat categories with Vector Body's edges (src/lib/metric-context.ts). Lengths are cm here; the
+// equations take inches, so each term is divided by 2.54 first, exactly as the app does. The category is judged on
+// the one-decimal value shown, where the app judges the unrounded value, so a result less than 0.05 below an edge
+// is in the band below there.
 
 export type NavyEquation = "male" | "female";
 
@@ -54,14 +56,24 @@ export const roundBodyFat = (value: number) => Math.round(value * 10) / 10;
 export type BodyFatCategory = "veryLow" | "lean" | "typical" | "elevated";
 
 /**
- * ACE category edges [low, lean, high] by sex, as Vector Body uses them. Below low is the essential-fat range;
- * low to lean the athlete range; lean to high ACE's fitness and average ranges combined; high and over ACE's
- * obese range. Each edge belongs to the band above it.
+ * ACE category edges [low, lean, high] by sex, as Vector Body uses them. Below low is ACE's essential fat range and
+ * anything under it; low to lean the athlete range; lean to high ACE's fitness and average ranges combined; high and
+ * over ACE's obese range. Each edge belongs to the band above it.
  */
 export const ACE_EDGES: Record<NavyEquation, readonly [number, number, number]> = {
   male: [6, 14, 25],
   female: [14, 21, 32],
 };
+
+/** ACE's essential fat range [from, to] by sex, %: the lower part of the very-low band, not all of it. */
+export const ACE_ESSENTIAL: Record<NavyEquation, readonly [number, number]> = {
+  male: [2, 5],
+  female: [10, 13],
+};
+
+/** True when a body-fat % is below ACE's essential fat range, judged on the one-decimal value. */
+export const belowEssentialFat = (value: number, equation: NavyEquation) =>
+  roundBodyFat(value) < ACE_ESSENTIAL[equation][0];
 
 /** Category of a body-fat %, judged on the one-decimal value so the shown number and its word always agree. */
 export function bodyFatCategory(value: number, equation: NavyEquation): BodyFatCategory {

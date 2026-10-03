@@ -6,12 +6,11 @@ import { pageMetadata } from "@/components/site/metadata";
 import { site } from "@/content/site";
 import { ButtonLink, LinkButton, Note, Panel, Status, Text } from "@/vector";
 
-export const metadata: Metadata = pageMetadata({
-  title: "Support",
-  description:
-    "How to reach support, and answers about Health sync, backups, reminders, OmegaFyt accounts and the calculators.",
-  path: "/support",
-});
+// What the page covers. "How to reach us" is promised only once the owner sets a support address.
+const topics = "Health sync, backups, reminders, OmegaFyt accounts and the calculators";
+const summary = site.supportEmail ? `How to reach support, and answers about ${topics}.` : `Answers about ${topics}.`;
+
+export const metadata: Metadata = pageMetadata({ title: "Support", description: summary, path: "/support" });
 
 // Answers come from docs/sources/app-facts.json. Each one says what happens, then what to do (§10).
 const groups: { id: string; title: string; intro?: string; items: Question[] }[] = [
@@ -83,8 +82,9 @@ const groups: { id: string; title: string; intro?: string; items: Question[] }[]
         answer: (
           <>
             <p>
-              No. Vector Body, Lift, Macros and Hydration have no account and no server, so your records are only on
-              your phone, in its device backup if that is on, and in backup files you saved.
+              No. Vector Body, Lift, Macros and Hydration have no account and no server, so support holds no copy of
+              your records. They are in the app on your phone, in its device backup if that is on, in backup files
+              you saved, and in Apple Health or Health Connect for what sync shares, if it is on.
             </p>
             <p>
               Vector Body and Vector Hydration have no backup in the app, and deleting either app may remove its
@@ -153,8 +153,8 @@ const groups: { id: string; title: string; intro?: string; items: Question[] }[]
         question: "Is what I type into a calculator saved?",
         answer: (
           <p>
-            No. Calculators run in your browser, and nothing you type is stored or sent. The site remembers only your
-            unit choice, in this browser.
+            No. Calculators run in your browser, and nothing you type is stored or sent. This browser remembers only
+            your unit and appearance choices.
           </p>
         ),
       },
@@ -177,9 +177,9 @@ export default function SupportPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Help / Apps and calculators"
+        eyebrow="Vector / Apps and calculators"
         title="Support"
-        subtitle="Answers to the questions that come up most, and how to reach us."
+        subtitle={summary}
       />
       <div className="mx-auto flex w-full max-w-data flex-col px-gutter py-10 md:py-12">
         <Group
@@ -209,7 +209,7 @@ export default function SupportPage() {
               ) : (
                 <>
                   <Status state="idle" label="Support address coming soon" />
-                  <Note>Until it is published, the answers below cover the most common questions.</Note>
+                  <Note>Until it is published, start with the answers below.</Note>
                 </>
               )}
             </Panel.Body>

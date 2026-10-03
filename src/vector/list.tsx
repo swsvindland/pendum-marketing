@@ -55,22 +55,19 @@ export function ListRow({
     icon ? "before:start-12" : "before:start-4"
   );
   if (!href) return <li className={rowClass}>{content}</li>;
+  // The row spans the clipped panel edge to edge, so its focus outline is drawn inside it (inset 2), not outside.
+  const linkClass = cn(
+    rowClass,
+    "w-full hover:bg-surface-secondary active:bg-surface-secondary before:hidden focus-visible:-outline-offset-2"
+  );
   return (
     <li className={cn(rowClass, "p-0")}>
       {external ? (
-        <a
-          href={href}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={cn(rowClass, "w-full hover:bg-surface-secondary active:bg-surface-secondary before:hidden")}
-        >
+        <a href={href} target="_blank" rel="noopener noreferrer" className={linkClass}>
           {content}
         </a>
       ) : (
-        <Link
-          href={href}
-          className={cn(rowClass, "w-full hover:bg-surface-secondary active:bg-surface-secondary before:hidden")}
-        >
+        <Link href={href} className={linkClass}>
           {content}
         </Link>
       )}

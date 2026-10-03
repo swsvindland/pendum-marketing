@@ -3,8 +3,8 @@ import { MEAL_COUNTS, PROTEIN_GOALS, grams, leanMass, leanMassView, perMeal, pro
 
 describe("protein", () => {
   it("uses the published ranges and Vector Macros' settings", () => {
-    // ISSN 2017: 1.4–2.0 g/kg; Morton et al. 2018: 1.62 g/kg breakpoint, upper 95% CI 2.20; Hector and Phillips
-    // 2018: 1.6–2.4 g/kg in a deficit.
+    // ISSN 2017: 1.4–2.0 g/kg; Morton et al. 2018: 1.62 g/kg breakpoint, 95% CI 1.03–2.20; Hector and Phillips
+    // 2018: 1.6–2.4 g/kg for athletes in a deficit.
     expect(PROTEIN_GOALS.maintain).toMatchObject({ min: 1.4, max: 2.0, target: 1.6 });
     expect(PROTEIN_GOALS.build).toMatchObject({ min: 1.6, max: 2.2, target: 2.0 });
     expect(PROTEIN_GOALS.lose).toMatchObject({ min: 1.6, max: 2.4, target: 2.2 });
@@ -22,6 +22,8 @@ describe("protein", () => {
     expect(grams(80, 2.2)).toBe(176);
     // 72.5 × 1.4 = 101.5 rounds half up to 102.
     expect(grams(72.5, 1.4)).toBe(102);
+    // 82.5 × 1.4 is stored as 115.49999999999999, so Math.round gives 115, as Vector Macros' own expression does.
+    expect(grams(82.5, 1.4)).toBe(115);
   });
 
   it("gives the range, target and RDA for each goal", () => {
@@ -49,14 +51,39 @@ describe("protein", () => {
     expect(leanMass(80, 15)).toBeCloseTo(68, 10);
     const lose = leanMassView(80, 15, "lose")!;
     expect(lose.leanKg).toBeCloseTo(68, 10);
-    // Helms et al. 2014, 2.3–3.1 g/kg lean mass: 2.3 × 68 = 156.4 → 156; 3.1 × 68 = 210.8 → 211.
+    // Helms et al. 2014, 2.3–3.1 g/kg lean mass: 2.3 × 68 = 156.4 → 156; 3.1 × 68 = 210.8 → 211, above the 176 g
+    // target, so the range is shown.
     expect(lose.deficit).toEqual({ min: 156, max: 211 });
+    expect(lose).toMatchObject({ leanTop: 211, pastLeanTop: false });
     // The 128–192 g body-weight range is 1.88–2.82 g per kg of lean mass.
     expect(lose.perLeanKg.min).toBeCloseTo(128 / 68, 10);
     expect(lose.perLeanKg.max).toBeCloseTo(192 / 68, 10);
     // Only a fat-loss goal gets the deficit range.
     expect(leanMassView(80, 15, "build")!.deficit).toBeNull();
     expect(leanMassView(80, 15, "maintain")!.deficit).toBeNull();
+  });
+
+  it("shows the lean-mass range only when it reaches above the target", () => {
+    // 80 kg at 25%: lean 60 kg, 138–186 g; 186 is above the 176 g target.
+    expect(leanMassView(80, 25, "lose")).toMatchObject({ deficit: { min: 138, max: 186 }, pastLeanTop: false });
+    // 80 kg at 29%: lean 56.8 kg, 3.1 × 56.8 = 176.08 → 176, equal to the target: neither the range nor the note.
+    expect(leanMassView(80, 29, "lose")).toMatchObject({ leanTop: 176, deficit: null, pastLeanTop: false });
+    // 80 kg at 30%: lean 56 kg, 3.1 × 56 = 173.6 → 174, under the 176 g target.
+    expect(leanMassView(80, 30, "lose")).toMatchObject({ leanTop: 174, deficit: null, pastLeanTop: true });
+    // 100 kg at 40%: lean 60 kg, top 186 g against a 220 g target. 150 kg at 45%: lean 82.5 kg, top 255.75 → 256 g
+    // against 330 g.
+    expect(leanMassView(100, 40, "lose")).toMatchObject({ leanTop: 186, deficit: null, pastLeanTop: true });
+    expect(leanMassView(150, 45, "lose")).toMatchObject({ leanTop: 256, deficit: null, pastLeanTop: true });
+  });
+
+  it("flags a target past 3.1 g per kg of lean mass for every goal", () => {
+    // Build, 100 kg: the 200 g target passes 3.1 g/kg lean once lean mass is under 64.5 kg (body fat over 35.5%).
+    // At 40%: top 186 g. At 30%: lean 70 kg, top 217 g.
+    expect(leanMassView(100, 40, "build")).toMatchObject({ leanTop: 186, pastLeanTop: true });
+    expect(leanMassView(100, 30, "build")).toMatchObject({ leanTop: 217, pastLeanTop: false });
+    // Maintain, 100 kg: the 160 g target against lean 50 kg (top 155 g) at 50%, and lean 55 kg (top 171 g) at 45%.
+    expect(leanMassView(100, 50, "maintain")).toMatchObject({ leanTop: 155, pastLeanTop: true });
+    expect(leanMassView(100, 45, "maintain")).toMatchObject({ leanTop: 171, pastLeanTop: false });
   });
 
   it("rejects body fat outside 0 to 100", () => {

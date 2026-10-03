@@ -1,10 +1,17 @@
-// Vector kit, web edition. Pages import from "@/vector" only; nothing here imports from the site.
+// Vector kit, web edition. Nothing here imports from the site. This barrel is server-safe and imports no
+// @heroui/react code, so a page pays only for what it renders. HeroUI-backed parts have entry points of their own:
+//   @/vector/button      Button, IconButton
+//   @/vector/disclosure  Disclosures
+//   @/vector/form/field, /select, /choices, /chip-row  (client inputs; @/vector/form re-exports all four)
+//   @/vector/provider    VectorProvider (React Aria locale)
+//   @/vector/appearance  the Appearance setting: head script and store
 export { AppIcon } from "./app-icon";
-export { Button, ButtonLink, IconButton, LinkButton, buttonClass, type ButtonVariant } from "./button";
+export { ButtonLink, LinkButton, buttonClass, type ButtonVariant } from "./button-link";
 export { cn } from "./cn";
 export { Callout, ErrorText, Meter, Status } from "./feedback";
-export { Disclosures, type DisclosureItem } from "./disclosure";
+export type { DisclosureItem } from "./disclosure";
 export { Icon, type IconName } from "./icon";
 export { ListRow, RowList } from "./list";
 export { Panel, ReadoutRow, Rule } from "./panel";
+export { SystemState } from "./system-state";
 export { Heading, Label, Meta, Note, Text, Value, isMonoSafe, roleClass, toneClass, type RoleName, type Tone } from "./text";

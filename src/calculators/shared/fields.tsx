@@ -1,24 +1,43 @@
 "use client";
 
-import { useState } from "react";
-import { cmToFtIn, cmToIn, formatNumber, ftInToCm, inToCm, kgToLb, lbToKg, parseNumber } from "@/lib/units";
-import { ErrorText } from "@/vector/feedback";
-import { Choices, Field } from "@/vector/form";
+import { useEffect, useId, useState } from "react";
+import { ACTIVITY_LEVELS, PROFILE_LIMITS, activityLevel, type Activity } from "@/lib/calc/tdee";
+import { cmToFtIn } from "@/lib/units";
+import { ErrorText } from "@/vector";
+import { Choices } from "@/vector/form/choices";
+import { Field } from "@/vector/form/field";
+import { Select } from "@/vector/form/select";
+import {
+  checkHeightImperial,
+  checkNumber,
+  checkQuantity,
+  quantityScale,
+  settled,
+  type Measure,
+} from "./measure";
 import type { UnitSystem } from "./use-units";
 
-/** A measured input held in canonical units (kg, cm) with its validation message. */
-export type Measure = { value: number | null; error: string | null };
-export const EMPTY: Measure = { value: null, error: null };
+export { EMPTY, type Measure } from "./measure";
 
 /** Up to `digits` decimals, no grouping, no trailing zeros: what goes back into a field. */
 const editable = (n: number, digits = 1) => String(Number(n.toFixed(digits)));
+
+/**
+ * Keeps the parent's Measure in line with what the field shows. Typing reports through `onChange` directly; this
+ * covers a remount (a unit switch, a field shown again), where the restored text is validated again in the current
+ * units. The old unit's error is replaced, and a draft that is valid in the new unit reaches the result.
+ */
+function useSettle(shown: Measure, value: Measure, onChange: (m: Measure) => void) {
+  useEffect(() => {
+    if (!settled(shown, value)) onChange(shown);
+  }, [shown, value, onChange]);
+}
 
 /** Metric / Imperial, shared across calculators. */
 export function UnitChoice({ units, onChange }: { units: UnitSystem; onChange: (u: UnitSystem) => void }) {
   return (
     <Choices
       label="Units"
-      size="sm"
       value={units}
       onChange={onChange}
       values={[
@@ -35,7 +54,7 @@ type QuantityProps = {
   /** Canonical value (kg for mass, cm for length). */
   value: Measure;
   onChange: (m: Measure) => void;
-  /** Canonical bounds. */
+  /** Canonical bounds. The error states them in the current unit, rounded inward to whole numbers. */
   min: number;
   max: number;
   hint?: string;
@@ -53,33 +72,35 @@ function QuantityInner({
   max,
   hint,
   placeholder,
-  noun: nounProp,
+  noun,
   kind,
-}: QuantityProps & { kind: "mass" | "length" }) {
-  const toDisplay = kind === "mass" ? (units === "metric" ? (n: number) => n : kgToLb) : units === "metric" ? (n: number) => n : cmToIn;
-  const fromDisplay = kind === "mass" ? (units === "metric" ? (n: number) => n : lbToKg) : units === "metric" ? (n: number) => n : inToCm;
-  const unit = kind === "mass" ? (units === "metric" ? "kg" : "lb") : units === "metric" ? "cm" : "in";
-  const noun = nounProp ?? `a ${label.toLowerCase()}`;
-  const lo = Math.ceil(toDisplay(min));
-  const hi = Math.floor(toDisplay(max));
-  const [text, setText] = useState(() => (value.value === null ? "" : editable(toDisplay(value.value))));
+}: QuantityProps & { kind: "mass" | "length" | "height" }) {
+  const quantity = kind === "mass" ? "mass" : "length";
+  const scale = quantityScale(quantity, units);
+  const check = (t: string) =>
+    checkQuantity(t, { kind: quantity, units, min, max, noun: noun ?? `a ${label.toLowerCase()}` });
+  const [text, setText] = useState(() => {
+    if (value.value !== null) return editable(scale.toDisplay(value.value));
+    const draft = value.draft;
+    // A typed mass or length is kept across a unit switch and read in the new unit (400 typed in kg, meant as lb).
+    // A height typed as feet and inches has no single text to carry into cm, so it starts empty.
+    if (!draft || draft.inches !== undefined || (kind === "height" && draft.units !== units)) return "";
+    return draft.text;
+  });
+  const shown = check(text);
+  useSettle(shown, value, onChange);
   return (
     <Field
       label={label}
       numeric
-      unit={unit}
+      unit={scale.unit}
       value={text}
       hint={hint}
       placeholder={placeholder?.[units]}
-      error={value.error}
+      error={shown.error}
       onChange={(t) => {
         setText(t);
-        if (!t.trim()) return onChange(EMPTY);
-        const n = parseNumber(t);
-        const canonical = n === null ? null : fromDisplay(n);
-        if (canonical === null || canonical < min - 1e-9 || canonical > max + 1e-9)
-          return onChange({ value: null, error: `Enter ${noun} between ${formatNumber(lo)} and ${formatNumber(hi)} ${unit}.` });
-        onChange({ value: canonical, error: null });
+        onChange(check(t));
       }}
     />
   );
@@ -96,24 +117,21 @@ export function LengthField(props: QuantityProps) {
 }
 
 function HeightImperial({ value, onChange, min, max, label }: QuantityProps) {
-  const start = value.value === null ? null : cmToFtIn(value.value, 1);
-  const [ft, setFt] = useState(start ? String(start.ft) : "");
-  const [inches, setInches] = useState(start ? editable(start.in) : "");
-  const lo = cmToFtIn(min);
-  const hi = cmToFtIn(max);
-  const message = `Enter a height between ${lo.ft} ft ${lo.in} in and ${hi.ft} ft ${hi.in} in.`;
-  const update = (f: string, i: string) => {
-    if (!f.trim() && !i.trim()) return onChange(EMPTY);
-    const fv = f.trim() ? parseNumber(f) : 0;
-    const iv = i.trim() ? parseNumber(i) : 0;
-    if (fv === null || iv === null || fv < 0 || iv < 0 || iv >= 12 || !Number.isInteger(fv))
-      return onChange({ value: null, error: message });
-    const cm = ftInToCm(fv, iv);
-    if (cm < min - 1e-9 || cm > max + 1e-9) return onChange({ value: null, error: message });
-    onChange({ value: cm, error: null });
-  };
+  const errorId = useId();
+  const [start] = useState(() => {
+    if (value.value !== null) {
+      const { ft, in: inches } = cmToFtIn(value.value, 1);
+      return { ft: String(ft), inches: editable(inches) };
+    }
+    const draft = value.draft;
+    return draft?.units === "imperial" ? { ft: draft.text, inches: draft.inches ?? "" } : { ft: "", inches: "" };
+  });
+  const [ft, setFt] = useState(start.ft);
+  const [inches, setInches] = useState(start.inches);
+  const shown = checkHeightImperial(ft, inches, min, max);
+  useSettle(shown, value, onChange);
   return (
-    <fieldset className="flex min-w-0 flex-col gap-2">
+    <fieldset className="flex min-w-0 flex-col gap-2" aria-describedby={shown.error ? errorId : undefined}>
       <legend className="mb-2 type-field-label text-foreground-secondary">{label}</legend>
       <div className="grid grid-cols-2 gap-3">
         <Field
@@ -124,7 +142,7 @@ function HeightImperial({ value, onChange, min, max, label }: QuantityProps) {
           value={ft}
           onChange={(t) => {
             setFt(t);
-            update(t, inches);
+            onChange(checkHeightImperial(t, inches, min, max));
           }}
           placeholder="5"
         />
@@ -135,12 +153,12 @@ function HeightImperial({ value, onChange, min, max, label }: QuantityProps) {
           value={inches}
           onChange={(t) => {
             setInches(t);
-            update(ft, t);
+            onChange(checkHeightImperial(ft, t, min, max));
           }}
           placeholder="10"
         />
       </div>
-      <ErrorText message={value.error} />
+      <ErrorText id={errorId} message={shown.error} />
     </fieldset>
   );
 }
@@ -149,7 +167,7 @@ function HeightImperial({ value, onChange, min, max, label }: QuantityProps) {
 export function HeightField(props: Omit<QuantityProps, "label"> & { label?: string }) {
   const p = { label: "Height", ...props };
   if (props.units === "imperial") return <HeightImperial key="imperial" {...p} />;
-  return <QuantityInner key="metric" kind="length" {...p} />;
+  return <QuantityInner key="metric" kind="height" {...p} />;
 }
 
 /** A plain number with its own unit word that does not change with the unit system (age, reps, %). */
@@ -173,12 +191,15 @@ export function NumberField({
   unit?: string;
   hint?: string;
   placeholder?: string;
+  /** Whole numbers only; a decimal gets its own error ("as a whole number"). */
   integer?: boolean;
   /** Overrides the noun in the error ("an age"). */
   noun?: string;
 }) {
-  const [text, setText] = useState(() => (value.value === null ? "" : editable(value.value, 2)));
-  const message = `Enter ${noun ?? `a ${label.toLowerCase()}`} between ${formatNumber(min)} and ${formatNumber(max)}${unit ? ` ${unit}` : ""}.`;
+  const check = (t: string) => checkNumber(t, { min, max, unit, integer, noun: noun ?? `a ${label.toLowerCase()}` });
+  const [text, setText] = useState(() => (value.value !== null ? editable(value.value, 2) : (value.draft?.text ?? "")));
+  const shown = check(text);
+  useSettle(shown, value, onChange);
   return (
     <Field
       label={label}
@@ -188,15 +209,88 @@ export function NumberField({
       value={text}
       hint={hint}
       placeholder={placeholder}
-      error={value.error}
+      error={shown.error}
       onChange={(t) => {
         setText(t);
-        if (!t.trim()) return onChange(EMPTY);
-        const n = parseNumber(t);
-        if (n === null || n < min || n > max || (integer && !Number.isInteger(n)))
-          return onChange({ value: null, error: message });
-        onChange({ value: n, error: null });
+        onChange(check(t));
       }}
+    />
+  );
+}
+
+// The profile inputs that are not a mass or a length: the Mifflin-St Jeor ones (TDEE, macros), and sex and age for
+// any calculator that asks for them (body fat, FFMI, water, strength score, heart rate).
+
+export type Sex = "female" | "male";
+
+const SEXES: readonly { value: Sex | ""; label: string }[] = [
+  { value: "female", label: "Female" },
+  { value: "male", label: "Male" },
+];
+
+/**
+ * Female / Male: which form of an equation, or which reference, applies. Starts unselected (""), and the result
+ * waits for a choice; no calculator assumes a sex.
+ */
+export function SexChoice({
+  value,
+  onChange,
+  label = "Sex",
+}: {
+  value: Sex | "";
+  onChange: (sex: Sex) => void;
+  label?: string;
+}) {
+  return (
+    <Choices
+      label={label}
+      values={SEXES}
+      value={value}
+      onChange={(v) => {
+        if (v) onChange(v);
+      }}
+    />
+  );
+}
+
+/** Age in whole years. 18 to 100 unless the calculator gives its own range, as Vector Macros accepts it. */
+export function AgeField({
+  value,
+  onChange,
+  min = PROFILE_LIMITS.age.min,
+  max = PROFILE_LIMITS.age.max,
+  hint,
+}: {
+  value: Measure;
+  onChange: (m: Measure) => void;
+  min?: number;
+  max?: number;
+  hint?: string;
+}) {
+  return (
+    <NumberField
+      label="Age"
+      unit="years"
+      integer
+      noun="an age"
+      min={min}
+      max={max}
+      value={value}
+      onChange={onChange}
+      hint={hint}
+    />
+  );
+}
+
+/** Vector Macros' four activity levels, with the chosen level described under the control. */
+export function ActivitySelect({ value, onChange }: { value: Activity; onChange: (a: Activity) => void }) {
+  return (
+    <Select
+      label="Typical activity"
+      value={value}
+      onChange={onChange}
+      options={ACTIVITY_LEVELS}
+      hint={activityLevel(value).description}
     />
   );
 }

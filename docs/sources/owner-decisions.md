@@ -14,3 +14,5 @@ Facts the app repos do not record yet, stated by the owner. Site copy may rely o
 - Store links and prices for every app; whether OmegaFyt's 1.7.0 listing is live in both stores.
 - The rename to "Vector Body" and "Vector Hydration" (current builds: "VECTOR BODY", "VECTOR HYDRATION" / "HYDRATE").
 - Support address, publisher name and production domain (`src/content/site.ts`).
+- Vector Macros store download and install sizes, once measured. Until then the site states only the catalog size (about 590 MB on the phone, about twice that installed on Android), not a download size.
+- Whether OmegaFyt 1.7.0 already sends PostHog analytics (the fact sheet dates it to 1.8.0). The site discloses PostHog either way.

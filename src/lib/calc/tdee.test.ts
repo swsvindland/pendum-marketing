@@ -1,5 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { ACTIVITY_LEVELS, activityLevel, isValidProfile, restingEnergy, tdee, tdeeByActivity, type Activity } from "./tdee";
+import {
+  ACTIVITY_LEVELS,
+  PROFILE_LIMITS,
+  activityLevel,
+  isValidProfile,
+  restingEnergy,
+  tdee,
+  tdeeByActivity,
+  type Activity,
+  type Profile,
+} from "./tdee";
 
 const man = { age: 30, heightCm: 180, weightKg: 80, sex: "male" as const };
 const woman = { age: 30, heightCm: 165, weightKg: 60, sex: "female" as const };
@@ -14,11 +24,25 @@ describe("restingEnergy", () => {
     expect(restingEnergy(man) - restingEnergy({ ...man, sex: "female" })).toBe(166);
   });
 
-  it("stays within 2 kcal of the published coefficients", () => {
+  it("stays within 8 kcal of the full regression over the accepted inputs", () => {
     // Mifflin et al. 1990: 9.99 × kg + 6.25 × cm − 4.92 × years + 166 × (male) − 161.
-    const published = (p: typeof man) => 9.99 * p.weightKg + 6.25 * p.heightCm - 4.92 * p.age + (p.sex === "male" ? 166 : 0) - 161;
+    const published = (p: Profile) => 9.99 * p.weightKg + 6.25 * p.heightCm - 4.92 * p.age + (p.sex === "male" ? 166 : 0) - 161;
     expect(published(man)).toBeCloseTo(1781.6, 6);
     expect(Math.abs(restingEnergy(man) - published(man))).toBeLessThan(2);
+    // The difference is −0.01 × kg + 0.08 × years (height and sex cancel), so it is largest at a corner of the range:
+    // 35 kg at 100 years, −0.35 + 8 = 7.65 kcal.
+    const { age, heightCm, weightKg } = PROFILE_LIMITS;
+    const gaps: number[] = [];
+    for (const a of [age.min, age.max])
+      for (const h of [heightCm.min, heightCm.max])
+        for (const w of [weightKg.min, weightKg.max])
+          for (const sex of ["female", "male"] as const) {
+            const p = { age: a, heightCm: h, weightKg: w, sex };
+            gaps.push(published(p) - restingEnergy(p));
+          }
+    expect(Math.max(...gaps)).toBeCloseTo(7.65, 9);
+    expect(Math.min(...gaps)).toBeCloseTo(-2.06, 9);
+    expect(Math.max(...gaps.map(Math.abs))).toBeLessThan(8);
   });
 });
 

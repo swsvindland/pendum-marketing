@@ -3,8 +3,12 @@
 //
 //   node scripts/vector-web.mjs gen     tokens.json -> src/vector/tokens.css, ionicons -> src/vector/icon-paths.ts
 //   node scripts/vector-web.mjs pull    copy the canonical kit's tokens.json in, then gen
-//   node scripts/vector-web.mjs check   fail when the generated files are stale or page code breaks the kit rules;
-//                                       warn when the canonical kit has moved on
+//   node scripts/vector-web.mjs check   fail when the generated files are stale or page code breaks the kit rules
+//                                       (scripts/kit-rules.mjs); warn when the canonical kit has moved on, or fail
+//                                       with --strict (CI)
+//
+// `check` never writes: `pnpm check` runs it through `pnpm lint`, so a hand edit to a generated file is reported,
+// not silently regenerated.
 //
 // src/vector/tokens.json is a snapshot of vector-design/kit/src/vector/tokens.json. Never edit it here: change the
 // kit, then `pull`. The native kit emits HeroUI/Uniwind CSS; this emits plain CSS custom properties plus a Tailwind v4
@@ -13,9 +17,10 @@
 // these rules are unlayered and win over HeroUI's layered defaults.
 
 import { createHash } from "node:crypto";
-import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
-import { dirname, join, relative, resolve } from "node:path";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { lintPages } from "./kit-rules.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const tokensPath = join(root, "src/vector/tokens.json");
@@ -96,6 +101,15 @@ function cssValue(v) {
   return typeof v === "string" && v.startsWith("@") ? `var(--${v.slice(1)})` : v;
 }
 
+/**
+ * A token value as web CSS. The kit's "no shadow" is `none`, but HeroUI puts --field-shadow and --surface-shadow
+ * inside a comma-separated box-shadow list (`var(--tw-ring-shadow), var(--tw-shadow)`), where `none` voids the
+ * whole declaration; an empty shadow keeps the list valid and still draws nothing.
+ */
+function webValue(key, value) {
+  return key.endsWith("shadow") && value === "none" ? "0 0 #0000" : cssValue(value);
+}
+
 function block(selector, decls, indent = "") {
   const body = decls.map(([k, v]) => `${indent}  --${k}: ${v};`).join("\n");
   return `${indent}${selector} {\n${body}\n${indent}}`;
@@ -104,7 +118,7 @@ function block(selector, decls, indent = "") {
 function genCss(tokens) {
   const colors = Object.entries(tokens.color);
   const pick = (mode) =>
-    colors.filter(([, c]) => c[mode] !== undefined).map(([k, c]) => [k, cssValue(c[mode])]);
+    colors.filter(([, c]) => c[mode] !== undefined).map(([k, c]) => [k, webValue(k, c[mode])]);
   const light = pick("light");
   const dark = pick("dark");
   const hcLight = pick("hcLight");
@@ -213,11 +227,14 @@ function genIcons() {
       .replace(/<title>.*?<\/title>/g, "")
       .replace(/ class="[^"]*"/g, "")
       .trim();
+    // The root <svg class="ionicon"> goes: Icon renders its own svg with fill="currentColor" (Ionicons'
+    // stylesheet sets that on .ionicon), so unfilled parts follow the tone and fill="none" parts stay outlines.
     return `  ${key}: ${JSON.stringify(inner)},`;
   });
   return [
     `// ${banner("ionicons/dist/svg (MIT), the kit's default renderer")}`,
-    "// Inner markup of each glyph on a 512 viewBox; strokes and fills use currentColor.",
+    "// Inner markup of each glyph on a 512 viewBox. Strokes are currentColor; parts with no fill take the svg's",
+    "// fill, which Icon (icon.tsx) sets to currentColor.",
     "",
     "export const iconPaths = {",
     ...entries,
@@ -228,82 +245,6 @@ function genIcons() {
     `export const mirroredIcons: ReadonlySet<IconName> = new Set(${JSON.stringify(MIRRORS)});`,
     "",
   ].join("\n");
-}
-
-
-/**
- * Page-code rules (the native kit's `vector-kit check`, for the web): type is a role, colour is a token, shape is
- * the kit's, and HeroUI is reached only through the kit. src/vector is the kit and is exempt; image routes and the
- * manifest draw raster assets and may use hex.
- */
-const PAGE_DIRS = ["src/app", "src/components", "src/calculators"];
-/** The kit's own stylesheet and the raster/meta routes (OG card, touch icon, manifest, browser theme colour). */
-const EXEMPT = [/^src\/app\/globals\.css$/];
-const ASSETS = [/opengraph-image\.tsx$/, /apple-icon\.tsx$/, /manifest\.ts$/, /components\/site\/brand\.tsx$/];
-const HEX_ALLOWED = [...ASSETS, /^src\/app\/layout\.tsx$/];
-const PALETTE =
-  "slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|black";
-/** Rules on class strings: string literals whose every word looks like a utility (no capitals, no sentence end). */
-const CLASS_RULES = [
-  { id: "size", re: /(?<![\w-])text-(xs|sm|base|lg|xl|[2-9]xl)(?![\w-])/, why: "a size class; use a type role (Text variant or type-*)" },
-  { id: "weight", re: /(?<![\w-])font-(thin|extralight|light|normal|medium|semibold|bold|extrabold|black)(?![\w-])/, why: "a weight class; roles set weight ([font-weight:500] for a rare change)" },
-  { id: "case", re: /(?<![\w-])(uppercase|lowercase|capitalize)(?![\w-])/, why: "a case class; the label role uppercases, strings stay sentence case" },
-  { id: "tracking", re: /(?<![\w-])tracking-[\w[]/, why: "a tracking class; roles set tracking" },
-  { id: "shadow", re: /(?<![\w-])shadow(-(sm|md|lg|xl|2xl|inner))?(?![\w-])/, why: "a shadow; content never casts one (§4.6)" },
-  { id: "radius", re: /(?<![\w-])rounded(-[trblse]{1,2})?(-(xs|sm|md|lg|xl|2xl|3xl|4xl|none))?(?![\w\[-])/, why: "a radius class; use rounded-control, rounded-panel or rounded-mark" },
-  { id: "palette", re: new RegExp(`(?<![\\w-])(bg|text|border|ring|outline|fill|stroke|divide|decoration|from|via|to)-(${PALETTE})(-\\d+)?(?![\\w-])`), why: "a Tailwind palette colour; use a token utility" },
-  { id: "gradient", re: /(?<![\w-])(bg-gradient|bg-linear|bg-radial|bg-conic)-/, why: "a gradient (§1: none anywhere)" },
-];
-/** Rules on whole lines. */
-const LINE_RULES = [
-  { id: "hex", re: /#[0-9a-fA-F]{6}\b|#[0-9a-fA-F]{3}\b(?![\w-])/, why: "a hex colour; app code never writes one", skip: HEX_ALLOWED },
-  { id: "raw-heroui", re: /from ["']@heroui\/(react|styles)["']/, why: "HeroUI outside the kit; import the kit component from @/vector" },
-];
-
-const STRING = /"([^"\\\n]*)"|'([^'\\\n]*)'|`([^`\\\n$]*)`/g;
-const classLike = (s) => {
-  const words = s.trim().split(/\s+/).filter(Boolean);
-  return words.length > 0 && words.every((w) => /^[a-z0-9!\-:[\]()/%.#_=&>*,'"@]+$/.test(w) && !/[.,]$/.test(w));
-};
-
-function* walk(dir) {
-  for (const name of readdirSync(dir)) {
-    const path = join(dir, name);
-    if (statSync(path).isDirectory()) yield* walk(path);
-    else if (/\.(tsx?|css)$/.test(name)) yield path;
-  }
-}
-
-function lintPages() {
-  const problems = [];
-  for (const dir of PAGE_DIRS) {
-    for (const path of walk(join(root, dir))) {
-      const rel = relative(root, path);
-      if (EXEMPT.some((re) => re.test(rel))) continue;
-      const asset = ASSETS.some((re) => re.test(rel));
-      readFileSync(path, "utf8")
-        .split("\n")
-        .forEach((line, i) => {
-          const code = line.trim();
-          if (code.startsWith("//") || code.startsWith("*") || code.startsWith("/*") || code.startsWith("{/*")) return;
-          for (const rule of LINE_RULES) {
-            if (rule.skip?.some((re) => re.test(rel))) continue;
-            const m = code.match(rule.re);
-            if (m) problems.push(`${rel}:${i + 1}  ${rule.id}  "${m[0]}" is ${rule.why}`);
-          }
-          if (asset) return;
-          for (const [, a, b, c] of code.matchAll(STRING)) {
-            const str = a ?? b ?? c ?? "";
-            if (!classLike(str)) continue;
-            for (const rule of CLASS_RULES) {
-              const m = str.match(rule.re);
-              if (m) problems.push(`${rel}:${i + 1}  ${rule.id}  "${m[0]}" is ${rule.why}`);
-            }
-          }
-        });
-    }
-  }
-  return problems;
 }
 
 const hash = (s) => createHash("sha256").update(s).digest("hex").slice(0, 12);
@@ -337,6 +278,7 @@ if (cmd === "pull") {
   const { tokens } = gen({ write: true });
   console.log(`Generated tokens.css and icon-paths.ts from kit ${tokens.version}.`);
 } else if (cmd === "check") {
+  const strict = process.argv.includes("--strict");
   const { tokens, stale } = gen({ write: false });
   if (stale.length) {
     console.error(`Stale generated files: ${stale.join(", ")}. Run \`pnpm tokens\`.`);
@@ -347,12 +289,15 @@ if (cmd === "pull") {
     const kit = readFileSync(kitTokensPath, "utf8");
     if (hash(local) !== hash(kit)) {
       const kitVersion = JSON.parse(kit).version;
-      console.warn(
-        `Warning: tokens.json (kit ${tokens.version}) differs from the canonical kit (${kitVersion}). Run \`pnpm tokens:pull\`.`
-      );
+      const message = `tokens.json (kit ${tokens.version}) differs from the canonical kit (${kitVersion}). Run \`pnpm tokens:pull\`.`;
+      if (strict) {
+        console.error(message);
+        process.exit(1);
+      }
+      console.warn(`Warning: ${message}`);
     }
   }
-  const problems = lintPages();
+  const problems = lintPages(root);
   if (problems.length) {
     console.error(problems.join("\n"));
     console.error(`${problems.length} page-code rule violation(s). See CLAUDE.md, "Rules that pages must follow".`);

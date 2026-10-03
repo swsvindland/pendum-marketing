@@ -27,7 +27,8 @@ export function PageHeader({
       <div
         className={cn(
           "mx-auto grid max-w-data gap-10 px-gutter",
-          hero ? "py-12 md:py-20" : "py-10 md:py-14",
+          // On the §4.1 scale: 48 then 64 for the hero, 40 then 48 for other pages.
+          hero ? "py-12 md:py-16" : "py-10 md:py-12",
           aside && "lg:grid-cols-[1.15fr_1fr] lg:items-center"
         )}
       >

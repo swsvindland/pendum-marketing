@@ -1,9 +1,32 @@
-import type { ReactNode } from "react";
-import { Label, Panel, Text, Value, cn } from "@/vector";
+"use client";
+
+import { useEffect, useState, type ReactNode } from "react";
+import { Icon, Label, Panel, Text, Value, cn } from "@/vector";
+
+/** How long the result must hold still before it is announced: past a pause in typing, not between digits. */
+const SETTLE_MS = 800;
+
+/**
+ * A polite live region that speaks `text` only once it has held for SETTLE_MS. Typing 100 into a field whose
+ * minimum is 1 gives three valid results in a row; only the last is announced.
+ */
+function SettledAnnouncement({ text }: { text: string }) {
+  const [spoken, setSpoken] = useState("");
+  useEffect(() => {
+    const timer = setTimeout(() => setSpoken(text), SETTLE_MS);
+    return () => clearTimeout(timer);
+  }, [text]);
+  return (
+    <p className="sr-only" aria-live="polite">
+      {spoken}
+    </p>
+  );
+}
 
 /**
  * The results side of a calculator: a Panel whose header names the result in DOMAIN / OBJECT form. The summary
- * sentence (`announce`) is a polite live region, so screen readers hear the result once it settles, not each digit.
+ * sentence (`announce`) goes to a polite live region once it settles, so screen readers hear the result, not each
+ * digit on the way to it.
  */
 export function ResultPanel({
   eyebrow,
@@ -23,9 +46,7 @@ export function ResultPanel({
       <h2 id="result-title" className="sr-only">
         Result
       </h2>
-      <p className="sr-only" aria-live="polite">
-        {announce ?? ""}
-      </p>
+      <SettledAnnouncement text={announce ?? ""} />
       <Panel.Body>{children}</Panel.Body>
     </Panel>
   );
@@ -117,12 +138,18 @@ export function ReadoutTable({
   columns,
   rows,
   highlight,
+  highlightLabel,
 }: {
   caption: string;
   columns: string[];
   rows: ReactNode[][];
   /** Row index drawn in surface-secondary (the visitor's own row). */
   highlight?: number;
+  /**
+   * What the highlighted row is ("your level", "goal"): a tint check after its first cell, and these words for
+   * screen readers, so the fill never carries it alone. Without it, the caller's first cell has to say it.
+   */
+  highlightLabel?: string;
 }) {
   return (
     <table className="w-full border-collapse text-start">
@@ -142,7 +169,15 @@ export function ReadoutTable({
             {row.map((cell, i) =>
               i === 0 ? (
                 <th key={i} scope="row" className="py-2.5 ps-0 text-start type-small text-foreground-secondary [font-weight:400]">
-                  {cell}
+                  {r === highlight && highlightLabel ? (
+                    <span className="inline-flex items-center gap-2">
+                      {cell}
+                      <Icon name="check" size={16} tone="tint" />
+                      <span className="sr-only"> ({highlightLabel})</span>
+                    </span>
+                  ) : (
+                    cell
+                  )}
                 </th>
               ) : (
                 <td key={i} className="py-2.5 text-end">

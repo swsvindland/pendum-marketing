@@ -19,35 +19,47 @@ export function WaterPage({ meta }: { meta: CalculatorMeta }) {
           </p>
           <p>The estimate from drinks has three parts.</p>
           <Formula>
-            {`Baseline = 28 mL × weight (kg)
-         = 35 mL/kg × 0.8 from drinks,
-           kept within EFSA to NASEM
+            {`Baseline = 19 mL × weight (kg),
+           kept between EFSA and NASEM
+19 mL/kg = 35 mL/kg × 1,410 / 2,600 from drinks,
+           D-A-CH’s split, to a whole mL
 Exercise = 10 mL × minutes a day
 Heat     = 1,000 mL when hot, else 0
 Drinks   = baseline + exercise + heat`}
           </Formula>
           <p>
-            <strong>Baseline.</strong> 35 mL of total water per kg of body weight is the D-A-CH guide value for adults
-            aged 19 to 50 (30 mL per kg from 51). About 80 % of total water comes from drinks, so the baseline is 28 mL
-            per kg. The per-kg rule is not built for very small or very large bodies, so the baseline stays between
-            EFSA’s figure (80 % of its total) and NASEM’s for your sex: 2.0 to 3.0 L for men and 1.6 to 2.2 L for
-            women. That covers men from 71 to 107 kg and women from 57 to 79 kg; outside those weights the nearer
-            reference applies.
+            <strong>Baseline.</strong> The <strong>D-A-CH</strong> reference values (Germany, Austria and Switzerland)
+            give 35 mL of total water per kg of body weight for adults aged 19 to 50. Their total includes the water
+            the body makes as it burns food, which the NASEM and EFSA totals leave out, and they set the part from
+            drinks at 1,410 of 2,600 mL a day for ages 25 to 50 (54 %; 1,470 of 2,700 mL for 19 to 24). So the
+            baseline from drinks is 35 × 1,410 / 2,600 = 18.98 mL, rounded to 19 mL per kg.
+          </p>
+          <p>
+            The per-kg rule is not built for every body, so the baseline stays between EFSA’s figure (80 % of its
+            total) and NASEM’s for your sex: 2.0 to 3.0 L for men and 1.6 to 2.2 L for women. 19 mL per kg falls in
+            that range for men from 105.3 to 157.8 kg and for women from 84.3 to 115.7 kg. At lighter weights the
+            baseline is EFSA’s figure, and at heavier ones NASEM’s. D-A-CH’s value from age 51 is lower, 30 mL per kg;
+            the calculator does not ask your age and uses the value for 19 to 50 for every adult. Where the baseline
+            is EFSA’s figure, the lower value would not change it.
           </p>
           <p>
             <strong>Exercise.</strong> Sweat rates run from about 0.3 to 2.4 L an hour, depending on the activity, the
             heat and the person. For marathon runners who do not know their own rate, ACSM suggests drinking 0.4 to 0.8
             L an hour; the calculator uses the middle, 0.6 L an hour. To learn your own sweat rate, weigh yourself
-            before and after an hour of exercise: each kilogram lost, plus what you drank, is about a litre of sweat.
+            before and after an hour of exercise: each kilogram lost, plus what you drank, is about a liter of sweat.
           </p>
           <p>
             <strong>Heat.</strong> The NASEM report puts daily needs at about 3 L for sedentary people in temperate
             climates and about 4 L in hot ones, and far more with hard work in the heat. Choosing hot adds that 1 L.
           </p>
           <p>
-            For example, an 80 kg man who exercises 45 minutes a day in a temperate climate gets 28 × 80 = 2,240 mL
-            plus 450 mL, 2,690 mL: about 2.7 L, or 11 glasses of 250 mL. Pounds are converted exactly (1 lb =
-            0.45359237 kg), and fluid ounces are US fluid ounces (1 fl oz = 29.5735 mL).
+            For example, a 70 kg woman who exercises 30 minutes a day in a temperate climate gets 19 × 70 = 1,330 mL,
+            below EFSA’s 1,600 mL, so her baseline is 1,600 mL; with 300 mL for exercise, that is 1.9 L, or 7.6
+            glasses of 250 mL. A 110 kg man who exercises 60 minutes gets 19 × 110 = 2,090 mL plus 600 mL, 2,690 mL:
+            2.7 L, or 10.8 glasses. Pounds are converted exactly (1 lb = 0.45359237 kg), and fluid ounces are US fluid
+            ounces (1 fl oz = 29.5735 mL). The parts are shown to 10 mL (0.1 fl oz), the total is their sum rounded
+            to 0.1 L (a whole fl oz), and each difference from a reference intake is taken between the numbers as
+            shown.
           </p>
           <p>
             In <strong>Vector Hydration</strong>, the daily goal starts at 2,500 mL and is yours to set; the app does

@@ -6,19 +6,20 @@ import { Label, Text } from "@/vector";
 import { AppearanceChoice } from "./appearance";
 import { Wordmark } from "./wordmark";
 
+/** A link column: each link a 44 row (§4.3), stacked with no gap so the list stays compact. */
 function Column({ title, links }: { title: string; links: { href: string; label: string }[] }) {
   const id = `footer-${title.toLowerCase().replace(/\s+/g, "-")}`;
   return (
-    <nav aria-labelledby={id} className="flex flex-col gap-3">
+    <nav aria-labelledby={id} className="flex flex-col gap-1">
       <Label as="h2" id={id}>
         {title}
       </Label>
-      <ul className="flex flex-col gap-1">
+      <ul className="flex flex-col">
         {links.map((l) => (
           <li key={l.href}>
             <Link
               href={l.href}
-              className="inline-flex min-h-8 items-center rounded-mark type-small text-foreground-secondary hover:text-tint"
+              className="inline-flex min-h-11 items-center rounded-mark type-small text-foreground-secondary hover:text-tint"
             >
               {l.label}
             </Link>

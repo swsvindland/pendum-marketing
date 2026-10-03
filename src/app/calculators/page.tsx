@@ -12,7 +12,7 @@ import { LinkButton, ListRow, Note, Panel, RowList, Value } from "@/vector";
 export const metadata: Metadata = pageMetadata({
   title: "Fitness calculators",
   description:
-    "Free calculators for body composition, nutrition, strength, hydration and heart rate: BMI, TDEE, macros, one-rep max and more. No sign-up, nothing stored.",
+    "Free calculators for body composition, nutrition, strength, hydration and heart rate: BMI, TDEE, macros, one-rep max and more. No sign-up, and nothing you type is sent anywhere.",
   path: "/calculators",
 });
 

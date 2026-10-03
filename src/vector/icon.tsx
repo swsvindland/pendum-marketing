@@ -18,7 +18,10 @@ const toneClass = {
 /**
  * A kit glyph (Ionicons outline, the apps' default renderer). 12 is the Choices check slot, 17 the Button glyph,
  * 20 the default. Decorative unless `label` is given. Directional glyphs mirror under RTL. The size is inline so
- * HeroUI's slot CSS (which sizes any svg inside a button) never changes it.
+ * HeroUI's slot CSS (which sizes any svg inside a button) never changes it. The svg fills with currentColor (the
+ * Ionicons stylesheet's `.ionicon` rule, which the generator strips), so filled glyphs (close, done, date dots)
+ * follow the tone; parts marked fill="none" stay outlines. `data-*` attributes pass through, so a HeroUI slot that
+ * clones the glyph (Select and Accordion indicators) can mark it open.
  */
 export function Icon({
   name,
@@ -26,18 +29,22 @@ export function Icon({
   tone = "inherit",
   label,
   className,
+  ...data
 }: {
   name: IconName;
   size?: 12 | 16 | 17 | 20 | 24 | 32;
   tone?: keyof typeof toneClass;
   label?: string;
   className?: string;
+  [attribute: `data-${string}`]: string | boolean | undefined;
 }) {
   return (
     <svg
+      {...data}
       viewBox="0 0 512 512"
       width={size}
       height={size}
+      fill="currentColor"
       style={{ width: size, height: size }}
       role={label ? "img" : undefined}
       aria-label={label}

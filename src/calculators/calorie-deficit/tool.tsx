@@ -3,26 +3,30 @@
 import { useState } from "react";
 import {
   DEFAULT_PACE,
+  MIN_INTAKE_KCAL,
   PACES,
   RECOMMENDED_PACE,
   checkpoints,
   dailyCalorieChange,
+  daysToGoal,
   direction,
   goalDate,
+  maintenanceFloor,
   projectGoal,
   weeklyRate,
   type Direction,
 } from "@/lib/calc/calorie-deficit";
 import { formatNumber, formatSigned, kgToLb } from "@/lib/units";
 import { Heading, Note, ReadoutRow, Value } from "@/vector";
-import { Select } from "@/vector/form";
+import { Select } from "@/vector/form/select";
 import { EMPTY, MassField, UnitChoice, type Measure } from "../shared/fields";
-import { ToolLayout } from "../shared/frame";
 import { EmptyResult, HeroValue, ReadoutTable, ResultPanel } from "../shared/results";
+import { ToolLayout } from "../shared/tool-layout";
 import { useUnits } from "../shared/use-units";
+import { useToday } from "./use-today";
 
-// Dates are pinned to en-US like every number on the site, and only formatted once a visitor has typed, so the
-// server (which renders the empty state) and the browser never disagree.
+// Dates are pinned to en-US like every number on the site. Today is null on the server, which renders the empty
+// result, so the server and the browser never disagree about a date.
 const longDate = new Intl.DateTimeFormat("en-US", { month: "long", day: "numeric", year: "numeric" });
 const shortDate = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" });
 
@@ -47,27 +51,37 @@ export function CalorieDeficitTool() {
     lose: String(DEFAULT_PACE.lose),
     gain: String(DEFAULT_PACE.gain),
   });
-  // Today, read when the visitor types (an event, never during render).
-  const [today, setToday] = useState<Date | null>(null);
+  const today = useToday();
+
+  const metric = units === "metric";
+  const massUnit = metric ? "kg" : "lb";
+  const mass = (kg: number) => (metric ? kg : kgToLb(kg));
 
   const ready = current.value !== null && goal.value !== null;
-  const dir = ready ? direction(current.value!, goal.value!) : null;
+  const change = ready ? goal.value! - current.value! : 0;
+  // A change that shows as 0.00 in the current unit is no change: a date and a calorie change for it would say
+  // more than the inputs do.
+  const dir = ready && Number(mass(change).toFixed(2)) !== 0 ? direction(current.value!, goal.value!) : null;
   const shownDir: Direction = dir ?? "lose";
   const pace = Number(paces[shownDir]);
   const projection = dir ? projectGoal(current.value!, goal.value!, pace) : null;
   const weeks = projection?.weeks ?? null;
   const rate = dir ? weeklyRate(current.value!, goal.value!, pace) : 0;
   const kcal = dailyCalorieChange(rate);
+  const floor = maintenanceFloor(kcal);
   const date = weeks !== null && today ? goalDate(today, weeks) : null;
   const rows = projection ? checkpoints(projection, EVERY, MAX_ROWS) : [];
   const rowDates = today ? rows.map((r) => goalDate(today, r.week)) : [];
   const truncated = weeks !== null && Math.ceil(weeks / EVERY) - 1 > rows.length - 1;
 
-  const metric = units === "metric";
-  const massUnit = metric ? "kg" : "lb";
-  const mass = (kg: number) => (metric ? kg : kgToLb(kg));
   const weeksText = weeks !== null ? formatNumber(weeks, 1, 1) : "";
-  const stamp = () => setToday(new Date());
+  // Under a week, the time is in days, counted as the date counts them (ceil(weeks × 7)), so a goal a day away never
+  // reads 0.0 weeks.
+  const days = weeks !== null ? daysToGoal(weeks) : 0;
+  const underWeek = days > 0 && days < 7;
+  const duration = underWeek
+    ? { value: formatNumber(days), unit: days === 1 ? "day" : "days" }
+    : { value: weeksText, unit: "weeks" };
 
   return (
     <ToolLayout
@@ -75,28 +89,8 @@ export function CalorieDeficitTool() {
       inputs={
         <>
           <UnitChoice units={units} onChange={setUnits} />
-          <MassField
-            label="Current weight"
-            units={units}
-            value={current}
-            onChange={(m) => {
-              setCurrent(m);
-              stamp();
-            }}
-            min={35}
-            max={350}
-          />
-          <MassField
-            label="Goal weight"
-            units={units}
-            value={goal}
-            onChange={(m) => {
-              setGoal(m);
-              stamp();
-            }}
-            min={35}
-            max={350}
-          />
+          <MassField label="Current weight" units={units} value={current} onChange={setCurrent} min={35} max={350} />
+          <MassField label="Goal weight" units={units} value={goal} onChange={setGoal} min={35} max={350} />
           <Select
             label={shownDir === "lose" ? "Weekly pace of loss" : "Weekly pace of gain"}
             options={paceOptions(shownDir)}
@@ -112,7 +106,7 @@ export function CalorieDeficitTool() {
           meta="Estimate"
           announce={
             weeks !== null && date && goal.value !== null
-              ? `${weeksText} weeks to reach ${formatNumber(mass(goal.value), 1, 0)} ${massUnit}, on ${longDate.format(date)}. ${formatSigned(kcal)} kcal a day at the start.`
+              ? `${duration.value} ${duration.unit} to reach ${formatNumber(mass(goal.value), 2, 0)} ${massUnit}, on ${longDate.format(date)}. ${formatSigned(kcal)} kcal a day at the start.`
               : undefined
           }
         >
@@ -126,10 +120,10 @@ export function CalorieDeficitTool() {
             </EmptyResult>
           ) : (
             <>
-              <HeroValue value={weeksText} unit="weeks" caption={`Goal date: ${longDate.format(date)}`} />
+              <HeroValue value={duration.value} unit={duration.unit} caption={`Goal date: ${longDate.format(date)}`} />
               <div>
                 <ReadoutRow label="Total change">
-                  <Value value={formatSigned(mass(goal.value! - current.value!), 1)} unit={massUnit} size="s" />
+                  <Value value={formatSigned(mass(change), 2)} unit={massUnit} size="s" />
                 </ReadoutRow>
                 <ReadoutRow label="First week’s change">
                   <Value value={formatSigned(mass(rate), 2)} unit={massUnit} size="s" />
@@ -142,28 +136,37 @@ export function CalorieDeficitTool() {
                 The weekly step is a share of your weight, so it {dir === "lose" ? "shrinks as you lose" : "grows as you gain"},
                 and the calorie change {dir === "lose" ? "shrinks" : "grows"} with it.
               </Note>
+              {floor !== null ? (
+                <Note>
+                  Vector Macros does not set a target under {formatNumber(MIN_INTAKE_KCAL)} kcal a day, so this pace
+                  needs a maintenance of at least {formatNumber(floor)} kcal a day.
+                </Note>
+              ) : null}
 
-              <div className="flex flex-col gap-3 border-t border-separator pt-4">
-                <Heading level={3} variant="h4">
-                  Projected weight
-                </Heading>
-                <ReadoutTable
-                  caption={`Projected weight every ${EVERY} weeks, then at the goal`}
-                  columns={["Week", "Date", "Weight"]}
-                  highlight={rows.length - 1}
-                  rows={rows.map((r, i) => [
-                    <Value key="w" value={r.goal ? weeksText : formatNumber(r.week)} size="s" />,
-                    <Value key="d" value={shortDate.format(rowDates[i])} size="s" />,
-                    <Value key="kg" value={formatNumber(mass(r.kg), 1, 1)} unit={massUnit} size="s" />,
-                  ])}
-                />
-                {truncated ? (
-                  <Note>
-                    The table shows every {EVERY} weeks to week {formatNumber(rows[rows.length - 2].week)}, then the goal
-                    week.
-                  </Note>
-                ) : null}
-              </div>
+              {underWeek ? null : (
+                <div className="flex flex-col gap-3 border-t border-separator pt-4">
+                  <Heading level={3} variant="h4">
+                    Projected weight
+                  </Heading>
+                  <ReadoutTable
+                    caption={`Projected weight every ${EVERY} weeks, then at the goal`}
+                    columns={["Week", "Date", "Weight"]}
+                    highlight={rows.length - 1}
+                    highlightLabel="goal"
+                    rows={rows.map((r, i) => [
+                      <Value key="w" value={r.goal ? weeksText : formatNumber(r.week)} size="s" />,
+                      <Value key="d" value={shortDate.format(rowDates[i])} size="s" />,
+                      <Value key="kg" value={formatNumber(mass(r.kg), 1, 1)} unit={massUnit} size="s" />,
+                    ])}
+                  />
+                  {truncated ? (
+                    <Note>
+                      The table shows every {EVERY} weeks to week {formatNumber(rows[rows.length - 2].week)}, then the
+                      goal week.
+                    </Note>
+                  ) : null}
+                </div>
+              )}
             </>
           )}
         </ResultPanel>

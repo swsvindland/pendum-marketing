@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import {
+  ACE_ESSENTIAL,
+  belowEssentialFat,
   bodyFatBands,
   bodyFatCategory,
   fatMass,
@@ -12,13 +14,13 @@ import {
   type BodyFatCategory,
   type NavyEquation,
 } from "@/lib/calc/body-fat";
-import { formatNumber, kgToLb } from "@/lib/units";
+import { formatNumber } from "@/lib/units";
 import { Note, ReadoutRow, Value } from "@/vector";
-import { Choices } from "@/vector/form";
-import { EMPTY, HeightField, LengthField, MassField, UnitChoice, type Measure } from "../shared/fields";
-import { ToolLayout } from "../shared/frame";
+import { EMPTY, HeightField, LengthField, MassField, SexChoice, UnitChoice, type Measure } from "../shared/fields";
+import { quantityScale } from "../shared/measure";
 import { BandScale, EmptyResult, HeroValue, ResultPanel } from "../shared/results";
-import { useUnits, type UnitSystem } from "../shared/use-units";
+import { ToolLayout } from "../shared/tool-layout";
+import { useUnits } from "../shared/use-units";
 
 /** Visual domain of the reference scale, % body fat. */
 const SCALE: Record<NavyEquation, { min: number; max: number }> = {
@@ -28,31 +30,18 @@ const SCALE: Record<NavyEquation, { min: number; max: number }> = {
 
 const SEX: Record<NavyEquation, string> = { male: "men", female: "women" };
 
-const CAPTION: Record<BodyFatCategory, string> = {
+/** The caption under the result. The very-low band holds ACE's essential fat range and any result below it. */
+const CAPTION: Record<BodyFatCategory | "belowEssential", string> = {
+  belowEssential: "Very low body fat, below the essential fat range",
   veryLow: "Very low body fat, in the essential fat range",
   lean: "Lean body fat, in the athlete range",
   typical: "Typical body fat",
   elevated: "Elevated body fat",
 };
 
-/** A tape measurement in cm or in, its range error worded as a measurement ("Enter a neck measurement…"). */
-function TapeField(props: {
-  label: string;
-  /** "a neck measurement" */
-  noun: string;
-  units: UnitSystem;
-  value: Measure;
-  onChange: (m: Measure) => void;
-  min: number;
-  max: number;
-  hint: string;
-}) {
-  return <LengthField {...props} />;
-}
-
 export function BodyFatTool() {
   const [units, setUnits] = useUnits();
-  const [equation, setEquation] = useState<NavyEquation>("male");
+  const [equation, setEquation] = useState<NavyEquation | "">("");
   const [height, setHeight] = useState<Measure>(EMPTY);
   const [neck, setNeck] = useState<Measure>(EMPTY);
   const [abdomen, setAbdomen] = useState<Measure>(EMPTY);
@@ -61,8 +50,12 @@ export function BodyFatTool() {
   const [weight, setWeight] = useState<Measure>(EMPTY);
 
   const male = equation === "male";
+  // No equation is assumed: the result, and the measurements that differ by equation, wait for a choice.
   const ready =
-    height.value !== null && neck.value !== null && (male ? abdomen.value !== null : waist.value !== null && hips.value !== null);
+    equation !== "" &&
+    height.value !== null &&
+    neck.value !== null &&
+    (male ? abdomen.value !== null : waist.value !== null && hips.value !== null);
   const measurements = {
     heightCm: height.value ?? NaN,
     neckCm: neck.value ?? NaN,
@@ -72,11 +65,10 @@ export function BodyFatTool() {
   };
   const value = ready ? navyBodyFat(equation, measurements) : null;
   const shown = value !== null ? roundBodyFat(value) : null;
-  const category = value !== null ? bodyFatCategory(value, equation) : null;
-  const bands = bodyFatBands(equation);
-  const band = category ? bands.find((b) => b.category === category)! : null;
-  const mass = (kg: number) => (units === "metric" ? kg : kgToLb(kg));
-  const massUnit = units === "metric" ? "kg" : "lb";
+  const category = ready && value !== null ? bodyFatCategory(value, equation) : null;
+  const band = ready && category ? bodyFatBands(equation).find((b) => b.category === category)! : null;
+  const below = ready && value !== null && belowEssentialFat(value, equation);
+  const mass = quantityScale("mass", units);
 
   // Why a complete set of measurements gives no estimate: the circumference term is not positive, or the result
   // falls outside 0 to 75 %.
@@ -94,17 +86,9 @@ export function BodyFatTool() {
       inputs={
         <>
           <UnitChoice units={units} onChange={setUnits} />
-          <Choices
-            label="Equation"
-            value={equation}
-            onChange={setEquation}
-            values={[
-              { value: "male", label: "Male" },
-              { value: "female", label: "Female" },
-            ]}
-          />
+          <SexChoice label="Equation" value={equation} onChange={setEquation} />
           <HeightField units={units} value={height} onChange={setHeight} min={100} max={250} />
-          <TapeField
+          <LengthField
             label="Neck"
             noun="a neck measurement"
             units={units}
@@ -114,8 +98,8 @@ export function BodyFatTool() {
             max={80}
             hint="Just below the larynx (Adam’s apple)."
           />
-          {male ? (
-            <TapeField
+          {equation === "male" ? (
+            <LengthField
               label="Abdomen"
               noun="an abdomen measurement"
               units={units}
@@ -125,9 +109,9 @@ export function BodyFatTool() {
               max={200}
               hint="Around the abdomen at the navel, at the end of a relaxed breath out."
             />
-          ) : (
+          ) : equation === "female" ? (
             <>
-              <TapeField
+              <LengthField
                 label="Waist"
                 noun="a waist measurement"
                 units={units}
@@ -137,7 +121,7 @@ export function BodyFatTool() {
                 max={200}
                 hint="At the natural waist, the narrowest point of the abdomen."
               />
-              <TapeField
+              <LengthField
                 label="Hips"
                 noun="a hip measurement"
                 units={units}
@@ -148,7 +132,7 @@ export function BodyFatTool() {
                 hint="At the widest point of the buttocks, feet together."
               />
             </>
-          )}
+          ) : null}
           <MassField
             label="Weight"
             units={units}
@@ -164,42 +148,50 @@ export function BodyFatTool() {
       result={
         <ResultPanel
           eyebrow="Result / Body fat"
-          meta={male ? "Male equation" : "Female equation"}
+          meta={equation ? (male ? "Male equation" : "Female equation") : undefined}
           announce={
-            shown !== null && band
+            equation && shown !== null && band
               ? `Body fat ${formatNumber(shown, 1)} %, ${band.label.toLowerCase()} for ${SEX[equation]}.`
               : (noEstimate ?? undefined)
           }
         >
           {noEstimate ? (
             <EmptyResult code="No estimate">{noEstimate}</EmptyResult>
-          ) : shown === null || !band || !category ? (
+          ) : !equation || shown === null || !band || !category ? (
             <EmptyResult>
-              {male
+              {equation === "male"
                 ? "Enter your height, neck and abdomen to see your body-fat estimate."
-                : "Enter your height, neck, waist and hips to see your body-fat estimate."}
+                : equation === "female"
+                  ? "Enter your height, neck, waist and hips to see your body-fat estimate."
+                  : "Choose the male or female equation and enter your measurements to see your body-fat estimate."}
             </EmptyResult>
           ) : (
             <>
               <HeroValue
                 value={formatNumber(shown, 1)}
                 unit="%"
-                caption={`${CAPTION[category]}, on the ACE scale for ${SEX[equation]}`}
+                caption={`${CAPTION[below ? "belowEssential" : category]}, on the ACE scale for ${SEX[equation]}`}
               />
               <BandScale
-                bands={bands}
+                bands={bodyFatBands(equation)}
                 value={shown}
                 min={SCALE[equation].min}
                 max={SCALE[equation].max}
                 label={`ACE body-fat categories for ${SEX[equation]}, %`}
               />
+              {below ? (
+                <Note>
+                  ACE’s essential fat range for {SEX[equation]} is {ACE_ESSENTIAL[equation][0]} to{" "}
+                  {ACE_ESSENTIAL[equation][1]} %. Check where the tape sits and that each measurement is in the right unit.
+                </Note>
+              ) : null}
               {weight.value !== null ? (
                 <div>
                   <ReadoutRow label="Fat mass">
-                    <Value value={formatNumber(mass(fatMass(weight.value, value!)), 1)} unit={massUnit} size="s" />
+                    <Value value={formatNumber(mass.toDisplay(fatMass(weight.value, value!)), 1)} unit={mass.unit} size="s" />
                   </ReadoutRow>
                   <ReadoutRow label="Lean mass">
-                    <Value value={formatNumber(mass(leanMass(weight.value, value!)), 1)} unit={massUnit} size="s" />
+                    <Value value={formatNumber(mass.toDisplay(leanMass(weight.value, value!)), 1)} unit={mass.unit} size="s" />
                   </ReadoutRow>
                 </div>
               ) : (

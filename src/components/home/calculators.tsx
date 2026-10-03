@@ -1,4 +1,5 @@
 import { Section } from "@/components/page";
+import { listFormat } from "@/components/site/format";
 import { calculators, categoryLabel, categoryOrder } from "@/content/calculators";
 import type { CalculatorCategory, CalculatorMeta } from "@/content/types";
 import { Label, LinkButton, ListRow, Panel, RowList } from "@/vector";
@@ -41,8 +42,6 @@ function CalculatorGroup({ group }: { group: Group }) {
     </div>
   );
 }
-
-const listFormat = new Intl.ListFormat("en", { style: "long", type: "conjunction" });
 
 /** Every free calculator, grouped by category, two columns from 768. */
 export function FreeCalculators() {
