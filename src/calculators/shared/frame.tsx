@@ -83,7 +83,7 @@ export function CalculatorFrame({
               {sources.map((s) => (
                 <li key={s.label} className="type-small text-foreground-secondary">
                   {s.href ? (
-                    <a href={s.href} target="_blank" rel="noopener noreferrer" className="text-tint underline-offset-4 hover:underline">
+                    <a href={s.href} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center rounded-mark text-tint underline-offset-4 hover:underline">
                       {s.label}
                     </a>
                   ) : (
@@ -129,7 +129,7 @@ export function CalculatorFrame({
                   Five apps on one design system
                 </Heading>
                 <Text tone="secondary">
-                  A subscription that syncs across devices, or one-time purchases that keep every record on your phone.
+                  A subscription that syncs across devices, or one-time purchases that keep their records on your phone.
                 </Text>
               </Panel.Body>
               <Panel.Footer>

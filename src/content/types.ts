@@ -40,7 +40,7 @@ export type App = {
   released: boolean;
   /** Full product name: "Vector Body", "OmegaFyt". */
   name: string;
-  /** Home-screen label: "Body". */
+  /** Planned home-screen label ("Body"). Not shown on the site until the rename ships (owner-decisions.md). */
   label: string;
   model: Model;
   /** Sentence case, at most 8 words. */

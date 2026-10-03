@@ -205,10 +205,10 @@ export default function PrivacyPage() {
               </Text>
               <div>
                 <ReadoutRow label="Encryption">
-                  <Word>AES-256-GCM</Word>
+                  <span className="type-readout-s">AES-256-GCM</span>
                 </ReadoutRow>
                 <ReadoutRow label="Key from password">
-                  <Word>PBKDF2-HMAC-SHA256</Word>
+                  <span className="type-readout-s">PBKDF2-HMAC-SHA256</span>
                 </ReadoutRow>
                 <ReadoutRow label="Iterations">
                   <Value value="600,000" size="s" />

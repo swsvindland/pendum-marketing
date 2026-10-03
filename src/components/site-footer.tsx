@@ -37,8 +37,8 @@ export function SiteFooter() {
         <div className="flex flex-col gap-4">
           <Wordmark />
           <Text variant="small" tone="muted" className="max-w-xs">
-            Fitness apps on one design system. A subscription that syncs, or a one-time purchase that stays on your
-            phone.
+            Fitness apps on one design system. A subscription that syncs, or a one-time purchase that keeps its
+            records on your phone.
           </Text>
           <div className="max-w-64">
             <AppearanceChoice />
@@ -64,7 +64,7 @@ export function SiteFooter() {
       <div className="border-t border-separator">
         <div className="mx-auto flex max-w-data flex-col gap-2 px-gutter py-6 sm:flex-row sm:items-center sm:justify-between">
           <Text variant="caption" tone="muted">
-            {site.publisher ? `© ${new Date().getFullYear()} ${site.publisher}` : "Vector app series"}
+            {site.publisher ? `© ${new Date().getFullYear()} ${site.publisher}` : "Vector apps"}
           </Text>
           <Text variant="caption" tone="muted">
             Calculators give general estimates, not medical advice.

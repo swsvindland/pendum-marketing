@@ -15,7 +15,7 @@ export function AppHeader({ app }: { app: App }) {
     <header className="border-b border-border">
       <div
         className={cn(
-          "mx-auto grid max-w-data gap-10 px-gutter py-10 md:py-14",
+          "mx-auto grid max-w-data gap-10 px-gutter py-10 md:py-12",
           specimen && "lg:grid-cols-[1.15fr_1fr] lg:items-center"
         )}
       >

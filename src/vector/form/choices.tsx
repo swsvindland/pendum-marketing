@@ -1,8 +1,10 @@
 "use client";
 
+import { Description } from "@heroui/react/description";
 import { Label } from "@heroui/react/label";
 import { Radio } from "@heroui/react/radio";
 import { RadioGroup } from "@heroui/react/radio-group";
+import type { ReactNode } from "react";
 import { cn } from "../cn";
 import { Icon } from "../icon";
 import { cell } from "./cell";
@@ -16,7 +18,7 @@ const endCorners = "rounded-e-[calc(var(--radius-control)-1px)]";
  * border-strong edge, radius 4, equal cells with 1pt dividers (logical, so they mirror under RTL by themselves).
  * Selected is a signal fill, #071017 label at 600 and a 12pt check in a reserved leading slot, so widths never
  * shift. At most 4 options (6 when `mono`). The container does not clip: the end cells round their own corners,
- * so the 2pt focus outline (offset 2) shows on every side.
+ * so the 2pt focus outline (offset 2) shows on every side. `hint` is a caption below, linked to the group.
  */
 export function Choices<T extends string>({
   label,
@@ -26,10 +28,12 @@ export function Choices<T extends string>({
   onChange,
   size = "md",
   mono = false,
+  hint,
   className,
 }: {
   label: string;
   showLabel?: boolean;
+  hint?: ReactNode;
   values: readonly { value: T; label: string }[];
   value: T;
   onChange: (value: T) => void;
@@ -76,6 +80,7 @@ export function Choices<T extends string>({
           </Radio>
         ))}
       </div>
+      {hint ? <Description>{hint}</Description> : null}
     </RadioGroup>
   );
 }

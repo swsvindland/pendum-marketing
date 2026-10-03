@@ -13,7 +13,9 @@ import { cn } from "../cn";
  * radius 4. `numeric` gives Plex Mono with a decimal keypad and the unit inside the field at the end; the text is
  * kept as typed and parsed by the caller. The unit is drawn for the eye and also read as part of the label
  * ("Body weight (kg)"), so a screen reader hears what the number means. An error gives a danger edge and the
- * message below, linked to the input.
+ * message below, linked to the input. In a group of fields that share one message (feet and inches), `invalid`
+ * marks the field without a message of its own and `describedBy` points it at the group's message; `showLabel`
+ * hides a label the group's legend already says (it stays the accessible name).
  */
 export function Field({
   label,
@@ -29,6 +31,9 @@ export function Field({
   className,
   autoComplete = "off",
   name,
+  invalid = false,
+  describedBy,
+  showLabel = true,
 }: {
   label: string;
   value: string;
@@ -43,18 +48,24 @@ export function Field({
   className?: string;
   autoComplete?: string;
   name?: string;
+  /** Invalid with no message here (the group shows it). */
+  invalid?: boolean;
+  /** Ids of elements outside the field that describe it, merged with its own hint and error. */
+  describedBy?: string;
+  showLabel?: boolean;
 }) {
   return (
     <TextField
       value={value}
       onChange={onChange}
-      isInvalid={Boolean(error)}
+      isInvalid={Boolean(error) || invalid}
+      aria-describedby={describedBy}
       isDisabled={disabled}
       name={name}
       fullWidth
       className={cn("min-w-0", className)}
     >
-      <Label>
+      <Label className={cn(!showLabel && "sr-only")}>
         {label}
         {unit ? <span className="sr-only"> ({unit})</span> : null}
       </Label>

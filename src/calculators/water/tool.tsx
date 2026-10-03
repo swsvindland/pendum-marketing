@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useState } from "react";
 import {
   CUP_FL_OZ,
   DRINKS_ML_PER_KG,
@@ -12,7 +12,7 @@ import {
   type ReferenceBody,
 } from "@/lib/calc/water";
 import { formatNumber, formatSigned } from "@/lib/units";
-import { Heading, Note, ReadoutRow, Text, Value } from "@/vector";
+import { Heading, Note, ReadoutRow, Value } from "@/vector";
 import { Choices } from "@/vector/form/choices";
 import { EMPTY, MassField, NumberField, SexChoice, type Measure, type Sex } from "../shared/fields";
 import { EmptyResult, HeroValue, ReadoutTable, ResultPanel } from "../shared/results";
@@ -48,18 +48,6 @@ function WaterUnitChoice({ units, onChange }: { units: UnitSystem; onChange: (u:
   );
 }
 
-/** Choices with a caption under them that says what the choice changes. */
-function ChoiceWithNote({ children, note }: { children: ReactNode; note: string }) {
-  return (
-    <div className="flex flex-col gap-2">
-      {children}
-      <Text variant="caption" tone="muted">
-        {note}
-      </Text>
-    </div>
-  );
-}
-
 export function WaterTool() {
   const [units, setUnits] = useUnits();
   const [sex, setSex] = useState<Sex | "">("");
@@ -92,9 +80,7 @@ export function WaterTool() {
       inputs={
         <>
           <WaterUnitChoice units={units} onChange={setUnits} />
-          <ChoiceWithNote note="Chooses the reference intakes that bound the estimate.">
-            <SexChoice value={sex} onChange={setSex} />
-          </ChoiceWithNote>
+          <SexChoice value={sex} onChange={setSex} hint="Chooses the reference intakes that bound the estimate." />
           <MassField
             label="Body weight"
             units={units}
@@ -114,9 +100,13 @@ export function WaterTool() {
             onChange={setExercise}
             hint="Optional. Minutes of exercise or hard physical work on a typical day."
           />
-          <ChoiceWithNote note="Hot means much of the day in heat, outdoors or without air conditioning.">
-            <Choices label="Climate" values={CLIMATES} value={climate} onChange={setClimate} />
-          </ChoiceWithNote>
+          <Choices
+            label="Climate"
+            values={CLIMATES}
+            value={climate}
+            onChange={setClimate}
+            hint="Hot means much of the day in heat, outdoors or without air conditioning."
+          />
         </>
       }
       result={

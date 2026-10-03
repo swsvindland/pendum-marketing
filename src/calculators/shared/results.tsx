@@ -42,7 +42,7 @@ export function ResultPanel({
 }) {
   return (
     <Panel as="section" aria-labelledby="result-title" className="lg:sticky lg:top-24">
-      <Panel.Header eyebrow={eyebrow} meta={meta} />
+      <Panel.Header eyebrow={eyebrow} meta={meta} heading={false} />
       <h2 id="result-title" className="sr-only">
         Result
       </h2>
@@ -168,7 +168,7 @@ export function ReadoutTable({
           <tr key={r} className={cn("border-b border-separator last:border-b-0", r === highlight && "bg-surface-secondary")}>
             {row.map((cell, i) =>
               i === 0 ? (
-                <th key={i} scope="row" className="py-2.5 ps-0 text-start type-small text-foreground-secondary [font-weight:400]">
+                <th key={i} scope="row" className="py-3 ps-0 text-start type-small text-foreground-secondary [font-weight:400]">
                   {r === highlight && highlightLabel ? (
                     <span className="inline-flex items-center gap-2">
                       {cell}
@@ -180,7 +180,7 @@ export function ReadoutTable({
                   )}
                 </th>
               ) : (
-                <td key={i} className="py-2.5 text-end">
+                <td key={i} className="py-3 text-end">
                   {cell}
                 </td>
               )

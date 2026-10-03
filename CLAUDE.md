@@ -8,7 +8,7 @@ Next.js 16 App Router, React 19, Tailwind v4, TypeScript, pnpm. Local git only f
 
 ```sh
 pnpm dev            # http://localhost:3000
-pnpm check          # tokens, typecheck, lint (with the token drift check), unit tests
+pnpm check          # typecheck, lint (with the token drift and page-code rule check), unit tests
 pnpm build
 pnpm tokens:pull    # copy the canonical kit's tokens.json in and regenerate
 ```
@@ -37,11 +37,16 @@ supplies the look, exactly as on native. Never edit `../vector-design` from here
   `text-foreground`, `text-foreground-secondary`, `text-muted`, `text-tint`, `border-border`, `border-separator`,
   `border-border-strong`, `bg-accent` + `text-accent-foreground`, `text-success|warning|danger`, `bg-cat-1…3`.
   Shape: `rounded-control|panel|mark` (and `rounded-full` for the 6pt status dot).
-- Components (`@/vector`): `Button` (HeroUI Button, `onPress`), `ButtonLink` (HeroUI button look on a Next link),
-  `LinkButton`, `IconButton` (HeroUI icon-only button), `Panel` (+ `.Header .Title .Description .Body .Footer`),
-  `ReadoutRow`, `Rule`, `Callout`, `ErrorText`, `Status`, `Meter`, `ListRow`/`RowList`, `Disclosures` (HeroUI
-  Accordion, for FAQs), `Icon`, `AppIcon`. Client inputs in `@/vector/form`: `Field` (HeroUI TextField), `Select`
-  (HeroUI Select), `Choices` (HeroUI RadioGroup as the segmented control), `ChipRow` (HeroUI CheckboxGroup).
+- Entry points. `@/vector` is server-safe and imports no `@heroui/react` code: `ButtonLink` (HeroUI's button look
+  on a Next link), `LinkButton`, `Panel` (+ `.Header .Title .Description .Body .Footer`), `ReadoutRow`, `Rule`,
+  `Callout`, `ErrorText`, `Status`, `Meter`, `ListRow`/`RowList`, `SystemState`, `Icon`, `AppIcon`, the text
+  components. HeroUI-backed parts have their own entry points, so a page ships only what it renders:
+  `@/vector/button` (`Button` with `onPress`, `IconButton`), `@/vector/disclosure` (`Disclosures`, HeroUI Accordion,
+  for FAQs), and the client inputs `@/vector/form/field` (HeroUI TextField), `/select` (HeroUI Select),
+  `/choices` (HeroUI RadioGroup as the segmented control) and `/chip-row` (HeroUI CheckboxGroup). Client files
+  import leaf modules.
+- Fonts: `src/fonts/*.ttf` are the kit's files; the site serves WOFF2 subsets built from them by `pnpm fonts`
+  (`scripts/fonts.mjs`). Rebuild them when the site gains characters outside the subset.
 - Gallery of every component: `/kit` (not indexed).
 
 ## Rules that pages must follow (design-system §1, §2.4, §10)
@@ -77,8 +82,11 @@ supplies the look, exactly as on native. Never edit `../vector-design` from here
 - Math lives in `src/lib/calc/<slug>.ts`, pure and unit-tested in `<slug>.test.ts` (vitest) with published
   reference values. It matches the apps where an app implements the same thing (`docs/sources/formulas.json`).
 - Each calculator is `src/calculators/<slug>/page.tsx` (server: `CalculatorFrame` with intro, method, sources,
-  caveat) and `tool.tsx` (client: `ToolLayout`, inputs from `../shared/fields`, results from `../shared/results`).
-  Registry: `src/calculators/registry.ts`; metadata: `src/content/calculators.ts`.
+  caveat) and `tool.tsx` (client: `ToolLayout` and `Formula` from `../shared/tool-layout`, inputs from
+  `../shared/fields`, results from `../shared/results`). Its route is `src/app/calculators/<slug>/page.tsx`, a
+  static page per calculator, so it ships only its own tool; `src/calculators/registry.ts` gives routes their
+  metadata from `src/content/calculators.ts`, the one source for titles, descriptions, lists and the sitemap.
 - Inputs start empty; results show `EmptyResult` until valid. Canonical units inside the math (kg, cm, mL); the
   shared `useUnits()` choice converts at the edges. Errors say what is wrong and the valid range.
-- Nothing typed into a calculator is stored or sent anywhere.
+- Nothing typed into a calculator is sent anywhere. Only the unit choice (and the site's appearance) is remembered,
+  in this browser's localStorage.

@@ -21,7 +21,7 @@ export function StrengthScorePage({ meta }: { meta: CalculatorMeta }) {
             written by Tim Konertz. The denominator is a fourth-degree polynomial in body weight x, in kilograms.
             Body weight outside 40 to 210 kg (men) or 40 to 150 kg (women) counts as the nearest end of that range.
           </p>
-          <Formula>
+          <Formula label="DOTS formula">
             {`DOTS = total × 500
        / (a·x⁴ + b·x³ + c·x² + d·x + e)
 
@@ -43,7 +43,7 @@ Women  a = −0.0000010706
             men and 26.51 to 154.53 kg for women, which keeps clear of the polynomial&rsquo;s asymptote at the heavy
             end and of very large coefficients at the light end.
           </p>
-          <Formula>
+          <Formula label="Wilks formula">
             {`Wilks = total × 500
         / (a + b·x + c·x² + d·x³ + e·x⁴ + f·x⁵)
 

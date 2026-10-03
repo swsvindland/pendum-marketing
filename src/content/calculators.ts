@@ -36,7 +36,7 @@ const entries = [
     slug: "tdee",
     title: "TDEE calculator",
     short: "TDEE",
-    description: "Resting metabolic rate and total daily energy expenditure from the Mifflin-St Jeor equation.",
+    description: "Resting energy and total daily energy expenditure from the Mifflin-St Jeor equation.",
     category: "nutrition",
     app: "macros",
     icon: "energy",

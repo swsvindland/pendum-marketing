@@ -19,7 +19,7 @@ export function OneRepMaxPage({ meta }: { meta: CalculatorMeta }) {
             The estimate is the <strong>Epley</strong> equation on reps to failure. At 1 rep to failure it is the
             weight itself. Kilograms and pounds give the same answer in their own unit.
           </p>
-          <Formula>
+          <Formula label="Epley formula">
             {`reps to failure = reps + reps in reserve
 
 e1RM = weight × (1 + reps to failure / 30)
@@ -31,13 +31,13 @@ e1RM = weight   (1 rep to failure)`}
             2 reps, 86 % for 5 and 75 % for 10. The table counts reps to failure, so the row marked as your set is
             your reps plus your reserve: 7 for 5 reps with 2 in reserve.
           </p>
-          <Formula>{`load(r) = e1RM / (1 + r / 30)    r = 2 to 12`}</Formula>
+          <Formula label="Rep-max table formula">{`load(r) = e1RM / (1 + r / 30)    r = 2 to 12`}</Formula>
           <p>
             <strong>Brzycki</strong> is shown for comparison up to 10 reps to failure, on the same reps to failure.
             From 2 to 9 reps it reads a little lower than Epley, and the two agree at 1 and at 10 reps. Past 10 the
             Brzycki denominator shrinks quickly and its estimate climbs, so it is left out.
           </p>
-          <Formula>{`Brzycki = weight × 36 / (37 − reps to failure)`}</Formula>
+          <Formula label="Brzycki formula">{`Brzycki = weight × 36 / (37 − reps to failure)`}</Formula>
           <p>
             Rep-based equations track measured maxes well on average but can miss for one person. LeSuer and
             colleagues compared seven equations, Epley and Brzycki among them, with measured one-rep maxes in

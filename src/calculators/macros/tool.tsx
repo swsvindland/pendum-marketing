@@ -22,7 +22,6 @@ import { Callout, ReadoutRow, Rule, Value } from "@/vector";
 import { Choices } from "@/vector/form/choices";
 import { Select } from "@/vector/form/select";
 import {
-  ActivitySelect,
   AgeField,
   EMPTY,
   HeightField,
@@ -33,6 +32,7 @@ import {
   type Measure,
   type Sex,
 } from "../shared/fields";
+import { ActivitySelect } from "../shared/activity-select";
 import { EmptyResult, HeroValue, ReadoutTable, ResultPanel } from "../shared/results";
 import { ToolLayout } from "../shared/tool-layout";
 import { useUnits, type UnitSystem } from "../shared/use-units";

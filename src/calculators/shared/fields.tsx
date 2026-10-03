@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, useId, useState } from "react";
-import { ACTIVITY_LEVELS, PROFILE_LIMITS, activityLevel, type Activity } from "@/lib/calc/tdee";
+import { useEffect, useId, useState, type ReactNode } from "react";
+import { PROFILE_LIMITS } from "@/lib/calc/tdee";
 import { cmToFtIn } from "@/lib/units";
 import { ErrorText } from "@/vector";
 import { Choices } from "@/vector/form/choices";
 import { Field } from "@/vector/form/field";
-import { Select } from "@/vector/form/select";
 import {
   checkHeightImperial,
   checkNumber,
@@ -19,8 +18,11 @@ import type { UnitSystem } from "./use-units";
 
 export { EMPTY, type Measure } from "./measure";
 
-/** Up to `digits` decimals, no grouping, no trailing zeros: what goes back into a field. */
-const editable = (n: number, digits = 1) => String(Number(n.toFixed(digits)));
+/**
+ * Up to `digits` decimals, no grouping, no trailing zeros: what goes back into a field. Two decimals, so a value
+ * converted on a unit switch (80 kg to 176.37 lb) reads back as the number the calculation uses.
+ */
+const editable = (n: number, digits = 2) => String(Number(n.toFixed(digits)));
 
 /**
  * Keeps the parent's Measure in line with what the field shows. Typing reports through `onChange` directly; this
@@ -131,7 +133,7 @@ function HeightImperial({ value, onChange, min, max, label }: QuantityProps) {
   const shown = checkHeightImperial(ft, inches, min, max);
   useSettle(shown, value, onChange);
   return (
-    <fieldset className="flex min-w-0 flex-col gap-2" aria-describedby={shown.error ? errorId : undefined}>
+    <fieldset className="flex min-w-0 flex-col gap-2">
       <legend className="mb-2 type-field-label text-foreground-secondary">{label}</legend>
       <div className="grid grid-cols-2 gap-3">
         <Field
@@ -139,6 +141,8 @@ function HeightImperial({ value, onChange, min, max, label }: QuantityProps) {
           numeric
           inputMode="numeric"
           unit="ft"
+          invalid={Boolean(shown.error)}
+          describedBy={shown.error ? errorId : undefined}
           value={ft}
           onChange={(t) => {
             setFt(t);
@@ -150,6 +154,8 @@ function HeightImperial({ value, onChange, min, max, label }: QuantityProps) {
           label="Inches"
           numeric
           unit="in"
+          invalid={Boolean(shown.error)}
+          describedBy={shown.error ? errorId : undefined}
           value={inches}
           onChange={(t) => {
             setInches(t);
@@ -236,14 +242,18 @@ export function SexChoice({
   value,
   onChange,
   label = "Sex",
+  hint,
 }: {
   value: Sex | "";
   onChange: (sex: Sex) => void;
   label?: string;
+  /** A caption under the choice, linked to the group (what the choice changes). */
+  hint?: ReactNode;
 }) {
   return (
     <Choices
       label={label}
+      hint={hint}
       values={SEXES}
       value={value}
       onChange={(v) => {
@@ -278,19 +288,6 @@ export function AgeField({
       value={value}
       onChange={onChange}
       hint={hint}
-    />
-  );
-}
-
-/** Vector Macros' four activity levels, with the chosen level described under the control. */
-export function ActivitySelect({ value, onChange }: { value: Activity; onChange: (a: Activity) => void }) {
-  return (
-    <Select
-      label="Typical activity"
-      value={value}
-      onChange={onChange}
-      options={ACTIVITY_LEVELS}
-      hint={activityLevel(value).description}
     />
   );
 }

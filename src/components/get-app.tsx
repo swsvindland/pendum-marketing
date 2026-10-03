@@ -25,8 +25,8 @@ const inStores = (key: string): key is keyof typeof stores => key in stores;
  */
 export function GetApp({ app, primary = false }: { app: App; primary?: boolean }) {
   const links = [
-    { key: "appStore", label: "App Store", href: app.stores.appStore, cta: `Get ${app.label} on the App Store` },
-    { key: "googlePlay", label: "Google Play", href: app.stores.googlePlay, cta: `Get ${app.label} on Google Play` },
+    { key: "appStore", label: "App Store", href: app.stores.appStore, cta: `Get ${app.name} on the App Store` },
+    { key: "googlePlay", label: "Google Play", href: app.stores.googlePlay, cta: `Get ${app.name} on Google Play` },
     ...(app.stores.web !== undefined
       ? [{ key: "web", label: "Web", href: app.stores.web ?? null, cta: `Open ${app.name} on the web` }]
       : []),

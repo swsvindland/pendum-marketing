@@ -8,7 +8,8 @@ The marketing site for the Vector app series:
 - **Free calculators**: BMI, body fat, FFMI, TDEE, macros, protein, goal date, one-rep max, plates, strength score,
   water intake and heart rate zones. Each one matches the math in the app that tracks it.
 
-Built with Next.js 16 (App Router), React 19, Tailwind v4 and a web re-creation of the Vector design system.
+Built with Next.js 16 (App Router), React 19, Tailwind v4 and HeroUI v3, styled by a web re-creation of the Vector
+design system.
 
 ## Run
 
@@ -17,7 +18,7 @@ Use Node 24 and pnpm 11 (`corepack enable`).
 ```sh
 pnpm install
 pnpm dev          # http://localhost:3000
-pnpm check        # regenerate tokens, typecheck, lint (with the token drift check), unit tests
+pnpm check        # typecheck, lint (with the token drift and page-code rule check), unit tests
 pnpm build
 ```
 
@@ -25,13 +26,13 @@ pnpm build
 
 | path | what |
 |---|---|
-| `src/vector/` | The Vector kit for the web: tokens, type roles, Button, Panel, Value, Meter, Field, Choices and more. Gallery at `/kit`. |
+| `src/vector/` | The Vector kit for the web, on HeroUI v3 (`@heroui/react`) as the native kit is on heroui-native: tokens, type roles, Button, Panel, Value, Meter, Field, Choices and more. Gallery at `/kit`. |
 | `scripts/vector-web.mjs` | Generates `tokens.css` and `icon-paths.ts` from `src/vector/tokens.json`, a snapshot of `../vector-design/kit/src/vector/tokens.json`. `pnpm tokens:pull` refreshes it. |
 | `src/content/` | Site settings, app copy (`apps.ts`) and the calculator list. |
-| `docs/sources/` | Verified fact sheets for each app and the formulas the apps implement, with file references. App copy is written from these. |
+| `docs/sources/` | Verified fact sheets for each app and the formulas the apps implement, with file references, plus the owner's decisions and open items (`owner-decisions.md`). App copy is written from these. |
 | `src/lib/calc/` | Calculator math with unit tests. |
-| `src/calculators/` | One folder per calculator: the page (method and sources) and the client tool. |
-| `src/app/` | Routes: home, `/apps`, `/apps/[slug]`, `/pricing`, `/calculators`, `/calculators/[slug]`, `/privacy`, `/support`. |
+| `src/calculators/` | One folder per calculator: the page (method and sources) and the client tool. Each has its own static route under `src/app/calculators/<slug>/`. |
+| `src/app/` | Routes: home, `/apps`, `/apps/[slug]`, `/pricing`, `/calculators`, `/calculators/<slug>`, `/privacy`, `/support`. |
 
 ## Before launch
 

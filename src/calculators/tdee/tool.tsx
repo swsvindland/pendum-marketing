@@ -5,7 +5,6 @@ import { DEFAULT_ACTIVITY, PROFILE_LIMITS, restingEnergy, tdeeByActivity, type A
 import { formatNumber } from "@/lib/units";
 import { ReadoutRow, Value } from "@/vector";
 import {
-  ActivitySelect,
   AgeField,
   EMPTY,
   HeightField,
@@ -15,6 +14,7 @@ import {
   type Measure,
   type Sex,
 } from "../shared/fields";
+import { ActivitySelect } from "../shared/activity-select";
 import { EmptyResult, HeroValue, ReadoutTable, ResultPanel } from "../shared/results";
 import { ToolLayout } from "../shared/tool-layout";
 import { useUnits } from "../shared/use-units";
