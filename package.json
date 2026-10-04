@@ -6,13 +6,15 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint && node scripts/vector-web.mjs check",
+    "lint": "eslint && node scripts/vector-web.mjs check && node scripts/brand-rules.mjs check",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "tokens": "node scripts/vector-web.mjs gen",
     "tokens:pull": "node scripts/vector-web.mjs pull",
     "fonts": "node scripts/fonts.mjs",
-    "check": "pnpm typecheck && pnpm lint && pnpm test"
+    "check": "pnpm typecheck && pnpm lint && pnpm test",
+    "indexnow": "node scripts/indexnow.mjs",
+    "lighthouse": "node scripts/lighthouse.mjs"
   },
   "dependencies": {
     "@heroui/react": "3.2.6",
@@ -33,6 +35,7 @@
     "ionicons": "^8.1.0",
     "subset-font": "^2.9.0",
     "tailwindcss": "^4",
+    "tw-animate-css": "1.4.0",
     "typescript": "^5",
     "vitest": "^5.0.3"
   },

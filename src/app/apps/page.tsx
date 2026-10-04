@@ -1,74 +1,53 @@
 import type { Metadata } from "next";
-import { listFormat } from "@/components/site/format";
-import { pageMetadata } from "@/components/site/metadata";
-import { AppCard } from "@/components/apps/app-card";
+import { AppCards } from "@/components/apps/app-card";
+import { Chooser } from "@/components/apps/chooser";
+import { preorderSentence } from "@/components/apps/model";
 import { PageHeader, Section } from "@/components/page";
-import { apps } from "@/content/apps";
-import { LinkButton } from "@/vector";
+import { JsonLd } from "@/components/site/json-ld";
+import { metaDescription, pageMetadata } from "@/components/site/metadata";
+import { apps, seriesNames } from "@/content/apps";
+import { sentenceCase } from "@/content/format";
+import { site } from "@/content/site";
+import { appListItems, breadcrumbList, itemList } from "@/content/structured-data";
 
 const subscription = apps.filter((a) => a.model === "subscription");
 const purchase = apps.filter((a) => a.model === "purchase");
-const names = (list: typeof apps) => listFormat.format(list.map((a) => a.name));
+
+/** What a visitor on the apps index is told, once: the two models, in the apps' own names. */
+const lead = `${seriesNames(subscription)} is the subscription: one account that syncs training and nutrition across iPhone and Android. ${seriesNames(purchase)} are one-time purchases that work offline, with no account.`;
+
+/** The snippet: both models in under 160 characters, with the collective noun in place of the four names. */
+const description = metaDescription(
+  `${seriesNames(subscription)} is the subscription: one account on iPhone and Android. ${sentenceCase(site.series.sentence)} are one-time purchases that work offline, with no account.`
+);
 
 export const metadata: Metadata = pageMetadata({
-  title: "Apps",
-  description: `${names(subscription)} is the subscription that syncs across devices. ${names(purchase)} are one-time purchases that work offline, with no account.`,
+  title: "Workout, macro, body and water tracking apps",
+  description,
   path: "/apps",
 });
 
 /**
- * The apps index: the subscription app first, across the column, then the one-time purchase apps as a grid of
- * linked panels. No primary button: each panel is the way in, and pricing is one link away.
+ * The apps index: the chooser first (the header's "Get the apps" lands on #choose), then the five apps as one
+ * grid, the subscription app wide with its store links as the page's one primary action. The models are stated
+ * in the lead and in the chooser's intro, not a third time; pricing is one link away from the chooser.
  */
 export default function AppsPage() {
+  const preorder = preorderSentence(purchase);
   return (
     <>
-      <PageHeader
-        eyebrow="Apps / OmegaFyt and Vector series"
-        title="Synced, or kept on your phone"
-        subtitle={`${names(subscription)} is the subscription: one account that syncs training and nutrition across your devices. ${names(purchase)} are one-time purchases that work offline, with no account.`}
-      />
-
+      <JsonLd data={itemList("Apps", appListItems())} />
+      <JsonLd data={breadcrumbList([{ name: "Home", href: "/" }, { name: "Apps" }])} />
+      <PageHeader eyebrow="Apps / Choose" crumbs={[{ href: "/", label: "Home" }]} title="Pick your app" subtitle={lead} />
+      <Chooser />
       <Section
-        id="subscription"
-        eyebrow="Model / Subscription"
-        title="One account across your devices"
-        intro="Records are stored on a server and open wherever you sign in. Subscriptions are bought in the iPhone and Android apps."
-      >
-        <ul className="grid gap-6">
-          {subscription.map((app) => (
-            <AppCard key={app.slug} app={app} wide />
-          ))}
-        </ul>
-      </Section>
-
-      <Section
-        id="purchase"
-        eyebrow="Model / One-time purchase"
-        title="Offline, with no account"
-        intro="No server and no analytics. Records live in a database on your phone, and Health sync stays off until you turn it on."
+        id="apps"
+        eyebrow={`Apps / ${seriesNames(subscription)} and ${site.series.sentence}`}
+        title="The apps"
+        intro={preorder || undefined}
         bordered
       >
-        <ul className="grid gap-6 md:grid-cols-2">
-          {purchase.map((app) => (
-            <AppCard key={app.slug} app={app} />
-          ))}
-        </ul>
-      </Section>
-
-      <Section
-        id="compare"
-        eyebrow="Pricing / Comparison"
-        title="Subscription or one-time purchase"
-        intro="The pricing page sets the two models side by side: what each includes and where records are kept."
-        action={
-          <LinkButton href="/pricing" forward>
-            Compare the models
-          </LinkButton>
-        }
-        bordered
-      >
-        {null}
+        <AppCards detail primary />
       </Section>
     </>
   );

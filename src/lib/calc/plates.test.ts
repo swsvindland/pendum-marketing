@@ -14,7 +14,7 @@ const kg = GYM_DEFAULTS.kg;
 const lb = GYM_DEFAULTS.lb;
 
 describe("roundLoad", () => {
-  it("matches Vector Lift's test vectors", () => {
+  it("matches Pendum Lift's test vectors", () => {
     // lift-track tests/lift.test.cjs.
     expect(roundLoad(101, kg.bar, kg.plates)).toBe(100);
     expect(roundLoad(101.3, kg.bar, kg.plates)).toBe(102.5);
@@ -99,7 +99,7 @@ describe("achievable loads", () => {
 });
 
 describe("platesPerSide", () => {
-  it("matches Vector Lift's test vectors", () => {
+  it("matches Pendum Lift's test vectors", () => {
     expect(platesPerSide(100, kg.bar, kg.plates)).toEqual([25, 15]);
     expect(platesPerSide(102.5, kg.bar, kg.plates)).toEqual([25, 15, 1.25]);
     expect(platesPerSide(315, lb.bar, lb.plates)).toEqual([45, 45, 45]);

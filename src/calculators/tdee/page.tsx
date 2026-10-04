@@ -1,10 +1,18 @@
+import { names } from "@/content/apps";
 import type { CalculatorMeta } from "@/content/types";
-import { ACTIVITY_LEVELS } from "@/lib/calc/tdee";
+import { ACTIVITY_LEVELS, PROFILE_LIMITS, tdeeExample } from "@/lib/calc/tdee";
 import { formatNumber } from "@/lib/units";
+import { Value } from "@/vector";
 import { CalculatorFrame, Formula } from "../shared/frame";
+import { Reference } from "../shared/reference";
+import { ReadoutTable } from "../shared/table";
 import { TdeeTool } from "./tool";
 
 export function TdeePage({ meta }: { meta: CalculatorMeta }) {
+  // The worked example, every number from the lib: a 30-year-old man, 180 cm and 80 kg.
+  const example = tdeeExample();
+  const p = example.profile;
+  const active = example.levels.find((l) => l.activity === "moderate") ?? example.levels[0];
   return (
     <CalculatorFrame
       meta={meta}
@@ -14,13 +22,15 @@ export function TdeePage({ meta }: { meta: CalculatorMeta }) {
         <>
           <p>
             Resting energy is resting energy expenditure (REE) as the <strong>Mifflin-St Jeor equation</strong> predicts
-            it, in the simplified form for each sex that Vector Macros uses for a program&rsquo;s starting estimate.
+            it, in the simplified form for each sex that {names.macros} uses for a program&rsquo;s starting estimate.
             Imperial inputs are converted exactly (1 lb = 0.45359237 kg, 1 in = 2.54 cm) first.
           </p>
           <Formula>
-            {`Resting energy (kcal/day) = 10 × weight (kg) + 6.25 × height (cm) − 5 × age (years) + s
-s = +5 (male equation) or −161 (female equation)
-TDEE = round(resting energy × activity multiplier)`}
+            {`REE (kcal/day) = 10 × weight (kg)
+  + 6.25 × height (cm)
+  − 5 × age (years) + s
+s = +5 (male) or −161 (female)
+TDEE = round(REE × activity multiplier)`}
           </Formula>
           <p>
             The paper gives two forms. The full regression uses 9.99 for weight and 4.92 for age, with 166 kcal between
@@ -39,13 +49,31 @@ TDEE = round(resting energy × activity multiplier)`}
             ))}
           </ul>
           <p>
-            For example, a 30-year-old man who is 180 cm tall and weighs 80 kg rests at 800 + 1,125 − 150 + 5 = 1,780
-            kcal a day. Active (× 1.55) gives 2,759 kcal a day. Ages 18 to 100, heights 120 to 230 cm and weights 35 to
-            350 kg are accepted, as in the app.
+            For example, a {p.age}-year-old man who is {p.heightCm} cm tall and weighs {p.weightKg} kg rests at{" "}
+            {formatNumber(10 * p.weightKg)} + {formatNumber(6.25 * p.heightCm)} − {formatNumber(5 * p.age)} + 5 ={" "}
+            {formatNumber(example.resting)} kcal a day. {active.label} (× {formatNumber(active.multiplier, 3, 1)}) gives{" "}
+            {formatNumber(active.kcal)} kcal a day. Ages {PROFILE_LIMITS.age.min} to {PROFILE_LIMITS.age.max}, heights{" "}
+            {PROFILE_LIMITS.heightCm.min} to {PROFILE_LIMITS.heightCm.max} cm and weights {PROFILE_LIMITS.weightKg.min} to{" "}
+            {PROFILE_LIMITS.weightKg.max} kg are accepted, as in the app.
           </p>
+          <Reference
+            id="tdee-example"
+            title="The example at each activity level"
+            note={`Resting energy ${formatNumber(example.resting)} kcal a day times each multiplier, rounded to a whole kcal: the same table the tool fills from your own numbers.`}
+          >
+            <ReadoutTable
+              caption={`TDEE of the worked example, a ${p.age}-year-old man of ${p.heightCm} cm and ${p.weightKg} kg, at each activity level`}
+              columns={["Activity", "Multiplier", "TDEE"]}
+              rows={example.levels.map((l) => [
+                l.label,
+                <Value key="multiplier" value={formatNumber(l.multiplier, 3, 1)} size="s" tone="secondary" />,
+                <Value key="kcal" value={formatNumber(l.kcal)} unit="kcal/day" size="s" />,
+              ])}
+            />
+          </Reference>
         </>
       }
-      caveat="An estimate for adults 18 and over who are not pregnant or breastfeeding. The equation predicts resting energy from size and age, not body composition, and the activity multipliers are coarse. Vector Macros starts from this estimate, then a weekly check-in compares your logged intake with your trend weight and proposes a change, which you accept or keep."
+      caveat="An estimate for adults 18 and over who are not pregnant or breastfeeding. The equation predicts resting energy from size and age, not body composition, and the activity multipliers are coarse. Treat the result as a starting point and adjust it against your own weight trend."
       sources={[
         {
           label:

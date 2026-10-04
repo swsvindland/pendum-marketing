@@ -6,12 +6,9 @@ import { Radio } from "@heroui/react/radio";
 import { RadioGroup } from "@heroui/react/radio-group";
 import type { ReactNode } from "react";
 import { cn } from "../cn";
-import { Icon } from "../icon";
-import { cell } from "./cell";
-
-// The inner radius of the 4pt container under its 1pt edge, for the first and last cells.
-const startCorners = "rounded-s-[calc(var(--radius-control)-1px)]";
-const endCorners = "rounded-e-[calc(var(--radius-control)-1px)]";
+import { Glyph } from "../glyph";
+import { check } from "../glyphs/check";
+import { cell, endCorners, segmentLabel, startCorners } from "./cell";
 
 /**
  * Choices (§5.5): the one segmented control, on HeroUI's RadioGroup (radios, arrow keys move the selection). A 1pt
@@ -19,6 +16,9 @@ const endCorners = "rounded-e-[calc(var(--radius-control)-1px)]";
  * Selected is a signal fill, #071017 label at 600 and a 12pt check in a reserved leading slot, so widths never
  * shift. At most 4 options (6 when `mono`). The container does not clip: the end cells round their own corners,
  * so the 2pt focus outline (offset 2) shows on every side. `hint` is a caption below, linked to the group.
+ * Labels keep one line; from three cells they take the small role so a label like "More carbs" fits at 375.
+ * A group that starts unselected passes `""`, which reaches React Aria as null: with a value that matches no
+ * radio every radio would be tabIndex -1 and the keyboard could never reach the group.
  */
 export function Choices<T extends string>({
   label,
@@ -35,7 +35,7 @@ export function Choices<T extends string>({
   showLabel?: boolean;
   hint?: ReactNode;
   values: readonly { value: T; label: string }[];
-  value: T;
+  value: T | "";
   onChange: (value: T) => void;
   size?: "md" | "sm";
   mono?: boolean;
@@ -43,7 +43,7 @@ export function Choices<T extends string>({
 }) {
   return (
     <RadioGroup
-      value={value}
+      value={value === "" ? null : value}
       onChange={(v) => onChange(v as T)}
       orientation="horizontal"
       className={cn("flex min-w-0 flex-col gap-2", className)}
@@ -65,10 +65,11 @@ export function Choices<T extends string>({
             >
               {({ isSelected }) => (
                 <>
-                  <Icon name="check" size={12} className={isSelected ? "opacity-100" : "opacity-0"} />
+                  <Glyph markup={check} name="check" size={12} className={isSelected ? "opacity-100" : "opacity-0"} />
                   <span
                     className={cn(
-                      mono ? "type-readout-xs" : size === "sm" ? "type-small" : "type-h4",
+                      segmentLabel(values.length, size, mono),
+                      "whitespace-nowrap",
                       isSelected && !mono && "[font-weight:600]"
                     )}
                   >

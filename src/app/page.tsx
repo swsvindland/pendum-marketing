@@ -1,32 +1,32 @@
 import type { Metadata } from "next";
+import { Chooser } from "@/components/apps/chooser";
+import { AppsGrid } from "@/components/home/apps-grid";
 import { FreeCalculators } from "@/components/home/calculators";
 import { Faq } from "@/components/home/faq";
 import { HomeHero } from "@/components/home/hero";
-import { OwnershipModels } from "@/components/home/models";
-import { OmegaFytSection } from "@/components/home/omegafyt";
 import { Principles } from "@/components/home/principles";
-import { VectorSeries } from "@/components/home/vector-series";
+import { pageMetadata } from "@/components/site/metadata";
 import { site } from "@/content/site";
 
-// The site default title, without the "· Vector" template the other pages get.
-export const metadata: Metadata = {
-  title: { absolute: site.title },
+// The site title as given, without the "· Vector" template the other pages get; the shared card and og:url for "/".
+export const metadata: Metadata = pageMetadata({
+  title: site.title,
+  absolute: true,
   description: site.description,
-  alternates: { canonical: "/" },
-};
+  path: "/",
+});
 
 /**
- * The home page sells the family and the two ways to buy it: the hero (the page's one primary action, Compare
- * plans), the two models fact for fact, the four one-time apps, OmegaFyt, the free calculators, the principles they
- * share, then common questions.
+ * The home page sells the apps in the order a visitor decides: the hero (what they do, how they are bought, the
+ * page's one primary action), the chooser (which app is for you), the five apps, the free calculators, the
+ * principles they share, then common questions.
  */
 export default function Home() {
   return (
     <>
       <HomeHero />
-      <OwnershipModels />
-      <VectorSeries />
-      <OmegaFytSection />
+      <Chooser />
+      <AppsGrid />
       <FreeCalculators />
       <Principles />
       <Faq />

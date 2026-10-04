@@ -1,4 +1,4 @@
-// Estimated one-rep max, as Vector Lift computes it (lift-track src/lib/strength.ts e1rm): Epley, with reps left
+// Estimated one-rep max, as Pendum Lift computes it (lift-track src/lib/strength.ts e1rm): Epley, with reps left
 // in reserve counted as reps that could have been done. Brzycki is here only for comparison, and the rep-max table
 // runs Epley backwards. Loads are kg; every equation is linear in the load, so any unit gives the same answer in
 // that unit.
@@ -9,7 +9,7 @@ export const ONE_REP_MAX_LIMITS = {
   rir: { min: 0, max: 5 },
 } as const;
 
-/** Beyond this many reps to failure the estimate is rough (Vector Lift's docs/progression.md, Limits). */
+/** Beyond this many reps to failure the estimate is rough (Pendum Lift's docs/progression.md, Limits). */
 export const ROUGH_BEYOND_REPS = 12;
 
 /** Brzycki is shown for comparison up to this many reps to failure. */
@@ -18,13 +18,13 @@ export const BRZYCKI_MAX_REPS = 10;
 /** Rows in the rep-max table: 1 to 12 reps. */
 export const REP_MAX_ROWS = 12;
 
-/** Reps done plus reps left in reserve. Unknown or negative reserve counts as 0, as in Vector Lift. */
+/** Reps done plus reps left in reserve. Unknown or negative reserve counts as 0, as in Pendum Lift. */
 export function repsToFailure(reps: number, rir?: number | null): number {
   return reps + Math.max(0, rir ?? 0);
 }
 
 /**
- * Epley estimate, exactly as Vector Lift's `e1rm`: at 1 rep to failure the weight itself, otherwise
+ * Epley estimate, exactly as Pendum Lift's `e1rm`: at 1 rep to failure the weight itself, otherwise
  * weight × (1 + reps to failure / 30). 0 when the weight or reps are not positive (or NaN).
  */
 export function e1rm(weightKg: number, reps: number, rir?: number | null): number {
@@ -59,4 +59,24 @@ export function repMaxTable(e1rmKg: number, rows = REP_MAX_ROWS): RepMaxRow[] {
     const load = repMaxLoad(e1rmKg, reps);
     return { reps, load, fraction: e1rmKg > 0 ? load / e1rmKg : 0 };
   });
+}
+
+/** The e1RM of the page's rep-max percentage table: 100 kg, so every load reads as a percentage in any unit. */
+export const REP_MAX_EXAMPLE_KG = 100;
+
+export type RepMaxReferenceRow = {
+  reps: number;
+  /** Share of the e1RM, in percent (unrounded). */
+  percent: number;
+  /** The load at an e1RM of the example weight, kg. */
+  load: number;
+};
+
+/**
+ * The rep-max table before anything is typed: the share of the e1RM for 1 to `rows` reps to failure, with the load
+ * at an e1RM of `exampleKg`. The page renders it so the percentages are in the HTML; it is `repMaxTable`, the same
+ * function behind the tool's table, so the two cannot drift.
+ */
+export function repMaxReference(exampleKg = REP_MAX_EXAMPLE_KG, rows = REP_MAX_ROWS): RepMaxReferenceRow[] {
+  return repMaxTable(exampleKg, rows).map((row) => ({ reps: row.reps, percent: row.fraction * 100, load: row.load }));
 }

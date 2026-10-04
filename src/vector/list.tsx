@@ -34,7 +34,7 @@ export function ListRow({
           {title}
         </Text>
         {description ? (
-          <Text variant="small" tone="muted" as="span">
+          <Text variant="small" tone="muted" as="span" className="text-pretty">
             {description}
           </Text>
         ) : null}

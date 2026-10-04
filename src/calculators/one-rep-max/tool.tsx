@@ -12,9 +12,10 @@ import {
   repsToFailure,
 } from "@/lib/calc/one-rep-max";
 import { formatNumber, kgToLb, lbToKg } from "@/lib/units";
-import { Note, ReadoutRow, Value } from "@/vector";
+import { ReadoutRow } from "@/vector/panel";
+import { Note, Value } from "@/vector/text";
 import { EMPTY, MassField, NumberField, UnitChoice, type Measure } from "../shared/fields";
-import { EmptyResult, HeroValue, ReadoutTable, ResultPanel } from "../shared/results";
+import { CheckInput, EmptyResult, HeroValue, ReadoutTable, ResultPanel, firstInvalid } from "../shared/results";
 import { ToolLayout } from "../shared/tool-layout";
 import { useUnits } from "../shared/use-units";
 
@@ -41,6 +42,11 @@ export function OneRepMaxTool() {
     reps.value !== null && rir.value
       ? `your set, ${formatNumber(reps.value)} ${reps.value === 1 ? "rep" : "reps"} with ${formatNumber(rir.value)} in reserve`
       : "your set";
+  const invalid = firstInvalid([
+    ["weight lifted", weight],
+    ["reps", reps],
+    ["reps left in reserve", rir],
+  ]);
 
   return (
     <ToolLayout
@@ -52,7 +58,7 @@ export function OneRepMaxTool() {
           <NumberField
             label="Reps"
             integer
-            noun="a whole number of reps"
+            noun="reps"
             min={ONE_REP_MAX_LIMITS.reps.min}
             max={ONE_REP_MAX_LIMITS.reps.max}
             value={reps}
@@ -62,7 +68,7 @@ export function OneRepMaxTool() {
           <NumberField
             label="Reps left in reserve"
             integer
-            noun="a whole number of reps in reserve"
+            noun="reps in reserve"
             min={ONE_REP_MAX_LIMITS.rir.min}
             max={ONE_REP_MAX_LIMITS.rir.max}
             value={rir}
@@ -77,12 +83,16 @@ export function OneRepMaxTool() {
           meta="Epley"
           announce={
             estimate !== null && toFailure !== null
-              ? `Estimated one-rep max ${formatNumber(mass(estimate), 1)} ${massUnit}, from ${toFailure} reps to failure.`
+              ? `Estimated one-rep max ${formatNumber(mass(estimate), 1)} ${massUnit}, from ${formatNumber(toFailure)} ${toFailure === 1 ? "rep" : "reps"} to failure.`
               : undefined
           }
         >
           {estimate === null || toFailure === null ? (
-            <EmptyResult>Enter the weight and the reps of a hard set to see your estimated one-rep max.</EmptyResult>
+            invalid ? (
+              <CheckInput field={invalid} outcome="your estimated one-rep max" />
+            ) : (
+              <EmptyResult>Enter the weight and the reps of a hard set to see your estimated one-rep max.</EmptyResult>
+            )
           ) : (
             <>
               <HeroValue value={formatNumber(mass(estimate), 1)} unit={massUnit} caption="Estimated one-rep max (Epley)" />

@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // Vector kit, web edition. One script, three commands:
 //
-//   node scripts/vector-web.mjs gen     tokens.json -> src/vector/tokens.css, ionicons -> src/vector/icon-paths.ts
+//   node scripts/vector-web.mjs gen     tokens.json -> src/vector/tokens.css, ionicons -> src/vector/glyphs/<name>.ts
+//                                       (one module per glyph) and src/vector/icon-paths.ts (the table over them)
 //   node scripts/vector-web.mjs pull    copy the canonical kit's tokens.json in, then gen
 //   node scripts/vector-web.mjs check   fail when the generated files are stale or page code breaks the kit rules
 //                                       (scripts/kit-rules.mjs); warn when the canonical kit has moved on, or fail
@@ -17,7 +18,7 @@
 // these rules are unlayered and win over HeroUI's layered defaults.
 
 import { createHash } from "node:crypto";
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { lintPages } from "./kit-rules.mjs";
@@ -26,6 +27,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const tokensPath = join(root, "src/vector/tokens.json");
 const cssPath = join(root, "src/vector/tokens.css");
 const iconsPath = join(root, "src/vector/icon-paths.ts");
+const glyphsDir = join(root, "src/vector/glyphs");
 const kitTokensPath = resolve(root, "../vector-design/kit/src/vector/tokens.json");
 
 /** Semantic glyphs the site uses: the kit's registry keys and their Ionicons names (src/vector/icons.ts in the kit). */
@@ -173,8 +175,10 @@ function genCss(tokens) {
     `  --tracking-tight: ${tokens.tracking.tight};`,
     `  --tracking-label: ${tokens.tracking.label};`,
     "",
-    '  --font-sans: var(--font-inter), "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;',
-    '  --font-mono: var(--font-plex-mono), "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;',
+    // The web faces (src/fonts/faces.css, written by scripts/fonts.mjs), each followed by its metric-matched Arial
+    // fallback (so the swap moves nothing), then the local full face if installed, then the system stack.
+    '  --font-sans: "Inter Web", "Inter Web Fallback", "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;',
+    '  --font-mono: "Plex Mono Web", "Plex Mono Web Fallback", "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;',
     "",
     "  --container-form: 640px;",
     "  --container-data: 1040px;",
@@ -216,10 +220,16 @@ function genCss(tokens) {
   ].join("\n");
 }
 
+/**
+ * The glyph modules: one file per glyph in src/vector/glyphs (`export const check = "<path…>"`), so a client part
+ * imports only the glyph it draws and renders it through Glyph (glyph.tsx), and icon-paths.ts, the table over all
+ * of them for the server-side Icon (icon.tsx). Returns [path, content] pairs.
+ */
 function genIcons() {
   const dir = join(root, "node_modules/ionicons/dist/svg");
   if (!existsSync(dir)) throw new Error("ionicons is not installed (pnpm install)");
-  const entries = Object.entries(ICONS).map(([key, ion]) => {
+  const iconBanner = banner("ionicons/dist/svg (MIT), the kit's default renderer");
+  const modules = Object.entries(ICONS).map(([key, ion]) => {
     const svg = readFileSync(join(dir, `${ion}.svg`), "utf8");
     const inner = svg
       .replace(/^<svg[^>]*>/, "")
@@ -227,17 +237,26 @@ function genIcons() {
       .replace(/<title>.*?<\/title>/g, "")
       .replace(/ class="[^"]*"/g, "")
       .trim();
-    // The root <svg class="ionicon"> goes: Icon renders its own svg with fill="currentColor" (Ionicons'
+    // The root <svg class="ionicon"> goes: Glyph renders its own svg with fill="currentColor" (Ionicons'
     // stylesheet sets that on .ionicon), so unfilled parts follow the tone and fill="none" parts stay outlines.
-    return `  ${key}: ${JSON.stringify(inner)},`;
+    const content = [
+      `// ${iconBanner}`,
+      `/** Inner markup of the \`${key}\` glyph (Ionicons ${ion}) on a 512 viewBox, for Glyph (src/vector/glyph.tsx). */`,
+      `export const ${key} = ${JSON.stringify(inner)};`,
+      "",
+    ].join("\n");
+    return [join(glyphsDir, `${key}.ts`), content];
   });
-  return [
-    `// ${banner("ionicons/dist/svg (MIT), the kit's default renderer")}`,
-    "// Inner markup of each glyph on a 512 viewBox. Strokes are currentColor; parts with no fill take the svg's",
-    "// fill, which Icon (icon.tsx) sets to currentColor.",
+  const names = Object.keys(ICONS);
+  const table = [
+    `// ${iconBanner}`,
+    "// The table of every glyph for the server-side Icon (icon.tsx). Each glyph is its own module in ./glyphs, so",
+    "// a client part imports one glyph and draws it with Glyph (glyph.tsx) instead of shipping this table.",
+    "",
+    ...names.map((key) => `import { ${key} } from "./glyphs/${key}";`),
     "",
     "export const iconPaths = {",
-    ...entries,
+    ...names.map((key) => `  ${key},`),
     "} as const;",
     "",
     "export type IconName = keyof typeof iconPaths;",
@@ -245,21 +264,31 @@ function genIcons() {
     `export const mirroredIcons: ReadonlySet<IconName> = new Set(${JSON.stringify(MIRRORS)});`,
     "",
   ].join("\n");
+  return [...modules, [iconsPath, table]];
 }
 
 const hash = (s) => createHash("sha256").update(s).digest("hex").slice(0, 12);
 
 function gen({ write }) {
   const tokens = JSON.parse(readFileSync(tokensPath, "utf8"));
-  const outputs = [
-    [cssPath, genCss(tokens)],
-    [iconsPath, genIcons()],
-  ];
+  const outputs = [[cssPath, genCss(tokens)], ...genIcons()];
   const stale = [];
+  if (write) mkdirSync(glyphsDir, { recursive: true });
   for (const [path, content] of outputs) {
     const current = existsSync(path) ? readFileSync(path, "utf8") : "";
     if (current === content) continue;
     if (write) writeFileSync(path, content);
+    else stale.push(path.replace(root + "/", ""));
+  }
+  // A glyph dropped from ICONS leaves its module behind: removed on gen, reported by check.
+  const expected = new Set(outputs.map(([path]) => path));
+  const extra = existsSync(glyphsDir)
+    ? readdirSync(glyphsDir)
+        .map((name) => join(glyphsDir, name))
+        .filter((path) => !expected.has(path))
+    : [];
+  for (const path of extra) {
+    if (write) unlinkSync(path);
     else stale.push(path.replace(root + "/", ""));
   }
   return { tokens, stale };
@@ -276,7 +305,7 @@ if (cmd === "pull") {
   console.log(`Pulled kit ${tokens.version} tokens and regenerated.`);
 } else if (cmd === "gen") {
   const { tokens } = gen({ write: true });
-  console.log(`Generated tokens.css and icon-paths.ts from kit ${tokens.version}.`);
+  console.log(`Generated tokens.css, glyphs/*.ts and icon-paths.ts from kit ${tokens.version}.`);
 } else if (cmd === "check") {
   const strict = process.argv.includes("--strict");
   const { tokens, stale } = gen({ write: false });

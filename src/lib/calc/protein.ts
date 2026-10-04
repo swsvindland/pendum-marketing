@@ -1,5 +1,5 @@
 // Daily protein for adults who train: a range per kilogram of body weight for each goal, a target inside it, and
-// the same numbers per meal and against the RDA. Grams round to whole numbers, as Vector Macros rounds protein
+// the same numbers per meal and against the RDA. Grams round to whole numbers, as Pendum Macros rounds protein
 // (round(weight × g/kg)), and every per-kg value below is one of its protein settings (1.4 / 1.6 / 2.0 / 2.2) or a
 // published bound.
 
@@ -17,7 +17,7 @@ export type ProteinGoalSpec = {
 /**
  * Per goal, g per kg of body weight per day:
  * - maintain 1.4–2.0 (ISSN 2017, enough for most exercising people), target 1.6 (Morton et al. 2018: past about
- *   1.6 g/kg, added protein gave no further average gain in lean mass; Vector Macros' default);
+ *   1.6 g/kg, added protein gave no further average gain in lean mass; Pendum Macros' default);
  * - build 1.6–2.2 (Morton et al. 2018: breakpoint 1.62, 95% CI 1.03–2.20, and the authors suggest about 2.2 for
  *   people seeking the most from training; Schoenfeld and Aragon 2018 use the same bounds), target 2.0 (the Vector
  *   Macros setting nearest the middle of that range);
@@ -43,7 +43,7 @@ export const PER_MEAL_G_PER_KG = 0.4;
 export const MEAL_COUNTS = [3, 4, 5] as const;
 
 /**
- * Whole grams for a body weight and a g/kg rate: Math.round(weight × g/kg), the expression Vector Macros uses. Kept
+ * Whole grams for a body weight and a g/kg rate: Math.round(weight × g/kg), the expression Pendum Macros uses. Kept
  * as is for parity, so an exact half that binary floating point stores a hair low (82.5 × 1.4) rounds down, as it
  * does in the app.
  */
@@ -122,4 +122,25 @@ export function leanMassView(weightKg: number, bodyFatPct: number, goal: Protein
 export function perMeal(targetG: number, weightKg: number, meals: number): { grams: number; perKg: number } | null {
   if (!valid(targetG) || !valid(weightKg) || !Number.isInteger(meals) || meals < 1) return null;
   return { grams: Math.round(targetG / meals), perKg: targetG / meals / weightKg };
+}
+
+/** The body weight of the page's worked example, kg. */
+export const PROTEIN_EXAMPLE_KG = 80;
+
+export type ProteinReferenceRow = ProteinGoalSpec & {
+  goal: ProteinGoal;
+  /** The range and target in whole grams at the example weight. */
+  grams: { min: number; max: number; target: number };
+};
+
+/**
+ * Each goal's range and target in g/kg with the grams at `exampleKg`, from `proteinRange`, for the page's table.
+ * Throws for a weight that is not positive, so the table can never show an empty row.
+ */
+export function proteinReference(exampleKg = PROTEIN_EXAMPLE_KG): ProteinReferenceRow[] {
+  return (Object.keys(PROTEIN_GOALS) as ProteinGoal[]).map((goal) => {
+    const range = proteinRange(exampleKg, goal);
+    if (!range) throw new RangeError(`The example weight must be positive: ${exampleKg}`);
+    return { goal, ...PROTEIN_GOALS[goal], grams: { min: range.min, max: range.max, target: range.target } };
+  });
 }

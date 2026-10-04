@@ -1,5 +1,5 @@
 // A daily fluid estimate from drinks: a body-weight baseline kept within the published reference intakes, plus
-// exercise and heat. No app implements this: Vector Hydration's goal is a fixed 2,500 mL default the user edits
+// exercise and heat. No app implements this: Pendum Hydration's goal is a fixed 2,500 mL default the user edits
 // (water-track src/db/schema.ts, goalMl), and the app says it is not a personal recommendation.
 
 import { ML_PER_FL_OZ, mlToFlOz } from "@/lib/units";
@@ -38,7 +38,7 @@ export const EFSA_DRINK_SHARE = 0.8;
 export const EXERCISE_ML_PER_MIN = 10;
 /** Sedentary needs rise from about 3 L a day in temperate climates to about 4 L in hot ones (IOM 2005). */
 export const HOT_CLIMATE_ML = 1000;
-/** Vector Hydration's default serving. */
+/** Pendum Hydration's default serving. */
 export const GLASS_ML = 250;
 /** A US cup. */
 export const CUP_FL_OZ = 8;

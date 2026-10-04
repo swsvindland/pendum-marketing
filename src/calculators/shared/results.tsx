@@ -1,45 +1,40 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
-import { Icon, Label, Panel, Text, Value, cn } from "@/vector";
+import type { ReactNode } from "react";
+import { cn } from "@/vector/cn";
+import { Panel } from "@/vector/panel";
+import { Label, Text, Value } from "@/vector/text";
+import { SettledAnnouncement } from "./announce";
+import { useNextStep } from "./next-step";
 
-/** How long the result must hold still before it is announced: past a pause in typing, not between digits. */
-const SETTLE_MS = 800;
+// Leaf imports only: the barrel re-exports Icon, which reads the whole icon table, and a client file must not ship
+// it. The one glyph a result needs (the highlight check) is in ./table.
 
-/**
- * A polite live region that speaks `text` only once it has held for SETTLE_MS. Typing 100 into a field whose
- * minimum is 1 gives three valid results in a row; only the last is announced.
- */
-function SettledAnnouncement({ text }: { text: string }) {
-  const [spoken, setSpoken] = useState("");
-  useEffect(() => {
-    const timer = setTimeout(() => setSpoken(text), SETTLE_MS);
-    return () => clearTimeout(timer);
-  }, [text]);
-  return (
-    <p className="sr-only" aria-live="polite">
-      {spoken}
-    </p>
-  );
-}
+export { firstInvalid } from "./measure";
+export { ReadoutTable } from "./table";
 
 /**
  * The results side of a calculator: a Panel whose header names the result in DOMAIN / OBJECT form. The summary
  * sentence (`announce`) goes to a polite live region once it settles, so screen readers hear the result, not each
- * digit on the way to it.
+ * digit on the way to it. Once there is a result, the footer offers the next step the frame provides (what the app
+ * does with this number, and the link to it); an empty state shows no footer.
  */
 export function ResultPanel({
   eyebrow,
   meta,
   announce,
+  hasResult = announce !== undefined,
   children,
 }: {
   eyebrow: string;
   meta?: string;
   /** One plain sentence that states the result ("BMI 24.7, healthy weight."). */
   announce?: string;
+  /** Whether a result is shown. Defaults to whether there is a sentence to announce. */
+  hasResult?: boolean;
   children: ReactNode;
 }) {
+  const next = useNextStep();
   return (
     <Panel as="section" aria-labelledby="result-title" className="lg:sticky lg:top-24">
       <Panel.Header eyebrow={eyebrow} meta={meta} heading={false} />
@@ -48,6 +43,7 @@ export function ResultPanel({
       </h2>
       <SettledAnnouncement text={announce ?? ""} />
       <Panel.Body>{children}</Panel.Body>
+      {next && hasResult ? <Panel.Footer>{next}</Panel.Footer> : null}
     </Panel>
   );
 }
@@ -59,6 +55,18 @@ export function EmptyResult({ code = "No input", children }: { code?: string; ch
       <Label>{code}</Label>
       <Text tone="secondary">{children}</Text>
     </div>
+  );
+}
+
+/**
+ * The empty state for a filled form with one entry out of range: it names the field (from `firstInvalid`) rather
+ * than asking for everything again. `outcome` is the result as the "No input" sentence ends ("your BMI").
+ */
+export function CheckInput({ field, outcome }: { field: string; outcome: string }) {
+  return (
+    <EmptyResult code="Check input">
+      Correct the {field} to see {outcome}.
+    </EmptyResult>
   );
 }
 
@@ -129,65 +137,5 @@ export function BandScale({
         ))}
       </ul>
     </figure>
-  );
-}
-
-/** A two-column table of readouts (rep-max tables, zones, plate lists). Header in the Label style. */
-export function ReadoutTable({
-  caption,
-  columns,
-  rows,
-  highlight,
-  highlightLabel,
-}: {
-  caption: string;
-  columns: string[];
-  rows: ReactNode[][];
-  /** Row index drawn in surface-secondary (the visitor's own row). */
-  highlight?: number;
-  /**
-   * What the highlighted row is ("your level", "goal"): a tint check after its first cell, and these words for
-   * screen readers, so the fill never carries it alone. Without it, the caller's first cell has to say it.
-   */
-  highlightLabel?: string;
-}) {
-  return (
-    <table className="w-full border-collapse text-start">
-      <caption className="sr-only">{caption}</caption>
-      <thead>
-        <tr className="border-b border-separator">
-          {columns.map((c, i) => (
-            <th key={c} scope="col" className={cn("pb-2 type-label text-muted", i === 0 ? "text-start" : "text-end")}>
-              {c}
-            </th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((row, r) => (
-          <tr key={r} className={cn("border-b border-separator last:border-b-0", r === highlight && "bg-surface-secondary")}>
-            {row.map((cell, i) =>
-              i === 0 ? (
-                <th key={i} scope="row" className="py-3 ps-0 text-start type-small text-foreground-secondary [font-weight:400]">
-                  {r === highlight && highlightLabel ? (
-                    <span className="inline-flex items-center gap-2">
-                      {cell}
-                      <Icon name="check" size={16} tone="tint" />
-                      <span className="sr-only"> ({highlightLabel})</span>
-                    </span>
-                  ) : (
-                    cell
-                  )}
-                </th>
-              ) : (
-                <td key={i} className="py-3 text-end">
-                  {cell}
-                </td>
-              )
-            )}
-          </tr>
-        ))}
-      </tbody>
-    </table>
   );
 }

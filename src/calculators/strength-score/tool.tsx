@@ -3,10 +3,11 @@
 import { useState } from "react";
 import { DOTS, STRENGTH_LIMITS, WILKS, dots, roundPoints, wilks, type Sex } from "@/lib/calc/strength-score";
 import { formatNumber, kgToLb } from "@/lib/units";
-import { Note, ReadoutRow, Value } from "@/vector";
+import { ReadoutRow } from "@/vector/panel";
+import { Note, Value } from "@/vector/text";
 import { Choices } from "@/vector/form/choices";
 import { EMPTY, MassField, SexChoice, UnitChoice, type Measure } from "../shared/fields";
-import { EmptyResult, HeroValue, ResultPanel } from "../shared/results";
+import { CheckInput, EmptyResult, HeroValue, ResultPanel, firstInvalid } from "../shared/results";
 import { ToolLayout } from "../shared/tool-layout";
 import { useUnits } from "../shared/use-units";
 
@@ -77,6 +78,7 @@ export function StrengthScoreTool() {
   const waiting = sex
     ? `Enter ${enter} to see your DOTS and Wilks scores.`
     : `Choose a sex${missing.length ? `, then enter ${enter}` : ""} to see your DOTS and Wilks scores.`;
+  const invalid = firstInvalid([["body weight", bodyWeight], ...weights]);
 
   return (
     <ToolLayout
@@ -146,7 +148,11 @@ export function StrengthScoreTool() {
           }
         >
           {dotsPoints === null || wilksPoints === null || totalKg === null ? (
-            <EmptyResult>{waiting}</EmptyResult>
+            invalid ? (
+              <CheckInput field={invalid} outcome="your DOTS and Wilks scores" />
+            ) : (
+              <EmptyResult>{waiting}</EmptyResult>
+            )
           ) : (
             <>
               <HeroValue value={points(dotsPoints)} caption="DOTS points" />

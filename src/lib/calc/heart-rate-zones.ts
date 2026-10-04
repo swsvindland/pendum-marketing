@@ -95,3 +95,23 @@ export function heartRateZones(maxHr: number, restingHr: number | null = null): 
     zones,
   };
 }
+
+/** Ages in the page's zones-by-age table: 20 to 70 in five-year steps. */
+export const ZONE_TABLE_AGES: readonly number[] = Array.from({ length: 11 }, (_, i) => 20 + 5 * i);
+
+export type ZonesByAgeRow = { age: number; maxHr: number; zones: Zone[] };
+
+/**
+ * The five zones by age for the page's reference table: the Tanaka maximum rounded to a whole bpm (`estimateMaxHr`)
+ * and the zones as percent of that maximum (`heartRateZones` with no resting rate), one row per age. An age the
+ * estimate does not cover (outside 18 to 100) is left out rather than guessed.
+ */
+export function zonesByAge(ages: readonly number[] = ZONE_TABLE_AGES): ZonesByAgeRow[] {
+  const rows: ZonesByAgeRow[] = [];
+  for (const age of ages) {
+    const maxHr = estimateMaxHr(age);
+    const set = maxHr === null ? null : heartRateZones(maxHr);
+    if (maxHr !== null && set) rows.push({ age, maxHr, zones: set.zones });
+  }
+  return rows;
+}

@@ -15,10 +15,11 @@ import {
   type NavyEquation,
 } from "@/lib/calc/body-fat";
 import { formatNumber } from "@/lib/units";
-import { Note, ReadoutRow, Value } from "@/vector";
+import { ReadoutRow } from "@/vector/panel";
+import { Note, Value } from "@/vector/text";
 import { EMPTY, HeightField, LengthField, MassField, SexChoice, UnitChoice, type Measure } from "../shared/fields";
 import { quantityScale } from "../shared/measure";
-import { BandScale, EmptyResult, HeroValue, ResultPanel } from "../shared/results";
+import { BandScale, CheckInput, EmptyResult, HeroValue, ResultPanel, firstInvalid } from "../shared/results";
 import { ToolLayout } from "../shared/tool-layout";
 import { useUnits } from "../shared/use-units";
 
@@ -69,13 +70,21 @@ export function BodyFatTool() {
   const band = ready && category ? bodyFatBands(equation).find((b) => b.category === category)! : null;
   const below = ready && value !== null && belowEssentialFat(value, equation);
   const mass = quantityScale("mass", units);
+  // The measurements the chosen equation needs, in form order. Weight is optional and never blocks the estimate.
+  const invalid = firstInvalid([
+    ["height", height],
+    ["neck", neck],
+    ["abdomen", male ? abdomen : EMPTY],
+    ["waist", equation === "female" ? waist : EMPTY],
+    ["hips", equation === "female" ? hips : EMPTY],
+  ]);
 
   // Why a complete set of measurements gives no estimate: the circumference term is not positive, or the result
-  // falls outside 0 to 75 %.
+  // falls outside 0 to 75%.
   const noEstimate =
     ready && value === null
       ? navyCircumference(equation, measurements) > 0
-        ? "The equation gives a value outside 0 to 75 % for these measurements, so there is no estimate. Check where the tape sits and that each measurement is in the right unit."
+        ? "The equation gives a value outside 0 to 75% for these measurements, so there is no estimate. Check where the tape sits and that each measurement is in the right unit."
         : male
           ? "The abdomen must measure more than the neck, so these measurements give no estimate. Check where the tape sits."
           : "Waist and hips together must measure more than the neck, so these measurements give no estimate. Check where the tape sits."
@@ -151,20 +160,25 @@ export function BodyFatTool() {
           meta={equation ? (male ? "Male equation" : "Female equation") : undefined}
           announce={
             equation && shown !== null && band
-              ? `Body fat ${formatNumber(shown, 1)} %, ${band.label.toLowerCase()} for ${SEX[equation]}.`
+              ? `Body fat ${formatNumber(shown, 1)}%, ${band.label.toLowerCase()} for ${SEX[equation]}.`
               : (noEstimate ?? undefined)
           }
+          hasResult={shown !== null}
         >
           {noEstimate ? (
             <EmptyResult code="No estimate">{noEstimate}</EmptyResult>
           ) : !equation || shown === null || !band || !category ? (
-            <EmptyResult>
-              {equation === "male"
-                ? "Enter your height, neck and abdomen to see your body-fat estimate."
-                : equation === "female"
-                  ? "Enter your height, neck, waist and hips to see your body-fat estimate."
-                  : "Choose the male or female equation and enter your measurements to see your body-fat estimate."}
-            </EmptyResult>
+            invalid ? (
+              <CheckInput field={invalid} outcome="your body-fat estimate" />
+            ) : (
+              <EmptyResult>
+                {equation === "male"
+                  ? "Enter your height, neck and abdomen to see your body-fat estimate."
+                  : equation === "female"
+                    ? "Enter your height, neck, waist and hips to see your body-fat estimate."
+                    : "Choose the male or female equation and enter your measurements to see your body-fat estimate."}
+              </EmptyResult>
+            )
           ) : (
             <>
               <HeroValue
@@ -182,7 +196,7 @@ export function BodyFatTool() {
               {below ? (
                 <Note>
                   ACE’s essential fat range for {SEX[equation]} is {ACE_ESSENTIAL[equation][0]} to{" "}
-                  {ACE_ESSENTIAL[equation][1]} %. Check where the tape sits and that each measurement is in the right unit.
+                  {ACE_ESSENTIAL[equation][1]}%. Check where the tape sits and that each measurement is in the right unit.
                 </Note>
               ) : null}
               {weight.value !== null ? (

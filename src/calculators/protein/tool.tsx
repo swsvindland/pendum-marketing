@@ -13,11 +13,12 @@ import {
   type ProteinGoal,
 } from "@/lib/calc/protein";
 import { KG_PER_LB, formatNumber, kgToLb } from "@/lib/units";
-import { Heading, Note, ReadoutRow, Value } from "@/vector";
+import { ReadoutRow } from "@/vector/panel";
+import { Heading, Note, Value } from "@/vector/text";
 import { Choices } from "@/vector/form/choices";
 import { EMPTY, MassField, NumberField, UnitChoice, type Measure } from "../shared/fields";
 import { ToolLayout } from "../shared/tool-layout";
-import { EmptyResult, HeroValue, ReadoutTable, ResultPanel } from "../shared/results";
+import { CheckInput, EmptyResult, HeroValue, ReadoutTable, ResultPanel, firstInvalid } from "../shared/results";
 import { useUnits } from "../shared/use-units";
 
 // Typed with "" so the Choices can start with no goal selected; the result waits for one.
@@ -49,6 +50,8 @@ export function ProteinTool() {
   const rate = (gPerKg: number) => (metric ? gPerKg : gPerKg * KG_PER_LB);
   const rateDigits = metric ? 1 : 2;
   const mass = (kg: number) => (metric ? kg : kgToLb(kg));
+  // Body fat is optional: an invalid entry hides its rows and never blocks the range.
+  const invalid = firstInvalid([["body weight", weight]]);
 
   return (
     <ToolLayout
@@ -86,7 +89,11 @@ export function ProteinTool() {
           }
         >
           {!result || !goal || weight.value === null ? (
-            <EmptyResult>Enter your body weight and choose a goal to see your daily protein range.</EmptyResult>
+            invalid ? (
+              <CheckInput field={invalid} outcome="your daily protein range" />
+            ) : (
+              <EmptyResult>Enter your body weight and choose a goal to see your daily protein range.</EmptyResult>
+            )
           ) : (
             <>
               <HeroValue value={range(result.min, result.max)} unit="g" caption={CAPTION[goal]} />
@@ -124,7 +131,7 @@ export function ProteinTool() {
                   <Value value={formatNumber(result.rda)} unit="g" size="s" />
                 </ReadoutRow>
                 <ReadoutRow label="Your range, times the RDA">
-                  <Value value={`${formatNumber(result.rdaMultiple.min, 2, 1)}–${formatNumber(result.rdaMultiple.max, 2, 1)}`} unit="×" size="s" />
+                  <Value value={`${formatNumber(result.rdaMultiple.min, 2)}–${formatNumber(result.rdaMultiple.max, 2)}`} unit="×" size="s" />
                 </ReadoutRow>
               </div>
               {lean?.deficit ? (

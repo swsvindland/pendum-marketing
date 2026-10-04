@@ -1,12 +1,17 @@
 import type { ReactNode } from "react";
 import { Heading, Label, Text, cn } from "@/vector";
+import { Breadcrumbs, type Crumb } from "./site/breadcrumbs";
 
 /**
  * The web Screen header (§5.1): optional mono eyebrow (live context or DOMAIN / OBJECT, never the title again),
- * the h1, a muted subtitle, one action row, then a 1pt rule. `hero` uses the large web hero role.
+ * the h1, a muted subtitle, one action row, then a 1pt rule. `hero` uses the large web hero role. The eyebrow slot
+ * shows the breadcrumb trail only when the page has two or more parents ("Home / Apps" over an app name): a lone
+ * "Home" reads as a truncated eyebrow, so a top-level page keeps its DOMAIN / OBJECT eyebrow and its BreadcrumbList
+ * markup names the trail for search.
  */
 export function PageHeader({
   eyebrow,
+  crumbs,
   title,
   subtitle,
   actions,
@@ -15,6 +20,8 @@ export function PageHeader({
   rule = true,
 }: {
   eyebrow?: string;
+  /** The page's parents ("Home / Apps"); shown in the eyebrow slot instead of `eyebrow` when there are two or more. */
+  crumbs?: Crumb[];
   title: ReactNode;
   subtitle?: ReactNode;
   actions?: ReactNode;
@@ -33,7 +40,7 @@ export function PageHeader({
         )}
       >
         <div className="flex flex-col gap-4">
-          {eyebrow ? <Label>{eyebrow}</Label> : null}
+          {crumbs && crumbs.length >= 2 ? <Breadcrumbs items={crumbs} /> : eyebrow ? <Label>{eyebrow}</Label> : null}
           <Heading level={1} variant={hero ? "hero" : "display"} className="max-w-[22ch]">
             {title}
           </Heading>

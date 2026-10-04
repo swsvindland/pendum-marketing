@@ -1,12 +1,11 @@
 import type { ReactNode } from "react";
 import { Section } from "@/components/page";
-import { listFormat } from "@/components/site/format";
 import type { App } from "@/content/types";
-import { Callout, Panel, ReadoutRow, Text, Value } from "@/vector";
-import { modelLabel } from "./model";
+import { Callout, LinkButton, Panel, Text, cn } from "@/vector";
+import { webNote } from "./model";
 
 /**
- * A ReadoutRow for a value that is a sentence: the label above and the text below, start-aligned, on the same
+ * A readout row for a value that is a sentence: the label above and the text below, start-aligned, on the same
  * 1pt rule. A paragraph set flush to the end edge is hard to read on a phone.
  */
 function ProseRow({ label, children }: { label: string; children: ReactNode }) {
@@ -23,80 +22,43 @@ function ProseRow({ label, children }: { label: string; children: ReactNode }) {
 }
 
 /**
- * The spec sheet: how the app is sold, the account, platforms, languages and units as readout rows in a panel,
- * beside the caveats that travel with its claims ("Good to know"). Two columns from 1024, stacked below. The
- * section has no eyebrow: the heading says all there is to say (§10).
- *
- * An app with a web version (stores.web present) gets a Web row. Until its address is set, the row describes it
- * and says when the address comes, so nothing reads as a place to open today.
+ * What is left after the at-a-glance table states the facts: the caveats that travel with the app's claims
+ * ("Good to know") and, for an app with a web version (stores.web present), the Web row. The web sentence comes
+ * from webNote, so it describes the version while its address is not public and never promises a launch. The
+ * section has no eyebrow: the heading says all there is to say (§10). Support is one link away for the rest.
  */
 export function AppDetails({ app }: { app: App }) {
-  const languages = app.languages;
+  const web = app.stores.web !== undefined;
+  if (!web && !app.caveats.length) return null;
   return (
     <Section id="details" title="Details" bordered>
-      <div className="grid items-start gap-6 lg:grid-cols-2">
-        <Panel>
-          <Panel.Body>
-            <div>
-              <ReadoutRow label="Sold as">
-                <Text variant="small" as="span">
-                  {modelLabel(app)}
-                </Text>
-              </ReadoutRow>
-              {app.price ? (
-                <ReadoutRow label="Price">
-                  <Value value={app.price} size="s" />
-                </ReadoutRow>
-              ) : null}
-              <ReadoutRow label="Account">
-                <Text variant="small" as="span">
-                  {app.model === "subscription" ? "Required" : "None"}
-                </Text>
-              </ReadoutRow>
-              {app.platforms.length ? (
-                <ReadoutRow label="Platforms">
-                  <Text variant="small" as="span" className="block py-3 text-pretty">
-                    {listFormat.format(app.platforms)}
-                  </Text>
-                </ReadoutRow>
-              ) : null}
-              {app.stores.web !== undefined ? (
-                <ProseRow label="Web">
-                  {app.stores.web
-                    ? "The same account in a web browser. It has no checkout."
-                    : "The same account in a web browser. The address is published at launch."}
-                </ProseRow>
-              ) : null}
-              {languages.length === 1 ? (
-                <ReadoutRow label="Language">
-                  <Text variant="small" as="span">
-                    {languages[0]}
-                  </Text>
-                </ReadoutRow>
-              ) : languages.length > 1 ? (
-                <div className="border-t border-separator pb-3">
-                  <ReadoutRow label="Languages">
-                    <Value value={String(languages.length)} unit="languages" size="s" />
-                  </ReadoutRow>
-                  <Text variant="caption" tone="muted" className="text-pretty">
-                    {listFormat.format(languages)}
-                  </Text>
-                </div>
-              ) : null}
-              {app.units ? <ProseRow label="Units">{app.units}</ProseRow> : null}
-            </div>
-          </Panel.Body>
-        </Panel>
+      <div className={cn("grid items-start gap-6", web && "lg:grid-cols-2")}>
+        {web ? (
+          <Panel>
+            <Panel.Body>
+              <div>
+                <ProseRow label="Web">{webNote(app)}</ProseRow>
+              </div>
+            </Panel.Body>
+          </Panel>
+        ) : null}
         {app.caveats.length ? (
-          <Callout tone="info" title="Good to know">
-            <ul className="flex flex-col gap-3">
-              {app.caveats.map((c) => (
-                <li key={c} className="text-pretty">
-                  {c}
-                </li>
-              ))}
-            </ul>
-          </Callout>
+          <div className={cn("flex flex-col gap-4", !web && "max-w-form")}>
+            <Callout tone="info" title="Good to know">
+              <ul className="flex flex-col gap-3">
+                {app.caveats.map((c) => (
+                  <li key={c} className="text-pretty">
+                    {c}
+                  </li>
+                ))}
+              </ul>
+            </Callout>
+            <div>
+              <LinkButton href="/support" forward>
+                Open support
+              </LinkButton>
+            </div>
+          </div>
         ) : null}
       </div>
     </Section>

@@ -1,6 +1,11 @@
 import { clsx, type ClassValue } from "clsx";
 import { extendTailwindMerge } from "tailwind-merge";
 
+// The joiner for the HeroUI-backed parts and the server-only panels and lists, where a `className` may have to beat
+// a slot class or a layout default. The parts every page carries (text, the native button and segmented control,
+// the glyph, the error states, the nav islands) use ./cx instead: clsx with the role rule alone, so no island ships
+// tailwind-merge (8 KB gzip) on every page.
+
 /** The kit's type roles are one group, so a later role replaces an earlier one. */
 const merge = extendTailwindMerge<"type-role">({
   extend: {

@@ -1,5 +1,5 @@
 import { readFile } from "node:fs/promises";
-import { join } from "node:path";
+import { extname, join } from "node:path";
 import tokens from "@/vector/tokens.json";
 
 /**
@@ -46,4 +46,16 @@ export async function imageFonts() {
     { name: "Sans", data: sans, style: "normal" as const, weight: 400 as const },
     { name: "Plex Mono", data: mono, style: "normal" as const, weight: 400 as const },
   ];
+}
+
+const imageTypes: Record<string, string> = { ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg" };
+
+/**
+ * A file under public/ as a data URL, for an <img> inside ImageResponse (Satori reads data URLs; it has no origin
+ * to resolve a site path against at build time). The app icons are 25 to 52 KB each, so the card stays small.
+ */
+export async function publicImageDataUrl(path: string) {
+  const type = imageTypes[extname(path).toLowerCase()] ?? "application/octet-stream";
+  const file = await readFile(join(process.cwd(), "public", path));
+  return `data:${type};base64,${file.toString("base64")}`;
 }

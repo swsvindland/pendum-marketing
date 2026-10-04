@@ -1,14 +1,16 @@
 "use client"; // Error boundaries must be Client Components.
 
 import { useEffect } from "react";
-import { LinkButton, SystemState } from "@/vector";
-import { Button } from "@/vector/button";
+import { NativeButton, NativeLinkButton } from "@/vector/button-native";
+import { SystemState } from "@/vector/system-state";
 
 /**
  * A runtime error in a page, inside the root layout (header and footer stay): an error SystemState (§5.7) in the
  * not-found page's place. The code as a Label with the error ID in mono when Next gives one (it matches the server
  * log), the fact as the h1, the message as ErrorText, then a secondary Retry (Next 16 `retry`: fetch and render the
- * segment again) and the way home.
+ * segment again) and the way home. This boundary belongs to the root segment, so every page loads it: it imports
+ * leaf kit modules and the native button and link, never the barrel (whose LinkButton and ListRow carry the icon
+ * table) or HeroUI.
  */
 export default function ErrorPage({ error, retry }: { error: Error & { digest?: string }; retry: () => void }) {
   useEffect(() => {
@@ -26,12 +28,12 @@ export default function ErrorPage({ error, retry }: { error: Error & { digest?: 
         message="Something failed while the page was drawn. Retry it, or start again from the home page."
         actions={
           <>
-            <Button variant="secondary" onPress={retry}>
+            <NativeButton variant="secondary" onClick={retry}>
               Retry
-            </Button>
-            <LinkButton href="/" forward>
+            </NativeButton>
+            <NativeLinkButton href="/" forward>
               Go to home page
-            </LinkButton>
+            </NativeLinkButton>
           </>
         }
       />

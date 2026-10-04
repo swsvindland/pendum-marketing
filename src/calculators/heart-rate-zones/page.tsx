@@ -1,9 +1,15 @@
 import type { CalculatorMeta } from "@/content/types";
-import { ZONES } from "@/lib/calc/heart-rate-zones";
+import { ZONES, zonesByAge } from "@/lib/calc/heart-rate-zones";
+import { formatNumber } from "@/lib/units";
+import { Value } from "@/vector";
 import { CalculatorFrame, Formula } from "../shared/frame";
+import { Reference } from "../shared/reference";
+import { ReadoutTable } from "../shared/table";
 import { HeartRateZonesTool } from "./tool";
 
 export function HeartRateZonesPage({ meta }: { meta: CalculatorMeta }) {
+  const byAge = zonesByAge();
+  const at40 = byAge.find((row) => row.age === 40);
   return (
     <CalculatorFrame
       meta={meta}
@@ -19,7 +25,8 @@ export function HeartRateZonesPage({ meta }: { meta: CalculatorMeta }) {
           <Formula>
             {`HRmax    = 208 − 0.7 × age (years)
 % of max = round(p × HRmax)
-Reserve  = round(rest + p × (HRmax − rest))
+Reserve  = round(rest
+           + p × (HRmax − rest))
 p        = 0.5, 0.6, 0.7, 0.8, 0.9, 1.0`}
           </Formula>
           <p>
@@ -40,14 +47,14 @@ p        = 0.5, 0.6, 0.7, 0.8, 0.9, 1.0`}
                 <strong>
                   Zone {z.zone}, {z.label.toLowerCase()}
                 </strong>
-                : {z.from} to {z.to} %
+                : {z.from} to {z.to}%
               </li>
             ))}
           </ul>
           <p>
-            Five zones in 10 % steps are a common training convention, the one heart rate monitors use, not a clinical
-            standard. For comparison, ACSM classes 64 to 76 % of maximum (40 to 59 % of reserve) as moderate and 77 to
-            95 % of maximum (60 to 89 % of reserve) as vigorous.
+            Five zones in 10% steps are a common training convention, the one heart rate monitors use, not a clinical
+            standard. For comparison, ACSM classes 64 to 76% of maximum (40 to 59% of reserve) as moderate and 77 to
+            95% of maximum (60 to 89% of reserve) as vigorous.
           </p>
           <p>
             Each edge is rounded to a whole bpm, halves up. A zone runs from its lower edge to 1 bpm below the next
@@ -55,6 +62,25 @@ p        = 0.5, 0.6, 0.7, 0.8, 0.9, 1.0`}
             is 208 − 28 = 180 bpm, and the zones are 90–107, 108–125, 126–143, 144–161 and 162–180 bpm. With a resting
             heart rate of 60 bpm, the reserve is 120 bpm and zone 2 runs from 60 + 72 = 132 to 143 bpm.
           </p>
+          <Reference
+            id="zones-by-age"
+            title="Zones by age"
+            note={`Beats per minute, from the Tanaka maximum rounded to a whole bpm. Each zone runs from the number shown to 1 bpm below the next; zone 5 ends at the maximum for that age${at40 ? ` (${formatNumber(at40.maxHr)} bpm at 40)` : ""}. Any age formula has a typical error of 7 to 11 bpm, and a measured maximum or a resting heart rate changes every row: the tool works them in.`}
+          >
+            <div className="overflow-x-auto">
+              <ReadoutTable
+                gap="sm"
+                caption="The five training zones in beats per minute by age, 20 to 70, from the Tanaka maximum heart rate"
+                columns={["Age", ...ZONES.map((z) => `Zone ${z.zone}`)]}
+                rows={byAge.map((row) => [
+                  <Value key="age" value={formatNumber(row.age)} size="xs" />,
+                  ...row.zones.map((z) => (
+                    <Value key={z.zone} value={`${formatNumber(z.low)}–${formatNumber(z.high)}`} size="xs" />
+                  )),
+                ])}
+              />
+            </div>
+          </Reference>
         </>
       }
       caveat="For healthy adults. Any age formula has a typical error of 7 to 11 bpm, and your true maximum can differ from it by 20 bpm or more. Medications such as beta blockers lower heart rate and change these zones. A laboratory exercise test or a field test measures your maximum more accurately. With a heart condition, or symptoms during exercise, ask your clinician before training by heart rate."

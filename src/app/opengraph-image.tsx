@@ -1,6 +1,7 @@
 import { ImageResponse } from "next/og";
 import { apps } from "@/content/apps";
 import { calculators } from "@/content/calculators";
+import { site } from "@/content/site";
 import { MarkImage, brand, imageFonts } from "@/components/site/brand";
 import { ogCard } from "@/components/site/metadata";
 
@@ -63,7 +64,7 @@ export default function OpengraphImage() {
         >
           <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
             <MarkImage size={48} />
-            <div style={{ fontSize: 44, letterSpacing: "-0.02em" }}>Vector</div>
+            <div style={{ fontSize: 44, letterSpacing: "-0.02em" }}>{site.family}</div>
           </div>
           <div style={label}>Fitness apps / Calculators</div>
         </div>

@@ -1,5 +1,11 @@
+import { names } from "@/content/apps";
 import type { CalculatorMeta } from "@/content/types";
+import { REP_MAX_EXAMPLE_KG, repMaxReference } from "@/lib/calc/one-rep-max";
+import { formatNumber } from "@/lib/units";
+import { Value } from "@/vector";
 import { CalculatorFrame, Formula } from "../shared/frame";
+import { Reference } from "../shared/reference";
+import { ReadoutTable } from "../shared/table";
 import { OneRepMaxTool } from "./tool";
 
 export function OneRepMaxPage({ meta }: { meta: CalculatorMeta }) {
@@ -11,7 +17,7 @@ export function OneRepMaxPage({ meta }: { meta: CalculatorMeta }) {
       method={
         <>
           <p>
-            This calculator estimates a one-rep max (e1RM) the way Vector Lift does. Reps left in reserve count as
+            This calculator estimates a one-rep max (e1RM) the way {names.lift} does. Reps left in reserve count as
             reps you could have done, so 5 reps with 2 in reserve is 7 reps to failure. An empty reserve field
             counts as 0, a set taken to failure.
           </p>
@@ -22,26 +28,48 @@ export function OneRepMaxPage({ meta }: { meta: CalculatorMeta }) {
           <Formula label="Epley formula">
             {`reps to failure = reps + reps in reserve
 
-e1RM = weight × (1 + reps to failure / 30)
+e1RM = weight
+  × (1 + reps to failure / 30)
 e1RM = weight   (1 rep to failure)`}
           </Formula>
           <p>
             The rep-max table runs Epley backwards. The load for r reps to failure is the e1RM divided by
-            (1 + r / 30), and the e1RM itself at 1 rep. The percentage is that load as a share of the e1RM: 94 % for
-            2 reps, 86 % for 5 and 75 % for 10. The table counts reps to failure, so the row marked as your set is
+            (1 + r / 30), and the e1RM itself at 1 rep. The percentage is that load as a share of the e1RM: 94% for
+            2 reps, 86% for 5 and 75% for 10. The table counts reps to failure, so the row marked as your set is
             your reps plus your reserve: 7 for 5 reps with 2 in reserve.
           </p>
-          <Formula label="Rep-max table formula">{`load(r) = e1RM / (1 + r / 30)    r = 2 to 12`}</Formula>
+          <Formula label="Rep-max table formula">
+            {`load(r) = e1RM / (1 + r / 30)
+r = 2 to 12 reps to failure`}
+          </Formula>
+          <Reference
+            id="rep-max-table"
+            title="Rep-max percentages (Epley)"
+            note={`Reps to failure, so a set of 5 with 2 in reserve is the 7-rep row. The loads are for an e1RM of ${REP_MAX_EXAMPLE_KG} kg, so they read as percentages in any unit; the tool fills the same table from your own set.`}
+          >
+            <ReadoutTable
+              caption={`Share of the one-rep max for 1 to 12 reps to failure, with the load at a ${REP_MAX_EXAMPLE_KG} kg one-rep max`}
+              columns={["Reps to failure", "% of 1RM", `Load at ${REP_MAX_EXAMPLE_KG} kg`]}
+              rows={repMaxReference().map((row) => [
+                <Value key="reps" value={formatNumber(row.reps)} size="s" />,
+                <Value key="percent" value={formatNumber(row.percent)} unit="%" size="s" />,
+                <Value key="load" value={formatNumber(row.load, 1)} unit="kg" size="s" tone="secondary" />,
+              ])}
+            />
+          </Reference>
           <p>
             <strong>Brzycki</strong> is shown for comparison up to 10 reps to failure, on the same reps to failure.
             From 2 to 9 reps it reads a little lower than Epley, and the two agree at 1 and at 10 reps. Past 10 the
             Brzycki denominator shrinks quickly and its estimate climbs, so it is left out.
           </p>
-          <Formula label="Brzycki formula">{`Brzycki = weight × 36 / (37 − reps to failure)`}</Formula>
+          <Formula label="Brzycki formula">
+            {`Brzycki = weight × 36
+  / (37 − reps to failure)`}
+          </Formula>
           <p>
             Rep-based equations track measured maxes well on average but can miss for one person. LeSuer and
             colleagues compared seven equations, Epley and Brzycki among them, with measured one-rep maxes in
-            untrained college students: accuracy differed by lift, and every equation underestimated the deadlift.
+            untrained college students. Accuracy differed by lift, and every equation underestimated the deadlift.
             The result also depends on how honest the reserve is.
           </p>
         </>

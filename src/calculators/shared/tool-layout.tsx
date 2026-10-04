@@ -17,7 +17,7 @@ export function ToolLayout({
   return (
     <div className="grid items-start gap-6 lg:grid-cols-2">
       <Panel as="section" aria-labelledby="inputs-title">
-        <Panel.Header eyebrow={inputsEyebrow} />
+        <Panel.Header eyebrow={inputsEyebrow} heading={false} />
         <h2 id="inputs-title" className="sr-only">
           Your details
         </h2>
@@ -29,16 +29,16 @@ export function ToolLayout({
 }
 
 /**
- * A formula in Plex Mono inside a 1pt border, with no fill. Long lines scroll rather than wrap, so the box is a
- * named region in the tab order and the arrow keys scroll it. `label` names it when a page has more than one.
+ * A formula in Plex Mono inside a 1pt border, with no fill. Pages keep each line to about 40 characters, the
+ * width of the box on a phone; a longer one wraps rather than clipping, so the box never scrolls and is not a
+ * tab stop. `label` names the region when a page has more than one.
  */
 export function Formula({ label = "Formula", children }: { label?: string; children: ReactNode }) {
   return (
     <pre
-      tabIndex={0}
       role="region"
       aria-label={label}
-      className="overflow-x-auto rounded-control border border-border px-4 py-3 type-readout-xs text-foreground"
+      className="whitespace-pre-wrap [overflow-wrap:anywhere] rounded-control border border-border px-4 py-3 type-readout-xs text-foreground"
     >
       <code>{children}</code>
     </pre>

@@ -1,4 +1,4 @@
-// Daily calorie and macro targets for a cut, maintenance or a bulk, as Vector Macros generates a program's starting
+// Daily calorie and macro targets for a cut, maintenance or a bulk, as Pendum Macros generates a program's starting
 // targets (macro-track src/lib/program.ts: goalRate, startingTargets, programMacros). The calculator has no goal
 // weight, so the weekly rate is the pace alone and maintenance is a rate of 0. The app also refuses a cut goal under
 // BMI 18.5 and stops a cut at its goal; here the nearest goal a pace describes, one week away, stands in for it.

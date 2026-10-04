@@ -1,13 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { fatMass, leanMass } from "@/lib/calc/body-fat";
 import { FFMI_LABEL, ffmi, ffmiBands, ffmiCategory, normalizedFfmi, roundFfmi, type Sex } from "@/lib/calc/ffmi";
 import { formatNumber } from "@/lib/units";
-import { LinkButton, Note, ReadoutRow, Value } from "@/vector";
+import { ReadoutRow } from "@/vector/panel";
+import { Note, Value } from "@/vector/text";
 import { EMPTY, HeightField, MassField, NumberField, SexChoice, UnitChoice, type Measure } from "../shared/fields";
 import { quantityScale } from "../shared/measure";
-import { BandScale, EmptyResult, HeroValue, ResultPanel } from "../shared/results";
+import { BandScale, CheckInput, EmptyResult, HeroValue, ResultPanel, firstInvalid } from "../shared/results";
 import { ToolLayout } from "../shared/tool-layout";
 import { useUnits } from "../shared/use-units";
 
@@ -19,7 +20,11 @@ const SCALE: Record<Sex, { min: number; max: number }> = {
 
 const SEX: Record<Sex, string> = { male: "men", female: "women" };
 
-export function FfmiTool() {
+/**
+ * `estimateLink` is the link to the body-fat calculator, rendered by the server page (a kit LinkButton, whose glyph
+ * comes from the icon table a client file must not ship).
+ */
+export function FfmiTool({ estimateLink }: { estimateLink?: ReactNode }) {
   const [units, setUnits] = useUnits();
   const [sex, setSex] = useState<Sex | "">("");
   const [height, setHeight] = useState<Measure>(EMPTY);
@@ -32,6 +37,11 @@ export function FfmiTool() {
   const shown = value !== null ? roundFfmi(value) : null;
   const category = ready && value !== null ? ffmiCategory(value, sex) : null;
   const mass = quantityScale("mass", units);
+  const invalid = firstInvalid([
+    ["height", height],
+    ["weight", weight],
+    ["body fat", bodyFat],
+  ]);
 
   return (
     <ToolLayout
@@ -52,9 +62,7 @@ export function FfmiTool() {
               noun="a body-fat percentage"
               hint="From a scan, calipers or a tape-measure estimate."
             />
-            <LinkButton href="/calculators/body-fat" forward className="self-start">
-              Estimate body fat
-            </LinkButton>
+            {estimateLink}
           </div>
         </>
       }
@@ -69,7 +77,11 @@ export function FfmiTool() {
           }
         >
           {!sex || value === null || shown === null || !category ? (
-            <EmptyResult>Enter your sex, height, weight and body fat to see your FFMI.</EmptyResult>
+            invalid ? (
+              <CheckInput field={invalid} outcome="your FFMI" />
+            ) : (
+              <EmptyResult>Enter your sex, height, weight and body fat to see your FFMI.</EmptyResult>
+            )
           ) : (
             <>
               <HeroValue value={formatNumber(shown, 1)} unit="kg/m²" caption={`${FFMI_LABEL[category]} for ${SEX[sex]}`} />

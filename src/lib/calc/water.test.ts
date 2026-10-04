@@ -138,7 +138,7 @@ describe("waterEstimate", () => {
 
 describe("glasses and cups", () => {
   it("counts 250 mL glasses and 8 US fl oz cups", () => {
-    // 2,500 mL / 250 = 10 glasses; Vector Hydration's default goal.
+    // 2,500 mL / 250 = 10 glasses; Pendum Hydration's default goal.
     expect(glasses(2500)).toBe(10);
     expect(glasses(2240)).toBeCloseTo(8.96, 9);
     // 64 fl oz × 29.5735295625 = 1,892.7059 mL = 8 cups.

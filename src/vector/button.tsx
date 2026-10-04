@@ -1,11 +1,12 @@
 import { Button as HeroButton } from "@heroui/react/button";
 import type { Ref } from "react";
-import { ButtonContent, buttonLooks, type ButtonCommonProps } from "./button-link";
+import { ButtonContent, type ButtonCommonProps } from "./button-link";
+import { buttonLooks, iconButtonLooks } from "./button-looks";
 import { cn } from "./cn";
 import { Icon, type IconName } from "./icon";
 
 // The HeroUI-backed actions, an entry point of their own (@/vector/button), so pages that only link never load
-// HeroUI's Button. The look (variants, ButtonLink, LinkButton, buttonClass) is in ./button-link.
+// HeroUI's Button. The looks are ./button-looks; ButtonLink, LinkButton and buttonClass are in ./button-link.
 
 /**
  * A button that acts in place: HeroUI's Button (React Aria press handling, keyboard and focus) in the kit look.
@@ -66,20 +67,17 @@ export function IconButton({
   "aria-expanded"?: boolean;
   "aria-controls"?: string;
 }) {
+  const look = iconButtonLooks[variant];
   return (
     <HeroButton
       ref={ref}
       isIconOnly
-      variant={variant === "secondary" ? "outline" : "ghost"}
+      variant={look.hero}
       aria-label={label}
       aria-expanded={expanded}
       aria-controls={controls}
       onPress={onPress}
-      className={cn(
-        "[--button-fg:var(--foreground)] [--button-bg-hover:var(--surface-secondary)] [--button-bg-pressed:var(--surface-secondary)]",
-        variant === "secondary" && "border-border-strong [--button-bg:var(--surface)]",
-        className
-      )}
+      className={cn(look.className, className)}
     >
       <Icon name={icon} size={20} />
     </HeroButton>

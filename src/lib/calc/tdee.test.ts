@@ -47,7 +47,7 @@ describe("restingEnergy", () => {
 });
 
 describe("tdee", () => {
-  it("matches the Vector Macros test vector", () => {
+  it("matches the Pendum Macros test vector", () => {
     // macro-track tests/nutrition.test.cjs: 30 y, 180 cm, 80 kg, male, Active → 2759 (1780 × 1.55 = 2759).
     expect(tdee({ ...man, activity: "moderate" })).toBe(2759);
   });

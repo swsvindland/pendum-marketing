@@ -1,5 +1,5 @@
 // Goal date: how long a weight change takes at a weekly pace set as a share of body weight, and the daily calorie
-// change it needs. The projection is Vector Macros' goal date (macro-track src/lib/insights.ts goalProjection): it
+// change it needs. The projection is Pendum Macros' goal date (macro-track src/lib/insights.ts goalProjection): it
 // compounds week by week, adds a fractional final week, and shows nothing at 520 weeks or more. The weekly rate
 // and calories are its goalRate and startingTargets (src/lib/program.ts): min(distance, weight × pace / 100), and
 // rate × 7700 / 7 kcal a day.
@@ -7,7 +7,7 @@
 export type Direction = "lose" | "gain";
 
 /**
- * Weekly paces offered on the site, % of body weight a week. Vector Macros sets the pace on a slider (cut 0.1–1.5%,
+ * Weekly paces offered on the site, % of body weight a week. Pendum Macros sets the pace on a slider (cut 0.1–1.5%,
  * bulk 0.05–0.5%, in 0.05 steps) with the same recommended bands; every pace here is a point on that slider.
  */
 export const PACES: Record<Direction, readonly number[]> = {
@@ -15,13 +15,13 @@ export const PACES: Record<Direction, readonly number[]> = {
   gain: [0.1, 0.25, 0.5],
 };
 
-/** Vector Macros' starting pace: a cut at the low end of its recommended 0.5–1% band, a bulk at the top of 0.1–0.25%. */
+/** Pendum Macros' starting pace: a cut at the low end of its recommended 0.5–1% band, a bulk at the top of 0.1–0.25%. */
 export const DEFAULT_PACE: Record<Direction, number> = { lose: 0.5, gain: 0.25 };
 
-/** The band Vector Macros marks as recommended, % a week. */
+/** The band Pendum Macros marks as recommended, % a week. */
 export const RECOMMENDED_PACE: Record<Direction, readonly [number, number]> = { lose: [0.5, 1], gain: [0.1, 0.25] };
 
-/** Vector Macros' slider range, % a week (macro-track src/lib/program.ts PACES). */
+/** Pendum Macros' slider range, % a week (macro-track src/lib/program.ts PACES). */
 export const APP_PACE_RANGE: Record<Direction, readonly [number, number]> = { lose: [0.1, 1.5], gain: [0.05, 0.5] };
 
 /** Energy in a kilogram of body-weight change, kcal (the 3,500 kcal/lb rule of thumb, 32.2 MJ/kg). */
@@ -30,7 +30,7 @@ export const KCAL_PER_KG = 7700;
 /** At this many weeks or more, no goal date is shown. */
 export const MAX_WEEKS = 520;
 
-/** The lowest daily calorie target Vector Macros sets (its programMacros refuses less), kcal. */
+/** The lowest daily calorie target Pendum Macros sets (its programMacros refuses less), kcal. */
 export const MIN_INTAKE_KCAL = 1500;
 
 const valid = (n: number) => Number.isFinite(n) && n > 0;
@@ -58,7 +58,7 @@ export function dailyCalorieChange(rateKgPerWeek: number): number {
 
 /**
  * The maintenance a deficit needs for intake to stay at MIN_INTAKE_KCAL or more: 1,500 − change. The site has no
- * expenditure, so it states this instead of applying Vector Macros' floor. null for a surplus or no change.
+ * expenditure, so it states this instead of applying Pendum Macros' floor. null for a surplus or no change.
  */
 export function maintenanceFloor(dailyChangeKcal: number): number | null {
   if (!Number.isFinite(dailyChangeKcal) || dailyChangeKcal >= 0) return null;

@@ -6,7 +6,8 @@ import { Description } from "@heroui/react/description";
 import { Label } from "@heroui/react/label";
 import type { ReactNode } from "react";
 import { cn } from "../cn";
-import { Icon } from "../icon";
+import { Glyph } from "../glyph";
+import { check } from "../glyphs/check";
 import { cell } from "./cell";
 
 /**
@@ -46,7 +47,7 @@ export function ChipRow<T extends string>({
             >
               {({ isSelected }) => (
                 <>
-                  <Icon name="check" size={12} className={isSelected ? "opacity-100" : "opacity-0"} />
+                  <Glyph markup={check} name="check" size={12} className={isSelected ? "opacity-100" : "opacity-0"} />
                   <span className={option.mono ? "type-readout-xs" : "type-small"}>{option.label}</span>
                 </>
               )}

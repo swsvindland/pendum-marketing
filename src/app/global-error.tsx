@@ -3,17 +3,20 @@
 import { useEffect, useLayoutEffect } from "react";
 import { InlineScript } from "@/components/inline-script";
 import { Wordmark } from "@/components/wordmark";
-import { fontVariables } from "@/fonts";
+import { site } from "@/content/site";
+import { fontPreloads } from "@/fonts";
 import { appearanceScript, applyAppearance, storedAppearance } from "@/vector/appearance";
-import { Button } from "@/vector/button";
-import { LinkButton, SystemState } from "@/vector";
+import { NativeButton, NativeLinkButton } from "@/vector/button-native";
+import { SystemState } from "@/vector/system-state";
 import "./globals.css";
 
 /**
  * An error in the root layout itself. It replaces the whole document, so it brings its own <html>, fonts, kit
  * styles and appearance (the head script on a server render; the stored choice applied before paint when it
  * renders in the browser, where the layout's <html> attribute is gone). The kit error SystemState (§5.7) under the
- * wordmark, with a secondary Retry and the way home.
+ * wordmark, with a secondary Retry and the way home. Like error.tsx it is loaded by every page, so it imports leaf
+ * kit modules and the native button and link only; of `site` it reads the family name alone (the origin is a
+ * server value and is not used here).
  */
 export default function GlobalError({ error, retry }: { error: Error & { digest?: string }; retry: () => void }) {
   useEffect(() => {
@@ -25,10 +28,13 @@ export default function GlobalError({ error, retry }: { error: Error & { digest?
   }, []);
 
   return (
-    <html lang="en" className={fontVariables} suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
+        {fontPreloads.map((href) => (
+          <link key={href} rel="preload" href={href} as="font" type="font/woff2" crossOrigin="anonymous" />
+        ))}
         <InlineScript html={appearanceScript} />
-        <title>Error · Vector</title>
+        <title>{`Error · ${site.family}`}</title>
       </head>
       <body className="flex min-h-dvh flex-col">
         <header className="border-b border-border">
@@ -46,12 +52,12 @@ export default function GlobalError({ error, retry }: { error: Error & { digest?
             message="Something failed while the site was drawn. Retry it, or start again from the home page."
             actions={
               <>
-                <Button variant="secondary" onPress={retry}>
+                <NativeButton variant="secondary" onClick={retry}>
                   Retry
-                </Button>
-                <LinkButton href="/" forward>
+                </NativeButton>
+                <NativeLinkButton href="/" forward>
                   Go to home page
-                </LinkButton>
+                </NativeLinkButton>
               </>
             }
           />

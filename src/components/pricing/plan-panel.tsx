@@ -1,13 +1,16 @@
 import type { ReactNode } from "react";
+import { hasWatch } from "@/components/apps/model";
+import { listFormat } from "@/content/format";
+import { site } from "@/content/site";
 import { AppIcon, Heading, Icon, Label, LinkButton, Panel, ReadoutRow, Text, Value, type IconName } from "@/vector";
-import { priceText, purchaseApps, purchasePriceText, subscriptionApp } from "./models";
+import { priceLine, purchasePriceRange, purchaseApps, subscriptionApp } from "./models";
 
 type Included = { icon: IconName; text: string };
 type Term = { label: string; value: string };
 
 /**
- * One buying model as a panel: the eyebrow and app count, the app icons, the plan name (h2) with its price in
- * words, one sentence, what is included, the billing terms as readout rows and one text link out.
+ * One buying model as a panel: the eyebrow and app count, the app icons, the plan name (h2) with its store price
+ * once one is set, one sentence, what is included, the billing terms as readout rows and the links out.
  */
 function PlanPanel({
   id,
@@ -26,7 +29,8 @@ function PlanPanel({
   count: number;
   icons: { src: string; dark?: string }[];
   title: string;
-  price: string;
+  /** The store price as the content prints it; nothing while unpriced (the terms state the model). */
+  price?: string;
   summary: string;
   included: Included[];
   terms: Term[];
@@ -52,7 +56,7 @@ function PlanPanel({
             <Heading level={2} variant="h2" id={`${id}-title`}>
               {title}
             </Heading>
-            <Text tone="secondary">{price}</Text>
+            {price ? <Text tone="secondary">{price}</Text> : null}
           </div>
         </div>
         <Text>{summary}</Text>
@@ -86,23 +90,29 @@ function PlanPanel({
 
 /**
  * The two models side by side (one column on phones). Every line comes from docs/sources/app-facts.json:
- * OmegaFyt Pro is bought only in the iPhone and Android apps, its plans and any trial come from the store, and the
- * Vector apps have no account, no server and no network code. "Included" lists only what the subscription buys
- * in the public 1.7.0 build: not the free guided setup, and not the web version, which the fact sheet says is never
- * sold as part of a plan.
+ * Pendum One is bought only in the iPhone and Android apps, and the Pendum apps have no account, no server and
+ * no network code. Prices and trials come from src/content/apps.ts (the owner's decision of 2026-10-04). "Included" lists only what the subscription buys
+ * in the public build: not the free guided setup, and not the web version, which the fact sheet says is never sold
+ * as part of a plan. Both panels carry four terms so they stay close in height. The page's primary action is the
+ * App Store link in the header; the subscription panel adds the Google Play listing as a text link.
  */
 export function PlanPanels() {
-  const omegafyt = subscriptionApp;
+  const pendumOne = subscriptionApp;
+  const watchApps = listFormat.format(purchaseApps.filter(hasWatch).map((a) => a.name));
+  const trialApps = purchaseApps.filter((a) => a.unlock && a.trial);
+  const subscriptionTrial = pendumOne?.trial
+    ? `${pendumOne.trial.days} days on the ${pendumOne.trial.plan === "month" ? "monthly" : "yearly"} plan, for new subscribers`
+    : "None";
   return (
-    <div className="grid gap-6 md:grid-cols-2">
-      {omegafyt ? (
+    <div className="grid gap-6 md:grid-cols-2 md:items-start">
+      {pendumOne ? (
         <PlanPanel
           id="plan-subscription"
           eyebrow="Model / Subscription"
           count={1}
-          icons={[{ src: omegafyt.icon.light, dark: omegafyt.icon.dark }]}
-          title="OmegaFyt Pro"
-          price={priceText(omegafyt)}
+          icons={[{ src: pendumOne.icon.light, dark: pendumOne.icon.dark }]}
+          title={pendumOne.plan ?? pendumOne.name}
+          price={priceLine(pendumOne)}
           summary="Training and nutrition, planned and tracked together in one account."
           included={[
             { icon: "sync", text: "One account with the same records on iPhone and Android" },
@@ -115,12 +125,19 @@ export function PlanPanels() {
             { label: "Billed by", value: "The App Store or Google Play" },
             { label: "Buy in", value: "The iPhone and Android apps" },
             { label: "Cancel in", value: "The store’s subscription settings" },
-            { label: "Free trial", value: "Only when the store offers one" },
+            { label: "Free trial", value: subscriptionTrial },
           ]}
           footer={
-            <LinkButton href={`/apps/${omegafyt.slug}`} forward>
-              See {omegafyt.name}
-            </LinkButton>
+            <>
+              <LinkButton href={`/apps/${pendumOne.slug}`} forward>
+                See {pendumOne.name}
+              </LinkButton>
+              {pendumOne.stores.googlePlay ? (
+                <LinkButton href={pendumOne.stores.googlePlay} external forward>
+                  Get {pendumOne.name} on Google Play
+                </LinkButton>
+              ) : null}
+            </>
           }
         />
       ) : null}
@@ -129,18 +146,22 @@ export function PlanPanels() {
         eyebrow="Model / One-time purchase"
         count={purchaseApps.length}
         icons={purchaseApps.map((a) => ({ src: a.icon.light, dark: a.icon.dark }))}
-        title="Vector apps"
-        price={purchasePriceText()}
-        summary="Four focused apps for body, lifting, food and water. Buy each one once and keep its records on your phone."
+        title={site.series.label}
+        price={purchasePriceRange()}
+        summary="Four focused apps for body, strength, food and fluids. Buy each one once and keep its records on your phone."
         included={[
           { icon: "lock", text: "No account, no server and no subscription" },
           { icon: "offline", text: "Works with no connection" },
           { icon: "phone", text: "Records in a database on your phone" },
           { icon: "health", text: "Optional Apple Health and Health Connect sync" },
-          { icon: "watch", text: "Apple Watch apps for Lift and Hydration" },
+          ...(watchApps ? [{ icon: "watch" as const, text: `Apple Watch apps for ${watchApps}` }] : []),
         ]}
         terms={[
           { label: "Pay", value: "Once for each app" },
+          ...(trialApps.length
+            ? [{ label: "Free trial", value: `${trialApps[0].trial?.days} days in ${listFormat.format(trialApps.map((a) => a.name))}` }]
+            : []),
+          { label: "Account", value: "None" },
           { label: "Renewal", value: "None" },
           { label: "Cancel", value: "Nothing to cancel" },
         ]}

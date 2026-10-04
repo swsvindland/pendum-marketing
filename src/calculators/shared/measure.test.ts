@@ -1,6 +1,15 @@
 import { describe, expect, it } from "vitest";
 import { cmToIn, ftInToCm, lbToKg } from "@/lib/units";
-import { EMPTY, checkHeightImperial, checkNumber, checkQuantity, displayBounds, heightBoundsInches, settled } from "./measure";
+import {
+  EMPTY,
+  checkHeightImperial,
+  checkNumber,
+  checkQuantity,
+  displayBounds,
+  firstInvalid,
+  heightBoundsInches,
+  settled,
+} from "./measure";
 
 const weight = (text: string, units: "metric" | "imperial", min = 35, max = 350) =>
   checkQuantity(text, { kind: "mass", units, min, max, noun: "a weight" });
@@ -105,6 +114,35 @@ describe("checkNumber", () => {
   it("allows decimals when the field is not an integer field", () => {
     const pct = (t: string) => checkNumber(t, { min: 3, max: 60, unit: "%", noun: "a body-fat percentage" });
     expect(pct("12.5").value).toBe(12.5);
-    expect(pct("61").error).toBe("Enter a body-fat percentage between 3 and 60 %.");
+    expect(pct("61").error).toBe("Enter a body-fat percentage between 3 and 60%.");
+  });
+});
+
+describe("firstInvalid", () => {
+  const age = (text: string) => checkNumber(text, { min: 18, max: 100, unit: "years", noun: "an age" });
+  const bad = age("17");
+  const good = age("30");
+
+  it("names the first field with an error, in form order", () => {
+    expect(firstInvalid([
+      ["age", good],
+      ["height", bad],
+      ["weight", bad],
+    ])).toBe("height");
+  });
+
+  it("is null when every field is valid or empty", () => {
+    expect(firstInvalid([
+      ["age", good],
+      ["height", EMPTY],
+    ])).toBeNull();
+    expect(firstInvalid([])).toBeNull();
+  });
+
+  it("passes over an empty field to reach an invalid one", () => {
+    expect(firstInvalid([
+      ["age", EMPTY],
+      ["height", bad],
+    ])).toBe("height");
   });
 });

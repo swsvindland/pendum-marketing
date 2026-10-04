@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { cn } from "./cn";
+import { cx } from "./cx";
 import { Label, Text } from "./text";
 
 const calloutRule = {
@@ -32,7 +32,7 @@ export function Callout({
   return (
     <div
       role={live ? (alert ? "alert" : "status") : undefined}
-      className={cn("flex flex-col gap-1 border-s-2 ps-3", calloutRule[tone], className)}
+      className={cx("flex flex-col gap-1 border-s-2 ps-3", calloutRule[tone], className)}
     >
       {title ? <Label tone={calloutTitle[tone]}>{title}</Label> : null}
       <div className="type-small text-foreground [&_a]:text-tint [&_a]:underline [&_a]:underline-offset-4">
@@ -77,8 +77,8 @@ export function Status({
   className?: string;
 }) {
   return (
-    <span className={cn("inline-flex items-center gap-2", className)}>
-      <span aria-hidden className={cn("size-1.5 shrink-0 rounded-full", dotClass[state])} />
+    <span className={cx("inline-flex items-center gap-2", className)}>
+      <span aria-hidden className={cx("size-1.5 shrink-0 rounded-full", dotClass[state])} />
       <Label>{label}</Label>
       {meta ? <span className="type-readout-xs text-muted">{meta}</span> : null}
     </span>
@@ -128,16 +128,16 @@ export function Meter({
       aria-valuemax={max}
       aria-valuenow={Math.round(value * 100) / 100}
       aria-valuetext={valueText}
-      className={cn("relative w-full", signal ? "h-2" : "h-1", className)}
+      className={cx("relative w-full", signal ? "h-2" : "h-1", className)}
     >
       <div
-        className={cn(
+        className={cx(
           "relative h-full w-full overflow-hidden rounded-mark bg-surface-tertiary",
           signal && "outline outline-1 -outline-offset-1 outline-border-strong"
         )}
       >
         <div
-          className={cn("h-full transition-[width] duration-300 ease-standard", fill)}
+          className={cx("h-full transition-[width] duration-300 ease-standard", fill)}
           style={{ width: `${pct}%` }}
         />
       </div>
@@ -151,7 +151,7 @@ export function Meter({
       {target !== undefined && max > 0 ? (
         <span
           aria-hidden
-          className={cn("absolute w-0.5 -translate-x-1/2 bg-foreground rtl:translate-x-1/2", signal ? "-top-0.5 h-3" : "-top-1 h-3")}
+          className={cx("absolute w-0.5 -translate-x-1/2 bg-foreground rtl:translate-x-1/2", signal ? "-top-0.5 h-3" : "-top-1 h-3")}
           style={{ insetInlineStart: `${Math.min(1, target / max) * 100}%` }}
         />
       ) : null}

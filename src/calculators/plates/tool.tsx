@@ -3,11 +3,12 @@
 import { useState } from "react";
 import { GYM_DEFAULTS, groupPlates, plateLoading, type PlateUnit } from "@/lib/calc/plates";
 import { formatNumber, kgToLb, lbToKg } from "@/lib/units";
-import { Note, ReadoutRow, Value } from "@/vector";
+import { ReadoutRow } from "@/vector/panel";
+import { Note, Value } from "@/vector/text";
 import { ChipRow } from "@/vector/form/chip-row";
 import { Select } from "@/vector/form/select";
 import { EMPTY, MassField, UnitChoice, type Measure } from "../shared/fields";
-import { EmptyResult, HeroValue, ReadoutTable, ResultPanel } from "../shared/results";
+import { CheckInput, EmptyResult, HeroValue, ReadoutTable, ResultPanel, firstInvalid } from "../shared/results";
 import { ToolLayout } from "../shared/tool-layout";
 import { useUnits } from "../shared/use-units";
 
@@ -19,7 +20,7 @@ const plain = (n: number) => formatNumber(n, 2, 0);
 
 type Setup = { bar: number; plates: number[] };
 
-/** Each unit keeps its own bar and plates, starting from Vector Lift's default gym, so switching back restores them. */
+/** Each unit keeps its own bar and plates, starting from Pendum Lift's default gym, so switching back restores them. */
 const START: Record<PlateUnit, Setup> = {
   kg: { bar: GYM_DEFAULTS.kg.bar, plates: GYM_DEFAULTS.kg.plates },
   lb: { bar: GYM_DEFAULTS.lb.bar, plates: GYM_DEFAULTS.lb.plates },
@@ -116,6 +117,7 @@ export function PlatesTool() {
   const result = goal !== null && plates.length > 0 ? plateLoading(goal, bar, plates) : null;
   const groups = result ? groupPlates(result.perSide) : [];
   const perSideTotal = result ? result.perSide.reduce((sum, p) => sum + p, 0) : 0;
+  const invalid = firstInvalid([["target weight", target]]);
 
   const announce = (() => {
     if (!result || goal === null) return undefined;
@@ -155,11 +157,20 @@ export function PlatesTool() {
         </>
       }
       result={
-        <ResultPanel eyebrow="Result / Plates" meta={`${plain(bar)} ${unit} bar`} announce={announce}>
+        <ResultPanel
+          eyebrow="Result / Plates"
+          meta={`${plain(bar)} ${unit} bar`}
+          announce={announce}
+          hasResult={result !== null && !result.belowBar}
+        >
           {plates.length === 0 ? (
             <EmptyResult code="No plates">Select at least one plate size to see how to load the bar.</EmptyResult>
           ) : !result ? (
-            <EmptyResult>Enter a target weight to see the plates for each side.</EmptyResult>
+            invalid ? (
+              <CheckInput field={invalid} outcome="the plates for each side" />
+            ) : (
+              <EmptyResult>Enter a target weight to see the plates for each side.</EmptyResult>
+            )
           ) : result.belowBar ? (
             <>
               <EmptyResult code="Under the bar">

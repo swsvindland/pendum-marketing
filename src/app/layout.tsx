@@ -2,10 +2,10 @@ import type { Metadata, Viewport } from "next";
 import { InlineScript } from "@/components/inline-script";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { SiteJsonLd } from "@/components/site/json-ld";
 import { site } from "@/content/site";
-import { fontVariables } from "@/fonts";
+import { fontPreloads } from "@/fonts";
 import { appearanceScript } from "@/vector/appearance";
-import { VectorProvider } from "@/vector/provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -26,26 +26,35 @@ export const viewport: Viewport = {
   ],
 };
 
+/**
+ * The root layout carries no client provider: the header, footer and error boundaries are native or server parts,
+ * so a page ships React Aria only where it renders a HeroUI input (the calculators mount VectorProvider around
+ * their tool). The two font files are preloaded here (their @font-face rules are in the one stylesheet,
+ * globals.css); `crossOrigin` matches the CORS mode fonts are fetched with, so the preload is the fetch. `main`
+ * takes focus from the skip link in every browser (tabIndex -1, no ring on that programmatic focus).
+ */
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={fontVariables} suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
+        {fontPreloads.map((href) => (
+          <link key={href} rel="preload" href={href} as="font" type="font/woff2" crossOrigin="anonymous" />
+        ))}
         <InlineScript html={appearanceScript} />
       </head>
       <body className="flex min-h-dvh flex-col">
-        <VectorProvider>
-          <a
-            href="#main"
-            className="sr-only z-50 rounded-control bg-surface type-button text-tint focus:not-sr-only focus:fixed focus:start-4 focus:top-4 focus:inline-flex focus:min-h-11 focus:items-center focus:border focus:border-border-strong focus:px-4"
-          >
-            Skip to content
-          </a>
-          <SiteHeader />
-          <main id="main" className="flex flex-1 flex-col">
-            {children}
-          </main>
-          <SiteFooter />
-        </VectorProvider>
+        <SiteJsonLd />
+        <a
+          href="#main"
+          className="sr-only z-50 rounded-control bg-surface type-button text-tint focus:not-sr-only focus:fixed focus:start-4 focus:top-4 focus:inline-flex focus:min-h-11 focus:items-center focus:border focus:border-border-strong focus:px-4"
+        >
+          Skip to content
+        </a>
+        <SiteHeader />
+        <main id="main" tabIndex={-1} className="flex flex-1 flex-col outline-none">
+          {children}
+        </main>
+        <SiteFooter />
       </body>
     </html>
   );

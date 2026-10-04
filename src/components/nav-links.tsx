@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { cn } from "@/vector/cn";
+import { cx } from "@/vector/cx";
 
 /**
  * Where a nav link stands against the current path. `page` only for the link to this very page; a link to the
@@ -27,8 +27,8 @@ export function NavLinks({ items }: { items: readonly { href: string; label: str
               <Link
                 href={item.href}
                 aria-current={ariaCurrent}
-                className={cn(
-                  "relative inline-flex min-h-11 items-center rounded-control px-3 type-button transition-colors duration-100 ease-standard",
+                className={cx(
+                  "relative inline-flex min-h-11 items-center rounded-control px-3 type-button transition-[background-color,color] duration-100 ease-standard",
                   inSection ? "text-tint" : "text-foreground hover:bg-surface-secondary"
                 )}
               >

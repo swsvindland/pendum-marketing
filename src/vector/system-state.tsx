@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { cn } from "./cn";
+import { cx } from "./cx";
 import { ErrorText } from "./feedback";
 import { Heading, Label, Text } from "./text";
 
@@ -29,7 +29,7 @@ export function SystemState({
   className?: string;
 }) {
   return (
-    <div className={cn("flex max-w-form flex-col items-start gap-3", className)}>
+    <div className={cx("flex max-w-form flex-col items-start gap-3", className)}>
       {code || meta ? (
         <div className="flex flex-wrap items-center gap-x-3">
           {code ? <Label>{code}</Label> : null}

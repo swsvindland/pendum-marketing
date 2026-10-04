@@ -99,11 +99,20 @@ export function checkNumber(
   { min, max, unit, integer = false, noun }: { min: number; max: number; unit?: string; integer?: boolean; noun: string }
 ): Measure {
   if (!text.trim()) return EMPTY;
-  const range = `between ${formatNumber(min, 2, 0)} and ${formatNumber(max, 2, 0)}${unit ? ` ${unit}` : ""}`;
+  // Percent closes up to its number (60%); every other unit takes a space (100 years).
+  const range = `between ${formatNumber(min, 2, 0)} and ${formatNumber(max, 2, 0)}${unit ? `${unit === "%" ? "" : " "}${unit}` : ""}`;
   const invalid = (error: string): Measure => ({ value: null, error, draft: { units: null, text } });
   const n = parseNumber(text);
   if (n === null) return invalid(`Enter ${noun} ${range}.`);
   if (integer && !Number.isInteger(n)) return invalid(`Enter ${noun} as a whole number ${range}.`);
   if (n < min || n > max) return invalid(`Enter ${noun} ${range}.`);
   return { value: n, error: null };
+}
+
+/**
+ * The first field, in form order, whose entry is invalid: the one the result's "Check input" state names. Null
+ * when every field is valid or empty, so the result shows its "No input" sentence instead.
+ */
+export function firstInvalid(fields: readonly (readonly [string, Measure])[]): string | null {
+  return fields.find(([, m]) => m.error !== null)?.[0] ?? null;
 }

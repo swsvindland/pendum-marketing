@@ -1,5 +1,5 @@
-// US Navy circumference body-fat estimate, as Vector Body computes it (body-track src/lib/metrics.ts bodyFat), and
-// the ACE body-fat categories with Vector Body's edges (src/lib/metric-context.ts). Lengths are cm here; the
+// US Navy circumference body-fat estimate, as Pendum Body computes it (body-track src/lib/metrics.ts bodyFat), and
+// the ACE body-fat categories with Pendum Body's edges (src/lib/metric-context.ts). Lengths are cm here; the
 // equations take inches, so each term is divided by 2.54 first, exactly as the app does. The category is judged on
 // the one-decimal value shown, where the app judges the unrounded value, so a result less than 0.05 below an edge
 // is in the band below there.
@@ -15,7 +15,7 @@ export type NavyMeasurements = {
   hipsCm?: number;
 };
 
-/** The result is kept only inside this open interval (%), as in Vector Body. */
+/** The result is kept only inside this open interval (%), as in Pendum Body. */
 export const NAVY_VALID = { min: 0, max: 75 } as const;
 
 /**
@@ -56,7 +56,7 @@ export const roundBodyFat = (value: number) => Math.round(value * 10) / 10;
 export type BodyFatCategory = "veryLow" | "lean" | "typical" | "elevated";
 
 /**
- * ACE category edges [low, lean, high] by sex, as Vector Body uses them. Below low is ACE's essential fat range and
+ * ACE category edges [low, lean, high] by sex, as Pendum Body uses them. Below low is ACE's essential fat range and
  * anything under it; low to lean the athlete range; lean to high ACE's fitness and average ranges combined; high and
  * over ACE's obese range. Each edge belongs to the band above it.
  */

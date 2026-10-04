@@ -13,7 +13,7 @@ import {
 } from "./macros";
 import { tdee } from "./tdee";
 
-/** The profile in Vector Macros' tests: 180 cm, 80 kg, 1.6 g/kg, balanced. */
+/** The profile in Pendum Macros' tests: 180 cm, 80 kg, 1.6 g/kg, balanced. */
 const base: MacroInput = {
   goal: "maintain",
   pace: 0,
@@ -44,7 +44,7 @@ describe("targetCalories", () => {
 });
 
 describe("splitMacros", () => {
-  it("matches the Vector Macros test vectors", () => {
+  it("matches the Pendum Macros test vectors", () => {
     // macro-track tests/coaching.test.cjs: programMacros(2400, 80, balanced, 1.6).
     // P = 80 × 1.6 = 128; F = max(48, (2400 − 512) × 0.40 / 9 = 83.9) → 84; C = (2400 − 512 − 756) / 4 = 283.
     expect(splitMacros(2400, 80, 1.6, "balanced")).toEqual({ calories: 2400, protein: 128, fat: 84, carbs: 283 });
@@ -71,7 +71,7 @@ describe("splitMacros", () => {
 });
 
 describe("macroPlan", () => {
-  it("matches Vector Macros' starting targets", () => {
+  it("matches Pendum Macros' starting targets", () => {
     // startingTargets(lose 0.5%, 80 kg, expenditure 2600) → 2160 kcal, 128 g protein.
     const cut = macroPlan({ ...base, goal: "cut", pace: 0.5 });
     expect(cut.blocked).toBeNull();

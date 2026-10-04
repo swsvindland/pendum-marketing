@@ -3,9 +3,10 @@
 import { useEffect, useId, useState, type ReactNode } from "react";
 import { PROFILE_LIMITS } from "@/lib/calc/tdee";
 import { cmToFtIn } from "@/lib/units";
-import { ErrorText } from "@/vector";
+import { ErrorText } from "@/vector/feedback";
 import { Choices } from "@/vector/form/choices";
 import { Field } from "@/vector/form/field";
+import { SettledAnnouncement } from "./announce";
 import {
   checkHeightImperial,
   checkNumber,
@@ -96,20 +97,23 @@ function QuantityInner({
   const shown = converted ? value : check(text);
   useSettle(shown, value, onChange);
   return (
-    <Field
-      label={label}
-      numeric
-      unit={scale.unit}
-      value={text}
-      hint={hint}
-      placeholder={placeholder?.[units]}
-      error={shown.error}
-      onChange={(t) => {
-        setText(t);
-        setConverted(false);
-        onChange(check(t));
-      }}
-    />
+    <>
+      <Field
+        label={label}
+        numeric
+        unit={scale.unit}
+        value={text}
+        hint={hint}
+        placeholder={placeholder?.[units]}
+        error={shown.error}
+        onChange={(t) => {
+          setText(t);
+          setConverted(false);
+          onChange(check(t));
+        }}
+      />
+      <SettledAnnouncement text={shown.error ?? ""} />
+    </>
   );
 }
 
@@ -140,12 +144,16 @@ function HeightImperial({ value, onChange, min, max, label }: QuantityProps) {
   const [converted, setConverted] = useState(value.value !== null);
   const shown = converted ? value : checkHeightImperial(ft, inches, min, max);
   useSettle(shown, value, onChange);
+  // The legend takes the label row of the metric field (14/20 over an 8 gap) and the two inputs the 44 row, so the
+  // group is the same height as the single cm field and the Units switch moves nothing below it. Feet and Inches
+  // keep their labels for screen readers; the eye has the units inside the fields.
   return (
     <fieldset className="flex min-w-0 flex-col gap-2">
       <legend className="mb-2 type-field-label text-foreground-secondary">{label}</legend>
       <div className="grid grid-cols-2 gap-3">
         <Field
           label="Feet"
+          showLabel={false}
           numeric
           inputMode="numeric"
           unit="ft"
@@ -157,10 +165,10 @@ function HeightImperial({ value, onChange, min, max, label }: QuantityProps) {
             setConverted(false);
             onChange(checkHeightImperial(t, inches, min, max));
           }}
-          placeholder="5"
         />
         <Field
           label="Inches"
+          showLabel={false}
           numeric
           unit="in"
           invalid={Boolean(shown.error)}
@@ -171,10 +179,10 @@ function HeightImperial({ value, onChange, min, max, label }: QuantityProps) {
             setConverted(false);
             onChange(checkHeightImperial(ft, t, min, max));
           }}
-          placeholder="10"
         />
       </div>
       <ErrorText id={errorId} message={shown.error} />
+      <SettledAnnouncement text={shown.error ?? ""} />
     </fieldset>
   );
 }
@@ -217,20 +225,23 @@ export function NumberField({
   const shown = check(text);
   useSettle(shown, value, onChange);
   return (
-    <Field
-      label={label}
-      numeric
-      inputMode={integer ? "numeric" : "decimal"}
-      unit={unit}
-      value={text}
-      hint={hint}
-      placeholder={placeholder}
-      error={shown.error}
-      onChange={(t) => {
-        setText(t);
-        onChange(check(t));
-      }}
-    />
+    <>
+      <Field
+        label={label}
+        numeric
+        inputMode={integer ? "numeric" : "decimal"}
+        unit={unit}
+        value={text}
+        hint={hint}
+        placeholder={placeholder}
+        error={shown.error}
+        onChange={(t) => {
+          setText(t);
+          onChange(check(t));
+        }}
+      />
+      <SettledAnnouncement text={shown.error ?? ""} />
+    </>
   );
 }
 
@@ -273,7 +284,7 @@ export function SexChoice({
   );
 }
 
-/** Age in whole years. 18 to 100 unless the calculator gives its own range, as Vector Macros accepts it. */
+/** Age in whole years. 18 to 100 unless the calculator gives its own range, as Pendum Macros accepts it. */
 export function AgeField({
   value,
   onChange,

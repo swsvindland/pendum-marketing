@@ -6,11 +6,14 @@ import { ListBox } from "@heroui/react/list-box";
 import { Select as HeroSelect } from "@heroui/react/select";
 import type { ReactNode } from "react";
 import { cn } from "../cn";
-import { Icon } from "../icon";
+import { Glyph } from "../glyph";
+import { check } from "../glyphs/check";
+import { down } from "../glyphs/down";
 
 /**
  * Select (§5.5) on HeroUI's Select: a Field-look trigger with the kit `down` glyph at the end, an overlay popover
  * the width of the trigger with 44 items and a 17pt tint check on the selected one. For more than 4 options.
+ * A client file, so its two glyphs come from their own modules (Glyph), never from Icon's whole table.
  */
 export function Select<T extends string>({
   label,
@@ -40,7 +43,7 @@ export function Select<T extends string>({
       <HeroSelect.Trigger>
         <HeroSelect.Value />
         <HeroSelect.Indicator>
-          <Icon name="down" size={20} />
+          <Glyph markup={down} name="down" size={20} />
         </HeroSelect.Indicator>
       </HeroSelect.Trigger>
       {hint ? <Description>{hint}</Description> : null}
@@ -50,7 +53,7 @@ export function Select<T extends string>({
             <ListBox.Item key={o.value} id={o.value} textValue={o.label}>
               {o.label}
               <ListBox.ItemIndicator>
-                {({ isSelected }) => (isSelected ? <Icon name="check" size={17} /> : null)}
+                {({ isSelected }) => (isSelected ? <Glyph markup={check} name="check" size={17} /> : null)}
               </ListBox.ItemIndicator>
             </ListBox.Item>
           ))}

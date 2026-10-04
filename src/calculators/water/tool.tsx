@@ -12,7 +12,8 @@ import {
   type ReferenceBody,
 } from "@/lib/calc/water";
 import { formatNumber, formatSigned } from "@/lib/units";
-import { Heading, Note, ReadoutRow, Value } from "@/vector";
+import { ReadoutRow } from "@/vector/panel";
+import { Heading, Note, Value } from "@/vector/text";
 import { Choices } from "@/vector/form/choices";
 import { EMPTY, MassField, NumberField, SexChoice, type Measure, type Sex } from "../shared/fields";
 import { EmptyResult, HeroValue, ReadoutTable, ResultPanel } from "../shared/results";
@@ -31,7 +32,7 @@ const REFERENCE_KEYS: readonly ReferenceBody[] = ["nasem", "efsa"];
 const PEOPLE: Record<Sex, string> = { female: "women", male: "men" };
 
 /**
- * Metric / US: the shared unit choice, named as Vector Hydration names it. Fluid ounces here are US fluid ounces
+ * Metric / US: the shared unit choice, named as Pendum Hydration names it. Fluid ounces here are US fluid ounces
  * (29.57 mL), not imperial ones (28.41 mL), so "US" is the accurate word.
  */
 function WaterUnitChoice({ units, onChange }: { units: UnitSystem; onChange: (u: UnitSystem) => void }) {
@@ -188,7 +189,7 @@ export function WaterTool() {
                 <Note>
                   NASEM sets intakes for the US and Canada, EFSA for the European Union. Total water includes the water
                   in food. NASEM’s drink figures are its own; EFSA sets total water only, and the drink figure here is
-                  80 % of it.
+                  80% of it.
                 </Note>
               </div>
             </>

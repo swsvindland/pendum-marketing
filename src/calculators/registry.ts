@@ -1,5 +1,3 @@
-import type { Metadata } from "next";
-import { pageMetadata } from "@/components/site/metadata";
 import { getCalculator, type CalculatorSlug } from "@/content/calculators";
 import type { CalculatorMeta } from "@/content/types";
 
@@ -15,13 +13,8 @@ export function calculatorMeta(slug: CalculatorSlug): CalculatorMeta {
 }
 
 /**
- * The route's metadata: the title and the list description, plus what is true of every calculator. Units are
- * remembered in this browser, so the line is about what is typed, not "nothing stored".
+ * The route's metadata is the site's calculator metadata (components/site/metadata.ts): the title plus the words
+ * `titleSuffix` adds to <title>, the list description with what is true of every calculator, the canonical path
+ * and the shared card. Re-exported here so every route picks it up through the registry.
  */
-export function calculatorMetadata(meta: CalculatorMeta): Metadata {
-  return pageMetadata({
-    title: meta.title,
-    description: `${meta.description} Free, with no sign-up. Nothing you type is sent anywhere.`,
-    path: `/calculators/${meta.slug}`,
-  });
-}
+export { calculatorMetadata } from "@/components/site/metadata";

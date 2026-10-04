@@ -26,7 +26,7 @@ function PanelRoot({ tone = "default", inset = "md", href, as: As = "div", class
     tone === "critical" ? "border-danger" : "border-border",
     inset === "md" && "gap-3 p-4 min-[600px]:p-6",
     tone === "live" && "border-s-0 ps-[calc(1rem+3px)] min-[600px]:ps-[calc(1.5rem+3px)]",
-    href && "transition-colors duration-100 ease-standard hover:bg-surface-secondary active:bg-surface-secondary",
+    href && "transition-[background-color,color] duration-100 ease-standard hover:bg-surface-secondary active:bg-surface-secondary",
     className
   );
   const rule =
@@ -139,14 +139,35 @@ export function Rule({ className }: { className?: string }) {
   return <hr className={cn("border-0 border-t border-separator", className)} />;
 }
 
-/** A labelled pair for readouts inside a panel: label at start, value at end, separated by a 1pt rule. */
-export function ReadoutRow({ label, children }: { label: string; children: ReactNode }) {
+/**
+ * A labelled pair for readouts inside a panel: label at start, value at end, separated by a 1pt rule. `stack` is
+ * for a worded value that may be a phrase rather than a number: below 640 the row may wrap, and the value then
+ * drops to a line of its own, still end aligned, only when label and value do not fit side by side (a flex-wrap
+ * row measures the value at its one-line width; `min-w-0` lets it shrink only once it is alone on its line). A
+ * value that fits keeps the usual 44 pair, so rows in one panel never alternate between the two layouts. From 640
+ * the row never wraps.
+ */
+export function ReadoutRow({
+  label,
+  children,
+  stack = false,
+}: {
+  label: string;
+  children: ReactNode;
+  /** Lets the value drop under the label below 640 when the two do not fit beside each other. */
+  stack?: boolean;
+}) {
   return (
-    <div className="flex min-h-11 items-center justify-between gap-4 border-t border-separator first:border-t-0">
-      <Text variant="small" tone="secondary" as="span">
+    <div
+      className={cn(
+        "flex min-h-11 items-center justify-between border-t border-separator first:border-t-0",
+        stack ? "flex-wrap gap-x-4 gap-y-1 py-2 sm:flex-nowrap sm:py-0" : "gap-4"
+      )}
+    >
+      <Text variant="small" tone="secondary" as="span" className="shrink-0">
         {label}
       </Text>
-      <span className="text-end">{children}</span>
+      <span className={cn("min-w-0 text-end", stack && "ms-auto")}>{children}</span>
     </div>
   );
 }

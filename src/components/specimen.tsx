@@ -1,10 +1,11 @@
 import type { Specimen as SpecimenData } from "@/content/types";
-import { Meter, Panel, ReadoutRow, Text, Value } from "@/vector";
+import { Meter, Panel, ReadoutRow, Status, Text, Value } from "@/vector";
 
 /**
  * An app's main readout drawn as a Vector panel: the eyebrow in DOMAIN / OBJECT form, its main value, an
- * optional meter and up to three readout rows. Example data, never a claim: `exampleLabel` sits in the meta slot
- * so it travels with every screenshot of the page. The caption is a phrase, so a number in it stays Inter (§3.3).
+ * optional meter and up to three readout rows. Example data, never a claim: the marker is a status word
+ * ("Example", an idle dot and a Label, §3.3) in the header's meta slot, so it travels with every screenshot of the
+ * page; a specimen with its own `meta` (a timestamp) shows that instead.
  */
 export function Specimen({
   data,
@@ -30,7 +31,11 @@ export function Specimen({
   return (
     <Panel tone={tone} className={className}>
       {/* An example of an app screen, not a section of the page: its eyebrow stays out of the heading list. */}
-      <Panel.Header eyebrow={data.eyebrow} meta={data.meta ?? exampleLabel} heading={false} />
+      <Panel.Header
+        eyebrow={data.eyebrow}
+        meta={data.meta ?? <Status state="idle" label={exampleLabel} />}
+        heading={false}
+      />
       <Panel.Body>
         <div className="flex flex-col gap-1">
           <Value value={data.hero.value} unit={data.hero.unit} size={hero ? "xl" : "l"} />

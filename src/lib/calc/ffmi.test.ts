@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { ffmi, ffmiBands, ffmiCategory, normalizedFfmi, roundFfmi } from "./ffmi";
 
 describe("ffmi", () => {
-  it("matches Vector Body's test vector", () => {
+  it("matches Pendum Body's test vector", () => {
     // body-track tests/core.test.cjs: composition(80, 180, 20).ffmi is 19.753086419753085 (compared with a tolerance).
     expect(ffmi(80, 180, 20)).toBeCloseTo(19.753086419753085, 12);
   });
@@ -41,7 +41,7 @@ describe("normalizedFfmi", () => {
 });
 
 describe("ffmiCategory", () => {
-  it("uses Vector Body's male band, both edges typical", () => {
+  it("uses Pendum Body's male band, both edges typical", () => {
     expect(ffmiCategory(16.9, "male")).toBe("lower");
     expect(ffmiCategory(17, "male")).toBe("typical");
     expect(ffmiCategory(20, "male")).toBe("typical");
@@ -50,7 +50,7 @@ describe("ffmiCategory", () => {
     expect(ffmiCategory(21, "male")).toBe("higher");
   });
 
-  it("uses Vector Body's female band", () => {
+  it("uses Pendum Body's female band", () => {
     expect(ffmiCategory(13.9, "female")).toBe("lower");
     expect(ffmiCategory(14, "female")).toBe("typical");
     // body-track: metricContext('ffmi', 16, 'female') is ffmiTypical.

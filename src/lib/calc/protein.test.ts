@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { MEAL_COUNTS, PROTEIN_GOALS, grams, leanMass, leanMassView, perMeal, proteinRange } from "./protein";
 
 describe("protein", () => {
-  it("uses the published ranges and Vector Macros' settings", () => {
+  it("uses the published ranges and Pendum Macros' settings", () => {
     // ISSN 2017: 1.4–2.0 g/kg; Morton et al. 2018: 1.62 g/kg breakpoint, 95% CI 1.03–2.20; Hector and Phillips
     // 2018: 1.6–2.4 g/kg for athletes in a deficit.
     expect(PROTEIN_GOALS.maintain).toMatchObject({ min: 1.4, max: 2.0, target: 1.6 });
@@ -11,18 +11,18 @@ describe("protein", () => {
     for (const g of Object.values(PROTEIN_GOALS)) {
       expect(g.target).toBeGreaterThanOrEqual(g.min);
       expect(g.target).toBeLessThanOrEqual(g.max);
-      // Every target is a Vector Macros protein setting.
+      // Every target is a Pendum Macros protein setting.
       expect([1.4, 1.6, 2.0, 2.2]).toContain(g.target);
     }
   });
 
-  it("rounds grams as Vector Macros does", () => {
-    // Vector Macros test vector: 80 kg at 1.6 g/kg is protein 128.
+  it("rounds grams as Pendum Macros does", () => {
+    // Pendum Macros test vector: 80 kg at 1.6 g/kg is protein 128.
     expect(grams(80, 1.6)).toBe(128);
     expect(grams(80, 2.2)).toBe(176);
     // 72.5 × 1.4 = 101.5 rounds half up to 102.
     expect(grams(72.5, 1.4)).toBe(102);
-    // 82.5 × 1.4 is stored as 115.49999999999999, so Math.round gives 115, as Vector Macros' own expression does.
+    // 82.5 × 1.4 is stored as 115.49999999999999, so Math.round gives 115, as Pendum Macros' own expression does.
     expect(grams(82.5, 1.4)).toBe(115);
   });
 

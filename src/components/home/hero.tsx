@@ -1,6 +1,7 @@
 import { PageHeader } from "@/components/page";
 import { Specimen } from "@/components/specimen";
-import { getApp } from "@/content/apps";
+import { apps } from "@/content/apps";
+import { site } from "@/content/site";
 import type { App } from "@/content/types";
 import { AppIcon, ButtonLink, Meta } from "@/vector";
 
@@ -8,8 +9,8 @@ import { AppIcon, ButtonLink, Meta } from "@/vector";
 const modelWord = { subscription: "Subscription", purchase: "One-time purchase" } as const;
 
 /**
- * One app's readout with a caption naming the app and how it is sold. A specimen with its own meta drops the
- * panel's "Example" label, so the caption carries it instead.
+ * One app's readout with a caption naming the app and how it is sold. The panel's own marker says it is an
+ * example; a specimen with its own meta drops that marker, so the caption carries it instead.
  */
 function SpecimenFigure({ app, signal }: { app: App; signal?: boolean }) {
   const labelled = !app.specimen.meta || /example/i.test(app.specimen.meta);
@@ -25,46 +26,31 @@ function SpecimenFigure({ app, signal }: { app: App; signal?: boolean }) {
 }
 
 /**
- * The page hero: the family in one sentence and the two ways to buy it. The aside sets one readout from each model
- * on a plain grid: side by side on tablets, stacked beside the copy from 1024. OmegaFyt carries the page's one
- * signal meter; no specimen is live.
+ * The page hero: what the apps do, then the two ways to buy them, with the page's one primary action leading to the
+ * chooser further down this page (#choose; /apps carries the same chooser for the header's "Get the apps"). The aside is one specimen, the subscription app's, carrying the page's one signal meter; no
+ * specimen is live.
  */
 export function HomeHero() {
-  const shown = [
-    { app: getApp("omegafyt"), signal: true },
-    { app: getApp("lift"), signal: false },
-  ].filter((s): s is { app: App; signal: boolean } => Boolean(s.app?.specimen.hero.value));
+  const subscription = apps.find((a) => a.model === "subscription");
+  const shown = subscription?.specimen.hero.value ? subscription : undefined;
 
   return (
     <PageHeader
       hero
-      eyebrow="Fitness apps / iPhone and Android"
-      title="Precise fitness tracking. Subscribe, or buy once."
-      subtitle={
-        <>
-          OmegaFyt is a subscription with one account that syncs across iPhone and Android. Vector Body, Lift,
-          Macros and Hydration are each a one-time purchase: they work offline and need no account.
-        </>
-      }
+      eyebrow="Fitness apps / iPhone, Android, Apple Watch"
+      title="Precise fitness apps for iPhone and Android."
+      subtitle={`Track lifts, food, body and fluids in plain numbers, each with its method and source. Buy a ${site.family} app once and keep its records on your phone${subscription ? `, or subscribe to ${subscription.name} and sync one account across phones` : ""}.`}
       actions={
         <>
-          <ButtonLink href="/pricing" variant="primary">
-            Compare plans
+          <ButtonLink href="#choose" variant="primary">
+            Choose your app
           </ButtonLink>
           <ButtonLink href="/calculators" variant="secondary">
             Try a calculator
           </ButtonLink>
         </>
       }
-      aside={
-        shown.length ? (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-1">
-            {shown.map((s) => (
-              <SpecimenFigure key={s.app.slug} app={s.app} signal={s.signal} />
-            ))}
-          </div>
-        ) : undefined
-      }
+      aside={shown ? <SpecimenFigure app={shown} signal /> : undefined}
     />
   );
 }

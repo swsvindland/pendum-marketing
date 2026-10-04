@@ -1,5 +1,5 @@
-import { Fragment, type ElementType, type ReactNode } from "react";
-import { cn } from "./cn";
+import type { ElementType, ReactNode } from "react";
+import { cx } from "./cx";
 
 /** The type scale (design-system §3.2), plus two web-only marketing roles: hero and lead. */
 export const roleClass = {
@@ -50,7 +50,7 @@ type TextProps = {
 /** The only text in app code. `variant` picks the §3.2 role; `tone` picks a token colour. */
 export function Text({ variant = "body", tone = "default", as: As = "p", className, id, children }: TextProps) {
   return (
-    <As id={id} className={cn(roleClass[variant], toneClass[tone], className)}>
+    <As id={id} className={cx(roleClass[variant], toneClass[tone], className)}>
       {children}
     </As>
   );
@@ -76,7 +76,7 @@ export function Heading({
 }) {
   const As = `h${level}` as const;
   return (
-    <As id={id} className={cn(roleClass[variant ?? headingRole[level]], toneClass[tone], "text-balance", className)}>
+    <As id={id} className={cx(roleClass[variant ?? headingRole[level]], toneClass[tone], "text-balance", className)}>
       {children}
     </As>
   );
@@ -109,7 +109,7 @@ export function Label({
   children: ReactNode;
 }) {
   return (
-    <Text variant="label" tone={tone} as={as} className={cn("block", className)} id={id}>
+    <Text variant="label" tone={tone} as={as} className={cx("block", className)} id={id}>
       {children}
     </Text>
   );
@@ -122,7 +122,10 @@ const unitRole = { xl: "h2", l: "h4", m: "small", s: "caption", xs: "caption" } 
 /** Plex Mono only when the formatted string is digits and punctuation; anything else stays Inter with tabular digits. */
 export const isMonoSafe = (s: string) => /^[\d\s.,:;%+\-−–/()'  ]+$/.test(s);
 
-/** The only way to show a measured number: mono digits, the unit smaller and muted, never wrapped apart. */
+/**
+ * The only way to show a measured number: mono digits, the unit smaller and muted, never wrapped apart (a no-break
+ * space). % closes up to the number (CLAUDE.md §7: "25%"); every other unit takes the space ("25 kg").
+ */
 export function Value({
   value,
   unit,
@@ -140,15 +143,15 @@ export function Value({
 }) {
   const mono = isMonoSafe(value);
   const u = unit ? (
-    <span className={cn(roleClass[unitRole[size]], tone === "onSignal" ? toneClass.onSignal : toneClass.muted)}>
-      {unitFirst ? `${unit} ` : ` ${unit}`}
+    <span className={cx(roleClass[unitRole[size]], tone === "onSignal" ? toneClass.onSignal : toneClass.muted)}>
+      {unitFirst ? `${unit} ` : unit === "%" ? unit : ` ${unit}`}
     </span>
   ) : null;
   return (
-    <span className={cn("inline-flex items-baseline whitespace-nowrap", className)}>
+    <span className={cx("inline-flex items-baseline whitespace-nowrap", className)}>
       {unitFirst ? u : null}
       <span
-        className={cn(
+        className={cx(
           roleClass[valueRole[size]],
           toneClass[tone],
           !mono && "font-sans tabular-nums"
@@ -161,18 +164,24 @@ export function Value({
   );
 }
 
-/** Facets separated by a drawn 3pt dot, never a typed " · ". Read as a list. */
+/**
+ * Facets separated by a drawn 3pt dot, never a typed " · ". Read as a list. The dot is drawn inside the item it
+ * precedes, so when the strip wraps a separator always travels with its item and never ends a line.
+ */
 export function Meta({ items, tone = "muted", className }: { items: string[]; tone?: "muted" | "default"; className?: string }) {
   const shown = items.filter(Boolean);
   return (
-    <ul className={cn("flex flex-wrap items-center gap-x-2", className)}>
+    <ul className={cx("flex flex-wrap items-center gap-x-2", className)}>
       {shown.map((item, i) => (
-        <Fragment key={`${i}:${item}`}>
+        <li
+          key={`${i}:${item}`}
+          className={cx("inline-flex items-center gap-x-2", roleClass.small, toneClass[tone === "muted" ? "muted" : "default"])}
+        >
           {i > 0 ? (
-            <li aria-hidden className={cn("size-[3px] rounded-mark", tone === "muted" ? "bg-muted" : "bg-foreground")} />
+            <span aria-hidden className={cx("size-[3px] shrink-0 rounded-mark", tone === "muted" ? "bg-muted" : "bg-foreground")} />
           ) : null}
-          <li className={cn(roleClass.small, toneClass[tone === "muted" ? "muted" : "default"])}>{item}</li>
-        </Fragment>
+          {item}
+        </li>
       ))}
     </ul>
   );

@@ -31,7 +31,7 @@ function closedForm(current: number, goal: number, pct: number) {
 }
 
 describe("goal date", () => {
-  it("offers paces on Vector Macros' slider, with its defaults", () => {
+  it("offers paces on Pendum Macros' slider, with its defaults", () => {
     expect(PACES.lose).toEqual([0.25, 0.5, 0.75, 1]);
     expect(PACES.gain).toEqual([0.1, 0.25, 0.5]);
     expect(PACES.lose).toContain(DEFAULT_PACE.lose);
@@ -104,21 +104,21 @@ describe("goal date", () => {
     expect(projectGoal(-80, 75, 0.5)).toEqual({ weeks: null, path: [] });
   });
 
-  it("matches Vector Macros' weekly rate and calories", () => {
+  it("matches Pendum Macros' weekly rate and calories", () => {
     // goalRate: min(distance, weight × pace / 100), signed.
     expect(weeklyRate(80, 75, 0.5)).toBeCloseTo(-0.4, 12);
     expect(weeklyRate(80, 85, 0.25)).toBeCloseTo(0.2, 12);
     expect(weeklyRate(80, 79.8, 0.5)).toBeCloseTo(-0.2, 12); // capped at the distance left
     expect(weeklyRate(75, 75, 0.5)).toBe(0);
     expect(weeklyRate(85, 85, 0.25)).toBe(0);
-    // Vector Macros test vectors with a starting expenditure of 2,600 kcal: lose 0.5% to 75 kg → 2,160 kcal;
+    // Pendum Macros test vectors with a starting expenditure of 2,600 kcal: lose 0.5% to 75 kg → 2,160 kcal;
     // gain 0.25% to 85 kg → 2,820 kcal. So the changes are −440 and +220 kcal a day (0.4 × 7700 / 7 = 440).
     expect(2600 + dailyCalorieChange(weeklyRate(80, 75, 0.5))).toBe(2160);
     expect(2600 + dailyCalorieChange(weeklyRate(80, 85, 0.25))).toBe(2820);
     expect(dailyCalorieChange(0)).toBe(0);
   });
 
-  it("states the maintenance a deficit needs above Vector Macros' 1,500 kcal floor", () => {
+  it("states the maintenance a deficit needs above Pendum Macros' 1,500 kcal floor", () => {
     // −440 kcal a day needs a maintenance of 1,940 kcal for intake to stay at 1,500.
     expect(maintenanceFloor(dailyCalorieChange(weeklyRate(80, 75, 0.5)))).toBe(1940);
     // 350 kg at 1%: 3.5 kg a week is −3,850 kcal a day, so 5,350 kcal.

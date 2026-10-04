@@ -2,8 +2,10 @@
 
 # vector-marketing
 
-The marketing site for the Vector app series: OmegaFyt (the subscription, account-based app) and the four one-time
-purchase, offline apps (Vector Body, Vector Lift, Vector Macros, Vector Hydration), plus free fitness calculators.
+The marketing site for the Pendum apps: Pendum One (the subscription, account-based app, formerly OmegaFyt) and the
+four one-time purchase, offline apps (Pendum Body, Pendum Lift, Pendum Macros, Pendum Hydration), plus free fitness
+calculators. The repo and the design system keep the name "Vector" (`src/vector`, `../vector-design`): that is the
+kit's name, not the product's.
 Next.js 16 App Router, React 19, Tailwind v4, TypeScript, pnpm. Local git only for now.
 
 ```sh
@@ -29,7 +31,9 @@ supplies the look, exactly as on native. Never edit `../vector-design` from here
   overlays, accordion row geometry). HeroUI's CSS is in `@layer components`, so utilities still win over it.
 - Page code never imports `@heroui/react` or `@heroui/styles`: it uses the kit. `pnpm lint` runs
   `vector-web.mjs check`, which fails on raw HeroUI imports, size/weight/case/tracking/shadow/radius classes,
-  Tailwind palette colours, gradients and hex in page code (`src/app`, `src/components`, `src/calculators`).
+  Tailwind palette colours, gradients and hex in page code (`src/app`, `src/components`, `src/calculators`), and
+  `scripts/brand-rules.mjs check`, which fails on any product name or the bare family word in page code (names
+  live in src/content; the two allowlisted literals are listed in the script).
 - Type is a role, never a size: `type-hero type-display type-h1…h4 type-lead type-body type-body-strong type-small
   type-caption type-field-label type-button type-label type-readout-xl|l|m|s|xs`. Prefer the components: `Text`,
   `Heading`, `Note`, `Label`, `Value`, `Meta`. A rare weight change is `[font-weight:500]`.
@@ -41,12 +45,25 @@ supplies the look, exactly as on native. Never edit `../vector-design` from here
   on a Next link), `LinkButton`, `Panel` (+ `.Header .Title .Description .Body .Footer`), `ReadoutRow`, `Rule`,
   `Callout`, `ErrorText`, `Status`, `Meter`, `ListRow`/`RowList`, `SystemState`, `Icon`, `AppIcon`, the text
   components. HeroUI-backed parts have their own entry points, so a page ships only what it renders:
-  `@/vector/button` (`Button` with `onPress`, `IconButton`), `@/vector/disclosure` (`Disclosures`, HeroUI Accordion,
-  for FAQs), and the client inputs `@/vector/form/field` (HeroUI TextField), `/select` (HeroUI Select),
-  `/choices` (HeroUI RadioGroup as the segmented control) and `/chip-row` (HeroUI CheckboxGroup). Client files
-  import leaf modules.
-- Fonts: `src/fonts/*.ttf` are the kit's files; the site serves WOFF2 subsets built from them by `pnpm fonts`
-  (`scripts/fonts.mjs`). Rebuild them when the site gains characters outside the subset.
+  `@/vector/button` (`Button` with `onPress`, `IconButton`) and the client inputs `@/vector/form/field` (HeroUI
+  TextField), `/select` (HeroUI Select), `/choices` (HeroUI RadioGroup as the segmented control) and `/chip-row`
+  (HeroUI CheckboxGroup). `@/vector/disclosure` (`Disclosures`, native details/summary, see below) is its own
+  entry point too, but loads no HeroUI. Client files import leaf modules.
+- Parts that must not load HeroUI or React Aria (anything the root layout renders on every page: the mobile nav,
+  the footer's appearance control, the error boundaries): `@/vector/button-native` (`NativeButton`,
+  `NativeIconButton`, `NativeLinkButton`, the same look as HeroUI's variants on a native element),
+  `@/vector/form/choices-native` (`NativeChoices`, native radios with the Choices look). `Disclosures` is a server
+  component on `<details>/<summary>` (no HeroUI, answers readable without JavaScript).
+- Glyphs in client files: `Glyph` from `@/vector/glyph` with one module per glyph from `@/vector/glyphs/<name>`
+  (generated), or the glyph passed down as a `ReactNode` from the server parent. `Icon` (server) reads the whole
+  table and belongs in server components only; importing it from a client file ships 28 KB of paths.
+- Fonts: `src/fonts/*.ttf` are the kit's files; `pnpm fonts` (`scripts/fonts.mjs`) writes content-hashed WOFF2
+  subsets to `public/fonts/` (served immutable), the `@font-face` rules to `src/fonts/faces.css` (imported first
+  in globals.css) and the preload list to `src/fonts/index.ts` (used by the root layout and global-error).
+  next/font is not used. Rebuild when the copy gains a character outside `CHARACTERS`, and commit the outputs.
+- Class joiners: `cx` (`@/vector/cx`, clsx plus "the last type role wins") for everything the root layout carries
+  (text, glyph, native button and choices, the nav islands); `cn` (`@/vector/cn`, adds tailwind-merge, 8 KB) only
+  for HeroUI-backed parts and server-only panels. A client island importing `cn` puts tailwind-merge on every page.
 - Gallery of every component: `/kit` (not indexed).
 
 ## Rules that pages must follow (design-system §1, §2.4, §10)
@@ -65,17 +82,92 @@ supplies the look, exactly as on native. Never edit `../vector-design` from here
 7. Copy voice: short, declarative, present tense, sentence case everywhere (CSS uppercases labels), no
    contractions, no exclamation marks, no emoji, no "please", buttons are verb + object. No hype ("revolutionary",
    "seamless", "powerful", "ultimate"), and no speed words ("fast", "instant") the apps cannot measure.
+   US spelling. Percent closes up to its number (25%); other units take a space (25 kg). Numerals for counts,
+   durations and measurements that are facts about an app ("7-day", "4 seconds"); words only in idioms ("one
+   tap"). Full product names in prose and in every answer ("Pendum Lift", never bare "Lift"); the four apps
+   collectively are `site.series` ("the Pendum apps"). "health sync" is lowercase
+   mid-sentence; "sign-in", not "login"; "body-fat" only as a compound adjective.
 
 ## Content rules
 
 - `src/content/apps.ts` is the single source for app copy; `docs/sources/app-facts.json` is the verified fact
   sheet it is written from (each claim has evidence in the app repos). Claim only what is shipped. Anything in a
   fact sheet's `notYetShipped` is never claimed; its `caveats` travel with the claims they qualify.
-- No prices, store links, trial lengths, domains or contact addresses are invented. `site.ts` and each app's
-  `stores`/`price` stay null until the owner supplies them; the UI renders "Coming soon" or the model in words.
-- OmegaFyt subscriptions are bought only in the iOS and Android apps. The four Vector apps have no account, no
+- No prices, store links, trial lengths, domains or contact addresses are invented. Prices and trials are the owner's
+  decision of 2026-10-04 (docs/sources/owner-decisions.md) and live only in src/content/apps.ts: `price`, `plans`
+  (a subscription's plans), `unlock` (a free download with a one-time in-app unlock) and `trial`. Every page,
+  answer, structured-data offer and llms.txt line reads them through `priceShort`, `priceSentence` and
+  `PriceReadout`, so a price change is one edit; tests fail on any amount or trial length the content does not set.
+  Store links stay null until a listing exists; the UI then renders "Coming soon".
+- The rename to Pendum (2026-10-04) has not reached the stores: Pendum One's `storeName` ("OmegaFyt") is shown
+  beside its store links and in its structured data until the listings are renamed. Slugs are URLs: `/apps/one`
+  (with a permanent redirect from `/apps/omegafyt`), `/apps/body`, `/apps/lift`, `/apps/macros`, `/apps/hydration`.
+- Pendum One subscriptions are bought only in the iOS and Android apps. The four Pendum apps have no account, no
   server and no analytics; records live in a database on the phone. Do not say data "never" leaves the phone:
   Health sync is opt-in, OS device backups may include it, and backups go where the user saves them.
+- Pendum One's store links are real (both listings verified 2026-10-03, see docs/sources/owner-decisions.md) and
+  `version` is the public build: a feature or integration with `since` newer than `version` is hidden everywhere
+  (`shipped()` in src/content/structured-data.ts), so a release lands by raising `version`, never by editing copy.
+- Each app carries, in src/content/apps.ts: `definition` (one quotable sentence: name, category, platforms, how
+  it is sold, offline/account), `category`, `subCategory`, `seoTitle` (name, category and model, within about 65
+  characters), `faq`, `backup`, `analytics`, `updated`, `chooser` and, where a buyer must read one fact before
+  the store button, `note`. Site-level questions are strings in src/content/faq.ts and calculator questions in
+  src/content/calculators.ts (`questions`, `next`, `titleSuffix`, `reviewed`), so the same text feeds the page and
+  FAQPage structured data.
+- Copy that pages once held is content too. `chooser` (`want`: what the visitor wants, in their words; `facts`: a
+  comma-separated restatement of that app's shipped feature titles, caveats, definition or summary, which
+  apps.test.ts checks so it cannot drift) draws the "Which app is for you" rows in content order, and `note`
+  restates a caveat under the store buttons. The four design principles are `principles` in
+  src/content/principles.ts (with `languageClause()`, the languages sentence from the app data), drawn on the home
+  page and on /about from that one list.
+- Pendum One's analytics statement is gated on `version` like a feature: `analyticsSentence(app)` in apps.ts says
+  the public build sends none until `ANALYTICS_SINCE` (1.8.0) and switches to the present tense after it. The
+  `analytics` row, the privacy list, both FAQ answers and the privacy page read it, so the release needs no copy
+  edit (docs/sources/owner-decisions.md records the dates).
+- Dates: `updated` (apps) and `reviewed` (calculators) are the day the facts were checked against the app repos;
+  `site.contentUpdated` must not be older than any of them (a test enforces it) and is the sitemap fallback.
+- The publisher (`site.publisher`) is the name both store listings show. Brand names ("Pendum", the app names,
+  `site.series`, and the retired "Vector" and "OmegaFyt") live in src/content only; page code reads them from there,
+  and `scripts/brand-rules.mjs` fails on any of them, current or retired, written into page code.
+
+## Search and assistants
+
+- Structured data comes from pure builders in src/content/structured-data.ts (`siteGraph`, `softwareApplication`,
+  `webApplication`, `itemList`, `breadcrumbList`, `faqPage`), rendered with `JsonLd` from
+  src/components/site/json-ld.tsx, so markup never drifts from content; the root layout renders `SiteJsonLd`.
+  Never emit `aggregateRating`, and emit `offers` only from a real `Price`.
+- Metadata helpers in src/components/site/metadata.ts: `pageMetadata` (template title, or `absolute`),
+  `appMetadata` (the app's `seoTitle`, its `definition` as the description), `calculatorMetadata` (title plus
+  `titleSuffix`); descriptions are trimmed to 160 characters at a boundary.
+- Breadcrumbs: `PageHeader`'s `crumbs` prop draws the parents ("Home / Apps") in the eyebrow slot; the page pairs
+  it with `breadcrumbList` naming the current page last.
+- src/app/robots.ts names the search and answer agents (OAI-SearchBot, Claude-SearchBot, PerplexityBot…) and the
+  training agents explicitly; keep the host's AI-bot blocking off. src/app/sitemap.ts reports `lastModified` from
+  git. /llms.txt is generated from content (src/app/llms.txt/route.ts) and src/app/llms.test.ts fails on any
+  amount or trial the content does not set, a store link while unset, a rating, a download count or a hype word. `pnpm indexnow` submits the sitemap to
+  IndexNow after a deploy (INDEXNOW_KEY and NEXT_PUBLIC_SITE_URL set in the deployment).
+
+## Performance
+
+- Target: 100 in Lighthouse mobile on every route. The LCP is always the h1, so the score is Lighthouse's
+  simulated load of everything that finishes before first paint: the render-blocking stylesheet, the two preloaded
+  fonts, the HTML and any script that evaluates early. Images, sprites and preconnects do not move it.
+- src/app/globals.css imports `@heroui/styles` per component (base, theme, utilities, variants and the component
+  stylesheets the kit renders), with `tw-animate-css` as a direct devDependency. Add a HeroUI component's
+  stylesheet there when the kit starts rendering it. `experimental.inlineCss` stays off: Next writes the
+  stylesheet into the HTML and the Flight payload more than once and the page triples in size.
+- Fonts: `pnpm fonts` subsets Inter (wght 400–600, `opsz` pinned at 14) and Plex Mono to basic Latin plus the
+  characters the copy sets, keeping only the OpenType features a browser applies by default plus `tnum`
+  (`FEATURES` in scripts/fonts.mjs: enable a feature there before using it in CSS). Both files are preloaded; a
+  font requested from the stylesheet instead counts as render-blocking in Lighthouse's model.
+- What Lighthouse mobile measures here (lantern): every request that finishes before the h1 paints is charged to
+  LCP at 1.6 Mbps, except scripts whose evaluation task is 10 ms or longer and starts after the paint. The
+  irreducible set (document, stylesheet, two fonts, Next's runtime chunks) is about 145 KB, which is LCP about
+  2.0 s and a score of 99; calculators add the HeroUI/React Aria chunk and sit at 96. Desktop is 100.
+- Nothing rendered by the root layout may import `@heroui/react`, `@/vector/button`, `@/vector/form/*` or `Icon`:
+  those pull React Aria, tailwind-variants and the icon table onto every page. Calculator tools load them on
+  purpose, inside `VectorProvider` (mounted in src/calculators/shared/frame.tsx, not the layout).
+- next.config.ts sets the security headers, `poweredByHeader: false` and a 30-day image cache.
 
 ## Calculators
 

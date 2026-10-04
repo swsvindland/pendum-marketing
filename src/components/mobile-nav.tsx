@@ -2,18 +2,31 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useId, useRef, useState } from "react";
-import { IconButton } from "@/vector/button";
-import { cn } from "@/vector/cn";
-import { Icon } from "@/vector/icon";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { NativeIconButton } from "@/vector/button-native";
+import { cx } from "@/vector/cx";
 import { navCurrent } from "./nav-links";
 
 /**
  * Under 768: a menu button that opens the nav as a full-width panel under the header. It closes on Escape (focus
  * returns to the button), on a tap outside, when focus moves on past it, on a link (the current page's too) and on
- * navigation. The button keeps one name, "Menu"; aria-expanded says whether it is open.
+ * navigation. The button keeps one name, "Menu"; aria-expanded says whether it is open. `lead` is the product
+ * path ("Get the apps"), the first row, since the header's button is hidden on phones. The glyphs come from the
+ * server parent (site-header.tsx) as ReactNodes, so this island ships no icon table and no HeroUI.
  */
-export function MobileNav({ items }: { items: readonly { href: string; label: string }[] }) {
+export function MobileNav({
+  items,
+  lead,
+  menuGlyph,
+  closeGlyph,
+  forwardGlyph,
+}: {
+  items: readonly { href: string; label: string }[];
+  lead?: { href: string; label: string };
+  menuGlyph: ReactNode;
+  closeGlyph: ReactNode;
+  forwardGlyph: ReactNode;
+}) {
   const [open, setOpen] = useState(false);
   const [openedAt, setOpenedAt] = useState<string | null>(null);
   const pathname = usePathname();
@@ -43,6 +56,8 @@ export function MobileNav({ items }: { items: readonly { href: string; label: st
     };
   }, [shown]);
 
+  const row = "flex min-h-12 items-center justify-between type-body-strong";
+
   return (
     <div
       ref={root}
@@ -53,13 +68,13 @@ export function MobileNav({ items }: { items: readonly { href: string; label: st
         if (shown && next && !e.currentTarget.contains(next)) setOpen(false);
       }}
     >
-      <IconButton
+      <NativeIconButton
         ref={button}
-        icon={shown ? "close" : "menu"}
+        glyph={shown ? closeGlyph : menuGlyph}
         label="Menu"
         aria-expanded={shown}
         aria-controls={id}
-        onPress={() => {
+        onClick={() => {
           setOpen(!shown);
           setOpenedAt(pathname);
         }}
@@ -71,6 +86,14 @@ export function MobileNav({ items }: { items: readonly { href: string; label: st
         className="absolute inset-x-0 top-full border-b border-border bg-background"
       >
         <ul className="flex flex-col px-gutter py-2">
+          {lead ? (
+            <li className="border-t border-separator first:border-t-0">
+              <Link href={lead.href} onClick={() => setOpen(false)} className={cx(row, "text-foreground")}>
+                {lead.label}
+                {forwardGlyph}
+              </Link>
+            </li>
+          ) : null}
           {items.map((item) => {
             const { inSection, ariaCurrent } = navCurrent(pathname, item.href);
             return (
@@ -79,13 +102,10 @@ export function MobileNav({ items }: { items: readonly { href: string; label: st
                   href={item.href}
                   aria-current={ariaCurrent}
                   onClick={() => setOpen(false)}
-                  className={cn(
-                    "flex min-h-12 items-center justify-between type-body-strong",
-                    inSection ? "text-tint" : "text-foreground"
-                  )}
+                  className={cx(row, inSection ? "text-tint" : "text-foreground")}
                 >
                   {item.label}
-                  <Icon name="forward" size={16} tone="muted" />
+                  {forwardGlyph}
                 </Link>
               </li>
             );

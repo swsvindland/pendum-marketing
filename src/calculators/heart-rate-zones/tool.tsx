@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { HR_LIMITS, estimateMaxHr, foxMaxHr, heartRateZones } from "@/lib/calc/heart-rate-zones";
 import { formatNumber } from "@/lib/units";
-import { Heading, Note, ReadoutRow, Value } from "@/vector";
+import { ReadoutRow } from "@/vector/panel";
+import { Heading, Note, Value } from "@/vector/text";
 import { Choices } from "@/vector/form/choices";
 import { AgeField, EMPTY, NumberField, type Measure } from "../shared/fields";
 import { EmptyResult, HeroValue, ReadoutTable, ResultPanel } from "../shared/results";

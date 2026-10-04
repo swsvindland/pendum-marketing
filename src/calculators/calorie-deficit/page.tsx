@@ -1,3 +1,4 @@
+import { names } from "@/content/apps";
 import type { CalculatorMeta } from "@/content/types";
 import { CalculatorFrame, Formula } from "../shared/frame";
 import { CalorieDeficitTool } from "./tool";
@@ -7,13 +8,13 @@ export function CalorieDeficitPage({ meta }: { meta: CalculatorMeta }) {
     <CalculatorFrame
       meta={meta}
       intro="How long a change in weight takes at a weekly pace set as a share of body weight, the date it lands on, and the daily calorie change it needs at the start."
-      tool={<CalorieDeficitTool />}
+      tool={<CalorieDeficitTool appName={names.macros} />}
       method={
         <>
           <p>
             The pace is a percentage of your current weight each week, so each week’s step is worked out from
             the weight the week before. The projection steps one week at a time and counts the last part-week as a
-            fraction. This is how Vector Macros projects its goal date. Imperial inputs are converted exactly
+            fraction. This is how {names.macros} projects its goal date. Imperial inputs are converted exactly
             (1 lb = 0.45359237 kg) first.
           </p>
           <Formula>
@@ -27,7 +28,7 @@ goal date  = today + days
 
 first week = min(distance, step)
 kcal a day = first week × 7,700 / 7
-maintenance ≥ 1,500 + kcal a day   (lose)`}
+maintenance ≥ 1,500 + kcal a day  (lose)`}
           </Formula>
           <p>
             For 80 kg to 75 kg at 0.5% a week, the first step is 0.4 kg. After 12 weeks the weight is 75.33 kg, the
@@ -36,7 +37,7 @@ maintenance ≥ 1,500 + kcal a day   (lose)`}
           </p>
           <p>
             <strong>Paces.</strong> A loss of 0.25%, 0.5%, 0.75% or 1% a week, or a gain of 0.1%, 0.25% or 0.5% a
-            week. Vector Macros marks 0.5–1% as the band that suits most people losing weight and 0.1–0.25% for
+            week. {names.macros} marks 0.5–1% as the band that suits most people losing weight and 0.1–0.25% for
             gaining; a higher gain adds more fat alongside the muscle. Because the step is a share of weight, it
             shrinks as you lose and grows as you gain, and the calorie change follows it.
           </p>
@@ -48,7 +49,7 @@ maintenance ≥ 1,500 + kcal a day   (lose)`}
             2008). The NIDDK Body Weight Planner models both for a longer plan.
           </p>
           <p>
-            <strong>Limits.</strong> Vector Macros does not set a daily target under 1,500 kcal, and it does not plan
+            <strong>Limits.</strong> {names.macros} does not set a daily target under 1,500 kcal, and it does not plan
             a cut when the current or goal weight is a BMI under 18.5. This page asks for neither your maintenance nor
             your height, so it applies neither. For a cut it states the maintenance the pace needs to keep intake at
             1,500 kcal or more: for the example, 1,500 + 440 = 1,940 kcal a day.

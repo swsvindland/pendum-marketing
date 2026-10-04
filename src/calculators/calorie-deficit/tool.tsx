@@ -17,10 +17,11 @@ import {
   type Direction,
 } from "@/lib/calc/calorie-deficit";
 import { formatNumber, formatSigned, kgToLb } from "@/lib/units";
-import { Heading, Note, ReadoutRow, Value } from "@/vector";
+import { ReadoutRow } from "@/vector/panel";
+import { Heading, Note, Value } from "@/vector/text";
 import { Select } from "@/vector/form/select";
 import { EMPTY, MassField, UnitChoice, type Measure } from "../shared/fields";
-import { EmptyResult, HeroValue, ReadoutTable, ResultPanel } from "../shared/results";
+import { CheckInput, EmptyResult, HeroValue, ReadoutTable, ResultPanel, firstInvalid } from "../shared/results";
 import { ToolLayout } from "../shared/tool-layout";
 import { useUnits } from "../shared/use-units";
 import { useToday } from "./use-today";
@@ -42,7 +43,8 @@ const paceHint: Record<Direction, string> = {
 const EVERY = 4;
 const MAX_ROWS = 26;
 
-export function CalorieDeficitTool() {
+/** `appName`: the app that plans a goal date this way, named by the server page (a client file reads no site content). */
+export function CalorieDeficitTool({ appName }: { appName: string }) {
   const [units, setUnits] = useUnits();
   const [current, setCurrent] = useState<Measure>(EMPTY);
   const [goal, setGoal] = useState<Measure>(EMPTY);
@@ -58,6 +60,10 @@ export function CalorieDeficitTool() {
   const mass = (kg: number) => (metric ? kg : kgToLb(kg));
 
   const ready = current.value !== null && goal.value !== null;
+  const invalid = firstInvalid([
+    ["current weight", current],
+    ["goal weight", goal],
+  ]);
   const change = ready ? goal.value! - current.value! : 0;
   // A change that shows as 0.00 in the current unit is no change: a date and a calorie change for it would say
   // more than the inputs do.
@@ -111,7 +117,11 @@ export function CalorieDeficitTool() {
           }
         >
           {!ready ? (
-            <EmptyResult>Enter your current and goal weight to see how long the change takes.</EmptyResult>
+            invalid ? (
+              <CheckInput field={invalid} outcome="how long the change takes" />
+            ) : (
+              <EmptyResult>Enter your current and goal weight to see how long the change takes.</EmptyResult>
+            )
           ) : !dir ? (
             <EmptyResult code="No change">Your goal weight is your current weight, so there is nothing to change.</EmptyResult>
           ) : weeks === null || !date ? (
@@ -138,7 +148,7 @@ export function CalorieDeficitTool() {
               </Note>
               {floor !== null ? (
                 <Note>
-                  Vector Macros does not set a target under {formatNumber(MIN_INTAKE_KCAL)} kcal a day, so this pace
+                  {appName} does not set a target under {formatNumber(MIN_INTAKE_KCAL)} kcal a day, so this pace
                   needs a maintenance of at least {formatNumber(floor)} kcal a day.
                 </Note>
               ) : null}

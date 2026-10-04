@@ -1,5 +1,9 @@
+import { hasWatch } from "@/components/apps/model";
+import { ANALYTICS_SINCE, names, priceShort, purchaseApps, seriesNames, subscriptionApp } from "@/content/apps";
+import { listFormat } from "@/content/format";
+import { site } from "@/content/site";
+import { isShipped } from "@/content/version";
 import { Icon, Label, Text, cn } from "@/vector";
-import { purchasePriced } from "./models";
 
 type Cell = {
   /** The answer, a word or a short phrase. */
@@ -11,11 +15,27 @@ type Cell = {
 };
 type Row = { topic: string; subscription: Cell; purchase: Cell };
 
+const purchaseNames = seriesNames();
+/** The subscription app's name and plan. The column has no meaning without one; the fallbacks only keep the types. */
+const subscriptionName = subscriptionApp?.name ?? "Subscription";
+const plan = subscriptionApp?.plan ?? subscriptionName;
+/** Which purchase apps add a watch app, from their platforms; no note when none does. */
+const watch = purchaseApps.filter(hasWatch);
+const watchNote = watch.length
+  ? `${listFormat.format(watch.map((a) => a.name))} ${watch.length > 1 ? "add" : "adds"} an Apple Watch app.`
+  : undefined;
 /**
- * Every cell is checked against docs/sources/app-facts.json. Where the four Vector apps differ (backups, the
+ * Analytics entered the subscription app with ANALYTICS_SINCE (src/content/apps.ts), so the public build sends
+ * none while `version` is older; the row then says so and names the version that changes it (the same gate as
+ * the app page's features and the content's analyticsSentence).
+ */
+const analyticsShipped = subscriptionApp ? isShipped({ since: ANALYTICS_SINCE }, subscriptionApp) : false;
+
+/**
+ * Every cell is checked against docs/sources/app-facts.json. Where the four Pendum apps differ (backups, the
  * watch apps) the note says which app does what, so no row claims more than every app ships. The first column is
- * the app, OmegaFyt, not the OmegaFyt Pro plan: the web version is never sold as part of a plan, and its address
- * is not public yet, so it is described rather than marked as a yes.
+ * the app, Pendum One, not the Pendum One plan: the web version is never sold as part of a plan, and its address
+ * is not public yet, so it is described rather than marked as a yes. Full product names throughout (CLAUDE.md).
  */
 const rows: Row[] = [
   {
@@ -25,25 +45,24 @@ const rows: Row[] = [
   },
   {
     topic: "Where your records live",
-    subscription: { text: "On the OmegaFyt server", note: "Stored with your account on a server in the US." },
+    subscription: { text: `On the ${subscriptionName} server`, note: "Stored with your account on a server in the US." },
     purchase: { text: "On your phone", note: "A database inside each app." },
   },
   {
     topic: "Works offline",
-    subscription: { text: "No", mark: "no", note: "Needs a connection to the OmegaFyt server." },
+    subscription: { text: "No", mark: "no", note: `Needs a connection to the ${subscriptionName} server.` },
     purchase: { text: "Yes", mark: "yes", note: "The apps make no network requests of their own." },
   },
   {
     topic: "Devices",
     subscription: { text: "iPhone and Android", note: "The same account on both." },
-    purchase: { text: "iPhone and Android", note: "Lift and Hydration add an Apple Watch app." },
+    purchase: { text: "iPhone and Android", note: watchNote },
   },
   {
     topic: "Web access",
-    // TODO(owner): once the web address is public (apps.ts stores.web), drop "The address is published at launch."
     subscription: {
       text: "Same account in a browser",
-      note: "The address is published at launch. The web version has no checkout.",
+      note: "Its address is not public yet. The web version has no checkout.",
     },
     purchase: { text: "No", mark: "no", note: "There is no web version." },
   },
@@ -61,40 +80,53 @@ const rows: Row[] = [
     subscription: { text: "Records follow the account", note: "Sign in on a new phone to open them." },
     purchase: {
       text: "Varies by app",
-      note: "Lift and Macros save encrypted backup files where you choose. Body and Hydration have no backup of their own.",
+      note: `${names.lift} and ${names.macros} save encrypted backup files where you choose. ${names.body} and ${names.hydration} have no backup of their own.`,
     },
   },
   {
     topic: "Analytics",
-    subscription: {
-      text: "Product analytics",
-      note: "In the iPhone and Android apps only. Events exclude weight, height, sex and measurements.",
-    },
+    subscription: analyticsShipped
+      ? {
+          text: "Product analytics",
+          note: "In the iPhone and Android apps only. Events exclude weight, height, sex and measurements.",
+        }
+      : {
+          text: "None in the current build",
+          note: `From version ${ANALYTICS_SINCE} the iPhone and Android apps send usage events and error reports to PostHog.`,
+        },
     purchase: { text: "None", note: "No analytics or crash-reporting code." },
   },
   {
     topic: "How you pay",
-    subscription: { text: "Subscription", note: "OmegaFyt Pro, billed by the App Store or Google Play." },
+    subscription: {
+      text: "Subscription",
+      note: subscriptionApp?.price
+        ? `${priceShort(subscriptionApp)}, billed by the App Store or Google Play.`
+        : `${plan}, billed by the App Store or Google Play.`,
+    },
     purchase: {
       text: "One-time purchase",
-      note: purchasePriced ? "Each app is bought once. Prices are listed per app." : "Each app is bought once. Price set at launch.",
+      note: purchaseApps.every((a) => a.price)
+        ? `${purchaseApps.map((a) => `${a.name} ${a.price!.display}`).join(", ")}. Each is bought once.`
+        : "Each app is bought once.",
     },
   },
   {
     topic: "Where you buy",
     subscription: {
       text: "In the iPhone and Android apps",
-      note: "Plans and prices come from the store. The web version has no checkout.",
+      note: "The paywall lists the plans. The web version has no checkout.",
     },
-    purchase: { text: "The App Store and Google Play", note: "Store links appear at launch." },
+    purchase: { text: "The App Store and Google Play", note: "Not in the stores yet." },
   },
 ];
 
 const columns = [
-  { key: "subscription", label: "OmegaFyt" },
-  { key: "purchase", label: "Vector apps" },
+  { key: "subscription", label: subscriptionName },
+  { key: "purchase", label: site.series.label },
 ] as const;
 
+/** The answer with its glyph slot always drawn, so every answer in a column starts at the same x. */
 function CellContent({ cell }: { cell: Cell }) {
   return (
     <span className="flex items-start gap-2">
@@ -103,9 +135,11 @@ function CellContent({ cell }: { cell: Cell }) {
           name={cell.mark === "yes" ? "check" : "close"}
           size={16}
           tone={cell.mark === "yes" ? "foreground" : "muted"}
-          className="mt-0.5"
+          className="mt-0.5 shrink-0"
         />
-      ) : null}
+      ) : (
+        <span aria-hidden className="mt-0.5 size-4 shrink-0" />
+      )}
       <span className="flex min-w-0 flex-col gap-1">
         <Text as="span" variant="small">
           {cell.text}
@@ -131,7 +165,7 @@ export function CompareTable() {
     <div className="overflow-clip rounded-panel border border-border bg-surface">
       <table role="table" className="block w-full border-separate border-spacing-0 md:table md:table-fixed">
         <caption className="sr-only">
-          OmegaFyt compared with the four Vector apps: Body, Lift, Macros and Hydration.
+          {columns[0].label} compared with {site.series.sentence}: {purchaseNames}.
         </caption>
         <thead role="rowgroup" className="sticky top-16 z-10 block bg-surface md:table-header-group">
           <tr role="row" className="grid grid-cols-2 md:table-row">

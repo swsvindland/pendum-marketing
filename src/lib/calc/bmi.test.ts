@@ -9,7 +9,7 @@ describe("bmi", () => {
   it("is kg per square metre", () => {
     expect(roundBmi(bmi(70, 175))).toBe(22.9);
     expect(roundBmi(bmi(80, 180))).toBe(24.7);
-    // Vector Body's test vector: composition(80, 180, 20).bmi.
+    // Pendum Body's test vector: composition(80, 180, 20).bmi.
     expect(bmi(80, 180)).toBeCloseTo(24.691358024691358, 12);
     // CDC example: 5 ft 5 in, 150 lb is 25.0.
     expect(roundBmi(bmi(150 * 0.45359237, 65 * 2.54))).toBe(25);

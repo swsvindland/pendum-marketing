@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { brzycki, e1rm, repMaxLoad, repMaxTable, repsToFailure } from "./one-rep-max";
 
 describe("e1rm", () => {
-  it("matches Vector Lift's test vectors", () => {
+  it("matches Pendum Lift's test vectors", () => {
     // lift-track: e1rm(100, 5, 2) = 100 × (1 + 7/30); e1rm(100, 5) = 100 × (1 + 5/30); e1rm(100, 1) = 100.
     expect(e1rm(100, 5, 2)).toBeCloseTo(123.3333333, 6);
     expect(e1rm(100, 5)).toBeCloseTo(116.6666667, 6);

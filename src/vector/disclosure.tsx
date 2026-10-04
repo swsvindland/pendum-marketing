@@ -1,4 +1,3 @@
-import { Accordion } from "@heroui/react/accordion";
 import type { ReactNode } from "react";
 import { cn } from "./cn";
 import { Icon } from "./icon";
@@ -6,12 +5,13 @@ import { Icon } from "./icon";
 export type DisclosureItem = { id?: string; question: string; answer: ReactNode };
 
 /**
- * Questions that open in place (FAQ), on HeroUI's Accordion (React Aria disclosure: the trigger is a button with
- * aria-expanded, the question a heading). Its own entry point (@/vector/disclosure), so only pages with questions
- * load the Accordion. Row geometry from §5.6 (components.css, section 4): 44 minimum, px-4 py-3, 1pt separators
- * inset 16, the kit `down` glyph that turns when open, answers as a 12-gap column. `panel` draws the rows in a
- * Panel (focus drawn inside, since the panel clips); `plain` sits on the canvas between 1pt rules, flush with the
- * text column. Several can be open at once.
+ * Questions that open in place (FAQ), on native <details>/<summary>: a server component with no script and no
+ * HeroUI, so the answers are in the document and open without JavaScript, and the summary carries the expanded
+ * state for assistive technology by itself. The question is a heading inside the summary (valid phrasing with
+ * heading content), so the heading list reaches every question. Row geometry from §5.6 (components.css, section
+ * 4): 44 minimum, px-4 py-3, 1pt separators inset 16, the kit `down` glyph that turns when open, answers as a
+ * 12-gap column. `panel` draws the rows in a Panel (focus drawn inside, since the panel clips); `plain` sits on the
+ * canvas between 1pt rules, flush with the text column. Several can be open at once.
  */
 export function Disclosures({
   items,
@@ -25,9 +25,9 @@ export function Disclosures({
   headingLevel?: 2 | 3 | 4;
   className?: string;
 }) {
+  const Question = `h${headingLevel}` as const;
   return (
-    <Accordion
-      allowsMultipleExpanded
+    <div
       className={cn(
         "kit-disclosures",
         look === "panel"
@@ -37,20 +37,14 @@ export function Disclosures({
       )}
     >
       {items.map((item) => (
-        <Accordion.Item key={item.id ?? item.question} id={item.id ?? item.question}>
-          <Accordion.Heading level={headingLevel}>
-            <Accordion.Trigger>
-              <span className="text-start">{item.question}</span>
-              <Accordion.Indicator>
-                <Icon name="down" size={16} />
-              </Accordion.Indicator>
-            </Accordion.Trigger>
-          </Accordion.Heading>
-          <Accordion.Panel>
-            <Accordion.Body>{item.answer}</Accordion.Body>
-          </Accordion.Panel>
-        </Accordion.Item>
+        <details key={item.id ?? item.question} className="kit-disclosure">
+          <summary className="kit-disclosure__trigger">
+            <Question className="kit-disclosure__question">{item.question}</Question>
+            <Icon name="down" size={16} className="kit-disclosure__indicator" />
+          </summary>
+          <div className="kit-disclosure__body">{item.answer}</div>
+        </details>
       ))}
-    </Accordion>
+    </div>
   );
 }

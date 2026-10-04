@@ -9,12 +9,13 @@ import {
   subscribeAppearance,
   type Appearance,
 } from "@/vector/appearance";
-import { Choices } from "@/vector/form/choices";
+import { NativeChoices } from "@/vector/form/choices-native";
 
 /**
  * Appearance: System / Light / Dark (glossary, §10). The control shows what is applied on <html> (data-theme), not
  * what storage says, so it agrees with the page when storage is blocked, after a choice in another tab, and once
- * the head script has run. Before hydration the server's System shows; the page itself is already right.
+ * the head script has run. Before hydration the server's System shows; the page itself is already right. On the
+ * kit's native segmented control, so this island, which every page carries, ships no HeroUI.
  */
 export function AppearanceChoice() {
   const value = useSyncExternalStore(subscribeAppearance, appliedAppearance, () => "system" as Appearance);
@@ -27,8 +28,9 @@ export function AppearanceChoice() {
   }, []);
 
   return (
-    <Choices
+    <NativeChoices
       label="Appearance"
+      name="appearance"
       value={value}
       onChange={setAppearance}
       values={[

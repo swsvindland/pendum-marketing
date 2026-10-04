@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { DEFAULT_ACTIVITY, PROFILE_LIMITS, restingEnergy, tdeeByActivity, type Activity } from "@/lib/calc/tdee";
 import { formatNumber } from "@/lib/units";
-import { ReadoutRow, Value } from "@/vector";
+import { ReadoutRow } from "@/vector/panel";
+import { Value } from "@/vector/text";
 import {
   AgeField,
   EMPTY,
@@ -15,7 +16,7 @@ import {
   type Sex,
 } from "../shared/fields";
 import { ActivitySelect } from "../shared/activity-select";
-import { EmptyResult, HeroValue, ReadoutTable, ResultPanel } from "../shared/results";
+import { CheckInput, EmptyResult, HeroValue, ReadoutTable, ResultPanel, firstInvalid } from "../shared/results";
 import { ToolLayout } from "../shared/tool-layout";
 import { useUnits } from "../shared/use-units";
 
@@ -35,6 +36,11 @@ export function TdeeTool() {
   const chosen = levels ? levels.findIndex((l) => l.activity === activity) : -1;
   const level = levels?.[chosen];
   const resting = profile ? Math.round(restingEnergy(profile)) : null;
+  const invalid = firstInvalid([
+    ["age", age],
+    ["height", height],
+    ["weight", weight],
+  ]);
 
   return (
     <ToolLayout
@@ -72,7 +78,11 @@ export function TdeeTool() {
           }
         >
           {!levels || !level || resting === null ? (
-            <EmptyResult>Enter your sex, age, height and weight to see your daily energy expenditure.</EmptyResult>
+            invalid ? (
+              <CheckInput field={invalid} outcome="your daily energy expenditure" />
+            ) : (
+              <EmptyResult>Enter your sex, age, height and weight to see your daily energy expenditure.</EmptyResult>
+            )
           ) : (
             <>
               <HeroValue

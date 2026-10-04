@@ -1,8 +1,16 @@
+import { names } from "@/content/apps";
 import type { CalculatorMeta } from "@/content/types";
+import { LEAN_MASS_DEFICIT, PROTEIN_EXAMPLE_KG, RDA_G_PER_KG, grams, proteinReference } from "@/lib/calc/protein";
+import { formatNumber } from "@/lib/units";
+import { Value } from "@/vector";
 import { CalculatorFrame, Formula } from "../shared/frame";
+import { Reference } from "../shared/reference";
+import { ReadoutTable } from "../shared/table";
 import { ProteinTool } from "./tool";
 
 export function ProteinPage({ meta }: { meta: CalculatorMeta }) {
+  const goals = proteinReference();
+  const rda = grams(PROTEIN_EXAMPLE_KG, RDA_G_PER_KG);
   return (
     <CalculatorFrame
       meta={meta}
@@ -11,23 +19,34 @@ export function ProteinPage({ meta }: { meta: CalculatorMeta }) {
       method={
         <>
           <p>
-            Protein is set in grams per kilogram of body weight per day and rounded to whole grams, as Vector Macros
-            does. Imperial inputs are converted exactly (1 lb = 0.45359237 kg) first. Each goal uses a published range,
-            and its target is one of the protein settings Vector Macros offers (1.4, 1.6, 2.0 or 2.2 g/kg).
+            Protein is set in grams per kilogram of body weight per day and rounded to whole grams, as{" "}
+            {names.macros} does. Imperial inputs are converted exactly (1 lb = 0.45359237 kg) first. Each goal uses a
+            published range, and its target is one of the protein settings {names.macros} offers (1.4, 1.6, 2.0 or
+            2.2 g/kg).
           </p>
           <Formula>
             {`protein (g) = round(weight × g/kg)
 
-goal          g/kg      target
-Maintain      1.4–2.0   1.6
-Build muscle  1.6–2.2   2.0
-Lose fat      1.6–2.4   2.2
-RDA           0.8
-
 lean mass = weight × (1 − fat % / 100)
-deficit: 2.3–3.1 g per kg lean mass
-         (shown when 3.1 × lean mass > target)`}
+deficit: ${LEAN_MASS_DEFICIT.min}–${LEAN_MASS_DEFICIT.max} g per kg lean mass
+  (shown when ${LEAN_MASS_DEFICIT.max} × lean mass > target)`}
           </Formula>
+          <Reference
+            id="protein-by-goal"
+            title="Protein by goal"
+            note={`Grams per kilogram of body weight a day, with the day’s target at ${PROTEIN_EXAMPLE_KG} kg. The RDA, ${RDA_G_PER_KG} g/kg a day, is ${formatNumber(rda)} g at ${PROTEIN_EXAMPLE_KG} kg: a floor against deficiency, not a training target.`}
+          >
+            <ReadoutTable
+              caption={`Protein range and target by goal in grams per kilogram of body weight a day, with the target in grams at ${PROTEIN_EXAMPLE_KG} kg`}
+              columns={["Goal", "Range", "Target", `At ${PROTEIN_EXAMPLE_KG} kg`]}
+              rows={goals.map((goal) => [
+                goal.label,
+                <Value key="range" value={`${goal.min.toFixed(1)}–${goal.max.toFixed(1)}`} unit="g/kg" size="s" />,
+                <Value key="target" value={goal.target.toFixed(1)} unit="g/kg" size="s" />,
+                <Value key="grams" value={formatNumber(goal.grams.target)} unit="g" size="s" />,
+              ])}
+            />
+          </Reference>
           <p>
             <strong>Maintain.</strong> The International Society of Sports Nutrition puts 1.4 to 2.0 g/kg a day as
             enough for most people who exercise. The target is 1.6 g/kg: in a meta-analysis of 49 trials, Morton and
@@ -48,7 +67,7 @@ deficit: 2.3–3.1 g per kg lean mass
           </p>
           <p>
             <strong>High body fat.</strong> Every range here is per kg of total body weight. When the target comes
-            to more than 3.1 g per kg of lean mass, the top of the Helms range, the result says so: that happens past
+            to more than 3.1 g per kg of lean mass, the top of the Helms range, the result says so. That happens past
             about 29% body fat for Lose fat, 35% for Build muscle and 48% for Maintain. In that case, base the number
             on a goal weight.
           </p>

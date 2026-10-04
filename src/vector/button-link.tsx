@@ -1,41 +1,16 @@
 import { buttonVariants } from "@heroui/styles/components/button";
 import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
+import { buttonLooks, linkButtonClass, type ButtonVariant } from "./button-looks";
 import { cn } from "./cn";
 import { Icon, type IconName } from "./icon";
 
 // Server-safe: the Button look as class names (HeroUI's plain buttonVariants) on a Next link. Nothing here imports
 // @heroui/react, so pages that render only links ship no HeroUI component code. The HeroUI-backed Button and
-// IconButton are in ./button.
+// IconButton are in ./button; the look strings themselves are in ./button-looks, shared with ./button-native.
 
-export type ButtonVariant = "primary" | "secondary" | "ghost" | "destructive";
-
-/**
- * The kit's four looks on HeroUI's button (§5.3), as data: HeroUI supplies the behaviour and its variant, the kit
- * supplies the look through HeroUI's own --button-* properties. Shared geometry (44 minimum, 52 at lg, radius 4,
- * Inter 500 15/20, colour-only press) is in components.css.
- * primary: signal fill, #071017 label (one per page; HeroUI's primary already uses --accent / --accent-hover).
- * secondary: surface with a 1pt border-strong edge, never a grey fill. ghost: tint label. destructive: danger label,
- * no fill.
- */
-export const buttonLooks = {
-  primary: { hero: "primary", className: "" },
-  secondary: {
-    hero: "outline",
-    className:
-      "border-border-strong [--button-bg:var(--surface)] [--button-bg-hover:var(--surface-secondary)] [--button-bg-pressed:var(--surface-secondary)] [--button-fg:var(--foreground)]",
-  },
-  ghost: {
-    hero: "ghost",
-    className:
-      "[--button-fg:var(--tint)] [--button-bg-hover:var(--surface-secondary)] [--button-bg-pressed:var(--surface-secondary)]",
-  },
-  destructive: {
-    hero: "ghost",
-    className:
-      "[--button-fg:var(--danger)] [--button-bg-hover:var(--surface-secondary)] [--button-bg-pressed:var(--surface-secondary)]",
-  },
-} as const;
+export type { ButtonVariant } from "./button-looks";
+export { buttonLooks } from "./button-looks";
 
 const iconTone = { primary: "onSignal", secondary: "foreground", ghost: "tint", destructive: "danger" } as const;
 
@@ -119,10 +94,7 @@ export function LinkButton({
   className?: string;
   children: ReactNode;
 } & Omit<ComponentProps<"a">, "children" | "className" | "href">) {
-  const classes = cn(
-    "inline-flex min-h-11 items-center gap-1 rounded-mark type-button text-tint underline-offset-4 hover:underline active:opacity-60",
-    className
-  );
+  const classes = cn(linkButtonClass, className);
   const glyph = forward ? <Icon name={external ? "external" : "forward"} size={17} tone="tint" /> : null;
   if (external)
     return (

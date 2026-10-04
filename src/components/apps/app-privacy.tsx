@@ -1,11 +1,12 @@
 import type { App } from "@/content/types";
-import { Heading, Icon, Label, Meta, Panel, Text } from "@/vector";
+import { Heading, Icon, Label, LinkButton, Meta, Panel, Text } from "@/vector";
 
 /**
  * Where an app keeps records. A one-time purchase headlines the offline promise (no account, no server, no
- * analytics, records in a database on the phone); the subscription headlines the account and its sync. Either way
- * the specifics come from `app.privacy`, so this section never claims more than the fact sheet. It does not say
- * records "never" leave the phone: Health sync, device backups and saved backup files are the visitor's choices.
+ * analytics); the subscription headlines the account and its sync. Either way the specifics come from
+ * `app.privacy`, so this section never claims more than the fact sheet, and the list beside the intro is where
+ * the database on the phone is named, once. It does not say records "never" leave the phone: health sync, device
+ * backups and saved backup files are the visitor's choices.
  */
 export function AppPrivacy({ app }: { app: App }) {
   const offline = app.model === "purchase";
@@ -20,7 +21,7 @@ export function AppPrivacy({ app }: { app: App }) {
           </Heading>
           <Text tone="secondary" className="max-w-[60ch] text-pretty">
             {offline
-              ? `${app.name} needs no account and has no server of its own. It keeps its records in a database on your phone.`
+              ? `${app.name} needs no account and has no server of its own.`
               : `${app.name} needs an account and a connection. Records are stored on the ${app.name} server, so the same data opens on each device you sign in on.`}
           </Text>
           <Meta
@@ -28,10 +29,16 @@ export function AppPrivacy({ app }: { app: App }) {
             items={offline ? ["No account", "No server", "No analytics"] : ["Account required", "Synced across devices"]}
             className="mt-1"
           />
+          <div>
+            <LinkButton href="/privacy" forward>
+              Read the privacy summary
+            </LinkButton>
+          </div>
         </div>
         {app.privacy.length ? (
           <Panel>
-            <Panel.Header eyebrow="Privacy / Details" />
+            {/* The section's h2 names this panel; the eyebrow stays a label, not a heading (A11Y-12, COPY-15). */}
+            <Panel.Header eyebrow="Privacy / Details" heading={false} />
             <Panel.Body>
               <ul className="flex flex-col">
                 {app.privacy.map((item) => (

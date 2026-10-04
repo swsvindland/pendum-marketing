@@ -1,11 +1,11 @@
-// Resting energy (Mifflin-St Jeor) and total daily energy expenditure, as Vector Macros makes a program's
+// Resting energy (Mifflin-St Jeor) and total daily energy expenditure, as Pendum Macros makes a program's
 // starting estimate (macro-track src/lib/program.ts, initialExpenditure).
 
 export type Sex = "female" | "male";
 export type Activity = "low" | "light" | "moderate" | "high";
 
 /**
- * Vector Macros' activity levels: its labels and multipliers. The descriptions are the conventional ones that go
+ * Pendum Macros' activity levels: its labels and multipliers. The descriptions are the conventional ones that go
  * with these factors (the app shows the labels only). "Lightly active" is the app's default.
  */
 export const ACTIVITY_LEVELS: readonly { value: Activity; label: string; multiplier: number; description: string }[] = [
@@ -17,7 +17,7 @@ export const ACTIVITY_LEVELS: readonly { value: Activity; label: string; multipl
 
 export const DEFAULT_ACTIVITY: Activity = "light";
 
-/** The inputs Vector Macros accepts for the estimate: whole years 18–100, 120–230 cm, 35–350 kg. */
+/** The inputs Pendum Macros accepts for the estimate: whole years 18–100, 120–230 cm, 35–350 kg. */
 export const PROFILE_LIMITS = {
   age: { min: 18, max: 100 },
   heightCm: { min: 120, max: 230 },
@@ -57,7 +57,7 @@ export function tdeeByActivity(p: Profile): { activity: Activity; label: string;
   }));
 }
 
-/** True when the profile is one Vector Macros accepts (its validateProgram rules for these fields). */
+/** True when the profile is one Pendum Macros accepts (its validateProgram rules for these fields). */
 export function isValidProfile(p: Profile): boolean {
   const { age, heightCm, weightKg } = PROFILE_LIMITS;
   return (
@@ -72,4 +72,12 @@ export function isValidProfile(p: Profile): boolean {
     p.weightKg <= weightKg.max &&
     (p.sex === "female" || p.sex === "male")
   );
+}
+
+/** The page's worked example: a 30-year-old man, 180 cm and 80 kg (resting energy 1,780 kcal a day). */
+export const TDEE_EXAMPLE: Profile = { age: 30, heightCm: 180, weightKg: 80, sex: "male" };
+
+/** The worked example at every activity level: its resting energy in whole kcal and `tdeeByActivity`. */
+export function tdeeExample(p: Profile = TDEE_EXAMPLE) {
+  return { profile: p, resting: Math.round(restingEnergy(p)), levels: tdeeByActivity(p) };
 }

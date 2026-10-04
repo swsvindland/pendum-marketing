@@ -1,6 +1,6 @@
 // Body mass index and the CDC adult screening categories. The category is chosen from the BMI rounded to one
 // decimal, as CDC reports BMI and as its adult table places weights (at 5 ft 9 in: 125 lb healthy weight, 169 lb
-// overweight, 203 lb obesity). Vector Body uses the same cutoffs on the unrounded value (body-track
+// overweight, 203 lb obesity). Pendum Body uses the same cutoffs on the unrounded value (body-track
 // src/lib/metric-context.ts), so a BMI less than 0.05 below 18.5, 25 or 30 is in the band below there.
 
 export type BmiCategory = "underweight" | "healthy" | "overweight" | "obesity";

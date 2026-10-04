@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { site } from "@/content/site";
 
 /**
  * The family mark: a signal square with an ink vector, the app-icon look (a #22D3EE fill always carries #071017),
@@ -6,7 +7,7 @@ import Link from "next/link";
  */
 export function Wordmark() {
   return (
-    <Link href="/" className="inline-flex min-h-11 items-center gap-2 rounded-control" aria-label="Vector home">
+    <Link href="/" className="inline-flex min-h-11 items-center gap-2 rounded-control" aria-label={`${site.family} home`}>
       <svg viewBox="0 0 20 20" width={20} height={20} aria-hidden className="shrink-0">
         <rect width="20" height="20" rx="4" className="fill-accent" />
         <path d="M4.88 15.12 14.5 5.5" fill="none" className="stroke-accent-foreground" strokeWidth="1.75" />
@@ -18,7 +19,7 @@ export function Wordmark() {
           strokeLinecap="square"
         />
       </svg>
-      <span className="type-h3 text-foreground">Vector</span>
+      <span className="type-h3 text-foreground">{site.family}</span>
     </Link>
   );
 }

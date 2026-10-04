@@ -1,4 +1,4 @@
-// Plates for a barbell load, as Vector Lift loads a bar (lift-track src/lib/loads.ts: defaultGym, achievableLoads,
+// Plates for a barbell load, as Pendum Lift loads a bar (lift-track src/lib/loads.ts: defaultGym, achievableLoads,
 // roundLoad, platesPerSide). Loads are in the gym's own unit, kg or lb, because plates do not convert; inside, every
 // sum is in hundredths of that unit so 2.5 + 1.25 adds up exactly. Any number of pairs of each available plate is
 // assumed. One deliberate difference: the nearest-load search always reaches the next load above the target (see
@@ -7,7 +7,7 @@
 export type PlateUnit = "kg" | "lb";
 
 /**
- * Vector Lift's default gym for each unit (bar and plates), plus the bars the calculator offers. Switching the unit
+ * Pendum Lift's default gym for each unit (bar and plates), plus the bars the calculator offers. Switching the unit
  * switches to the other set rather than converting, as Lift does: a 20 kg plate is not a 44.09 lb plate.
  */
 export const GYM_DEFAULTS: Record<PlateUnit, { bar: number; bars: number[]; plates: number[] }> = {
@@ -40,7 +40,7 @@ export function achievableLoads(bar: number, plates: number[], upTo: number): nu
 }
 
 /**
- * How far up the search for a load runs. Vector Lift stops at target × 1.25 + 10, which can leave out the next load
+ * How far up the search for a load runs. Pendum Lift stops at target × 1.25 + 10, which can leave out the next load
  * above the target when only large plates are available (a 45 lb bar with only 45s: 95 lb finds 45, not the nearer
  * 135). Any number of the lightest plate can go on, so the next load above the target is at most target + 2 × that
  * plate; the search reaches whichever is further. With a lightest plate of 5 or under, as in both default sets,
@@ -53,7 +53,7 @@ export function searchLimit(target: number, plates: number[]): number {
 }
 
 /**
- * The load nearest the target that the bar and plates can make, as Vector Lift's `roundLoad` does for a barbell.
+ * The load nearest the target that the bar and plates can make, as Pendum Lift's `roundLoad` does for a barbell.
  * "nearest" breaks ties toward the lighter load; "down" never exceeds the target, or gives the lightest load (the
  * empty bar) when nothing is at or under it. The search always includes the next load above the target (see
  * searchLimit). 0 when the target is not positive.
@@ -71,7 +71,7 @@ export function roundLoad(target: number, bar: number, plates: number[], mode: "
 }
 
 /**
- * Plates for one side of the bar, heaviest first, as Vector Lift's `platesPerSide`: the fewest plates that make
+ * Plates for one side of the bar, heaviest first, as Pendum Lift's `platesPerSide`: the fewest plates that make
  * the load exactly (a change-making search, so 165 lb is 35 + 25 a side, not 45 + 10 + 5). Among equally short
  * lists, the one that starts with the heaviest plate. null when the load cannot be made exactly or is under the bar.
  */
@@ -133,4 +133,30 @@ export function groupPlates(side: number[]): { plate: number; count: number }[] 
     else groups.push({ plate, count: 1 });
   }
   return groups;
+}
+
+/** Loads in the page's reference table: 60 to 200 kg by 10 kg, and the common pound loads. */
+export const COMMON_LOADS: Record<PlateUnit, readonly number[]> = {
+  kg: Array.from({ length: 15 }, (_, i) => 60 + 10 * i),
+  lb: [95, 135, 185, 225, 315],
+};
+
+export type CommonLoadRow = {
+  load: number;
+  /** Runs of equal plates on each side, heaviest first. */
+  perSide: { plate: number; count: number }[];
+  /** False when the default plates cannot make the load exactly (they make every load in COMMON_LOADS). */
+  exact: boolean;
+};
+
+/**
+ * The plates per side for each common load on the default bar with every default plate (`GYM_DEFAULTS`), found by
+ * `plateLoading` exactly as the tool finds them, so the page's table and the tool always agree.
+ */
+export function commonLoads(unit: PlateUnit, loads: readonly number[] = COMMON_LOADS[unit]): CommonLoadRow[] {
+  const { bar, plates } = GYM_DEFAULTS[unit];
+  return loads.map((load) => {
+    const result = plateLoading(load, bar, plates);
+    return { load, perSide: groupPlates(result.perSide), exact: result.difference === 0 && !result.belowBar };
+  });
 }

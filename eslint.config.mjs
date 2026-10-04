@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Local tooling and reports (pnpm lighthouse, session notes), gitignored.
+    ".work/**",
   ]),
 ]);
 

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { PageHeader, Section } from "@/components/page";
+import { apps } from "@/content/apps";
 import { KitControls } from "./controls";
 import {
   AppIcon,
@@ -21,6 +22,7 @@ import {
   Value,
 } from "@/vector";
 import { Button } from "@/vector/button";
+import { NativeButton, NativeIconButton } from "@/vector/button-native";
 import { Disclosures } from "@/vector/disclosure";
 
 export const metadata: Metadata = { title: "Kit", robots: { index: false } };
@@ -61,6 +63,13 @@ export default function KitPage() {
           <Button variant="secondary" disabled>Disabled</Button>
           <ButtonLink href="#" variant="primary" size="lg">Large primary</ButtonLink>
           <LinkButton href="#" forward>Read the method</LinkButton>
+        </div>
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <NativeButton variant="secondary">Native secondary</NativeButton>
+          <NativeButton variant="ghost">Native ghost</NativeButton>
+          <NativeIconButton label="Menu" glyph={<Icon name="menu" size={20} />} />
+          <NativeIconButton label="Close" variant="secondary" glyph={<Icon name="close" size={20} />} />
+          <Text variant="small" tone="muted">Native buttons: the same look with no HeroUI, for the error pages and the mobile nav.</Text>
         </div>
       </Section>
       <Section title="Panels and feedback" eyebrow="Kit / Panel" bordered>
@@ -110,8 +119,8 @@ export default function KitPage() {
         <Disclosures
           className="max-w-form"
           items={[
-            { question: "Do the Vector apps need an internet connection?", answer: "No. Health sync and backups are optional." },
-            { question: "Can I use OmegaFyt on the web?", answer: "Yes, with the same account." },
+            { question: "Does the app need an internet connection?", answer: "No. Health sync and backups are optional." },
+            { question: "Is there a web version?", answer: "Yes, with the same account." },
           ]}
         />
       </Section>
@@ -120,8 +129,9 @@ export default function KitPage() {
           {(["scale", "ruler", "lift", "food", "water", "pulse", "record", "chart", "lock", "cloud", "offline", "phone", "watch", "globe", "sync", "analysis"] as const).map((n) => (
             <Icon key={n} name={n} size={24} label={n} />
           ))}
-          <AppIcon src="/apps/body.png" dark="/apps/body-dark.png" alt="Vector Body" size={56} />
-          <AppIcon src="/apps/omegafyt.png" alt="OmegaFyt" size={56} />
+          {apps.slice(0, 2).map((app) => (
+            <AppIcon key={app.slug} src={app.icon.light} dark={app.icon.dark} alt={app.name} size={56} />
+          ))}
         </div>
       </Section>
     </>

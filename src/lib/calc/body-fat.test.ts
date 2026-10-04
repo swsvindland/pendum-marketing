@@ -14,7 +14,7 @@ import {
 const IN = 2.54;
 
 describe("navyBodyFat, male", () => {
-  it("matches Vector Body's test vector", () => {
+  it("matches Pendum Body's test vector", () => {
     // body-track tests/core.test.cjs: neck 40, abdomen 90, height 180 cm gives between 18 and 19.
     const v = navyBodyFat("male", { heightCm: 180, neckCm: 40, abdomenCm: 90 })!;
     expect(v).toBeGreaterThan(18);
@@ -23,7 +23,7 @@ describe("navyBodyFat, male", () => {
   });
 
   it("matches a hand calculation in inches", () => {
-    // Neck 15 in, abdomen 34 in, height 70 in (the OmegaFyt server test case):
+    // Neck 15 in, abdomen 34 in, height 70 in (the Pendum One server test case):
     // 86.010 × log10(19) − 70.041 × log10(70) + 36.76
     // = 86.010 × 1.278754 − 70.041 × 1.845098 + 36.76 = 109.985 − 129.232 + 36.76 = 17.513
     const v = navyBodyFat("male", { heightCm: 70 * IN, neckCm: 15 * IN, abdomenCm: 34 * IN })!;
@@ -38,7 +38,7 @@ describe("navyBodyFat, male", () => {
 });
 
 describe("navyBodyFat, female", () => {
-  it("matches Vector Body's test vector exactly", () => {
+  it("matches Pendum Body's test vector exactly", () => {
     // body-track tests/core.test.cjs: neck 33, waist 75, hips 100, height 165 cm.
     expect(navyBodyFat("female", { heightCm: 165, neckCm: 33, waistCm: 75, hipsCm: 100 })).toBe(29.739407691790603);
   });
@@ -86,7 +86,7 @@ describe("navyBodyFat, no estimate", () => {
 });
 
 describe("bodyFatCategory", () => {
-  it("uses Vector Body's ACE edges for men, lower edges inclusive", () => {
+  it("uses Pendum Body's ACE edges for men, lower edges inclusive", () => {
     expect(bodyFatCategory(5.9, "male")).toBe("veryLow");
     expect(bodyFatCategory(6, "male")).toBe("lean");
     expect(bodyFatCategory(13.9, "male")).toBe("lean");
@@ -96,7 +96,7 @@ describe("bodyFatCategory", () => {
     expect(bodyFatCategory(25, "male")).toBe("elevated");
   });
 
-  it("uses Vector Body's ACE edges for women", () => {
+  it("uses Pendum Body's ACE edges for women", () => {
     expect(bodyFatCategory(13.9, "female")).toBe("veryLow");
     expect(bodyFatCategory(14, "female")).toBe("lean");
     expect(bodyFatCategory(21, "female")).toBe("typical");

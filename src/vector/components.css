@@ -51,6 +51,11 @@
     min-width: 44px;
     padding: 0;
   }
+  /* HeroUI paints the press through React Aria's data-pressed; the kit's native buttons (button-native.tsx) press
+     through :active. */
+  .button:active:not(:disabled) {
+    background-color: var(--button-bg-pressed);
+  }
   .button .kit-icon[data-kit-icon] {
     margin: 0;
   }
@@ -195,68 +200,106 @@
     transition-timing-function: var(--ease-standard);
   }
 
-  /* 4. Accordion, the kit's Disclosures (§5.6 row geometry): rows 44 minimum, px-4 py-3, the question in
-        bodyStrong, separators inset 16, pressed and hovered rows in surface-secondary, the panel opening over 200
-        standard. The answer is body foreground-secondary, its paragraphs a column 12 apart, with links in tint. */
-  .accordion__trigger {
+  /* 4. Disclosures (§5.6 row geometry) on native <details>/<summary> (disclosure.tsx), the kit's own hooks since
+        HeroUI has no slot here: rows 44 minimum, px-4 py-3, the question in bodyStrong, the muted `down` glyph
+        turning when open, 1pt separators inset 16, hovered closed rows in surface-secondary, the answer opening
+        over 200 standard where the browser animates ::details-content (elsewhere it opens at once). The answer is
+        body foreground-secondary, its paragraphs a column 12 apart, with links in tint. */
+  .kit-disclosure {
+    position: relative;
+    interpolate-size: allow-keywords;
+  }
+  .kit-disclosure::after {
+    content: "";
+    position: absolute;
+    inset-inline: 16px 0;
+    bottom: 0;
+    height: 1px;
+    background: var(--separator);
+  }
+  .kit-disclosure:last-child::after {
+    content: none;
+  }
+  .kit-disclosure__trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
     min-height: 44px;
     padding: 12px 16px;
-    gap: 12px;
-    font-size: 16px;
-    line-height: 24px;
-    font-weight: 500;
+    cursor: pointer;
+    list-style: none;
     color: var(--foreground);
+    -webkit-tap-highlight-color: transparent;
     transition: background-color 100ms var(--ease-standard);
   }
+  .kit-disclosure__trigger::-webkit-details-marker,
+  .kit-disclosure__trigger::marker {
+    display: none;
+  }
   @media (hover: hover) {
-    .accordion__trigger:hover:not([aria-expanded="true"]) {
+    .kit-disclosure:not([open]) > .kit-disclosure__trigger:hover {
       background-color: var(--surface-secondary);
     }
   }
-  .accordion__indicator {
-    color: var(--muted);
-    transition-duration: 150ms;
-    transition-timing-function: var(--ease-standard);
-  }
-  .accordion__panel {
-    transition:
-      height 200ms var(--ease-standard),
-      opacity 200ms var(--ease-standard);
-  }
-  .accordion__body {
+  .kit-disclosure__question {
     font-size: 16px;
     line-height: 24px;
+    font-weight: 500;
+    text-align: start;
+    text-wrap: pretty;
   }
-  .accordion__body-inner {
+  .kit-disclosure__indicator {
+    color: var(--muted);
+    transition: transform 150ms var(--ease-standard);
+  }
+  .kit-disclosure[open] > .kit-disclosure__trigger .kit-disclosure__indicator {
+    transform: rotate(180deg);
+  }
+  .kit-disclosure__body {
     display: flex;
     flex-direction: column;
     gap: 12px;
     padding: 0 16px 16px;
+    font-size: 16px;
+    line-height: 24px;
     color: var(--foreground-secondary);
   }
-  .accordion__body-inner strong {
+  .kit-disclosure__body strong {
     color: var(--foreground);
     font-weight: 500;
   }
-  .accordion__body-inner a {
+  .kit-disclosure__body a {
     color: var(--tint);
     text-decoration-line: underline;
     text-underline-offset: 4px;
   }
-  .accordion__item::after {
-    inset-inline-start: 16px;
-    width: auto;
-    inset-inline-end: 0;
-    border-radius: 0;
+  .kit-disclosure::details-content {
+    height: 0;
+    overflow: clip;
+    opacity: 0;
+    transition:
+      height 200ms var(--ease-standard),
+      opacity 200ms var(--ease-standard),
+      content-visibility 200ms allow-discrete;
+  }
+  .kit-disclosure[open]::details-content {
+    height: auto;
+    opacity: 1;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .kit-disclosure::details-content {
+      transition: none;
+    }
   }
   /* plain: on the canvas between 1pt rules, flush with the text column; answers keep 32 clear of the glyph. */
-  .kit-disclosures--plain .accordion__trigger {
+  .kit-disclosures--plain .kit-disclosure__trigger {
     padding-inline: 0;
   }
-  .kit-disclosures--plain .accordion__body-inner {
+  .kit-disclosures--plain .kit-disclosure__body {
     padding-inline: 0 32px;
   }
-  .kit-disclosures--plain .accordion__item::after {
+  .kit-disclosures--plain .kit-disclosure::after {
     inset-inline-start: 0;
   }
 
@@ -271,11 +314,10 @@
         box-shadow ring. An outline survives forced-colors mode (which drops box-shadows and repaints the outline
         in a system colour), and it does not depend on the shadow list HeroUI builds from --field-shadow. Rows that
         span a clipping container (Disclosures in a panel, items in the scrolling Select list) draw it inside.
-        Choices and ChipRow cells set the same outline with utilities (form/cell.ts). */
+        Choices and ChipRow cells set the same outline with utilities (form/cell.ts); native summaries and buttons
+        take the base :focus-visible rule (globals.css). */
   .button:focus-visible:not([data-focused]),
   .button[data-focus-visible="true"],
-  .accordion__trigger:focus-visible:not([data-focused]),
-  .accordion__trigger[data-focus-visible="true"],
   .select__trigger:focus-visible:not([data-focused]),
   .select__trigger[data-focus-visible="true"],
   .input:focus,
@@ -288,8 +330,7 @@
   }
   .list-box-item:focus-visible:not([data-focused]),
   .list-box-item[data-focus-visible="true"],
-  .kit-disclosures--panel .accordion__trigger:focus-visible:not([data-focused]),
-  .kit-disclosures--panel .accordion__trigger[data-focus-visible="true"] {
+  .kit-disclosures--panel .kit-disclosure__trigger:focus-visible {
     box-shadow: none;
     outline: 2px solid var(--focus);
     outline-offset: -2px;

@@ -1,24 +1,32 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { PageHeader } from "@/components/page";
 import { Group } from "@/components/site/group";
+import { JsonLd } from "@/components/site/json-ld";
 import { FactList } from "@/components/site/lists";
-import { pageMetadata } from "@/components/site/metadata";
+import { metaDescription, pageMetadata } from "@/components/site/metadata";
 import { getApp } from "@/content/apps";
 import { calculators, categoryLabel, categoryOrder } from "@/content/calculators";
+import { breadcrumbList, calculatorListItems, itemList } from "@/content/structured-data";
 import type { App } from "@/content/types";
-import { LinkButton, ListRow, Note, Panel, RowList, Value } from "@/vector";
+import { LinkButton, ListRow, Panel, RowList, Value } from "@/vector";
+
+const TITLE = "Fitness calculators";
 
 export const metadata: Metadata = pageMetadata({
-  title: "Fitness calculators",
-  description:
-    "Free calculators for body composition, nutrition, strength, hydration and heart rate: BMI, TDEE, macros, one-rep max and more. No sign-up, and nothing you type is sent anywhere.",
+  title: TITLE,
+  // Search results show about 160 characters; the helper cuts at a boundary should the sentence ever grow past it.
+  description: metaDescription(
+    "Free fitness calculators: BMI, body fat, TDEE, macros, one-rep max, water, heart rate zones and more. No sign-up, and nothing you type is sent anywhere."
+  ),
   path: "/calculators",
 });
 
 const count = new Intl.NumberFormat("en");
 
-/** Every calculator, grouped by category in the content's order, each group noting the app that tracks it. */
+/**
+ * Every calculator, grouped by category in the content's order, each group linking the app that tracks it over
+ * time. The page emits the list as an ItemList and its breadcrumb (Home, then this page).
+ */
 export default function CalculatorsPage() {
   const groups = categoryOrder
     .map((category) => {
@@ -33,9 +41,12 @@ export default function CalculatorsPage() {
 
   return (
     <>
+      <JsonLd data={breadcrumbList([{ name: "Home", href: "/" }, { name: TITLE }])} />
+      <JsonLd data={itemList(TITLE, calculatorListItems(calculators))} />
       <PageHeader
         eyebrow="Tools / Browser"
-        title="Fitness calculators"
+        crumbs={[{ href: "/", label: "Home" }]}
+        title={TITLE}
         subtitle="Estimates for body composition, nutrition, strength, hydration and heart rate. Free, with no sign-up. Nothing you type is sent anywhere."
       />
       <div className="mx-auto flex w-full max-w-data flex-col px-gutter py-10 md:py-12">
@@ -55,13 +66,9 @@ export default function CalculatorsPage() {
             footnote={
               tracked.length
                 ? tracked.map((app) => (
-                    <Note key={app.slug}>
-                      Tracked over time in{" "}
-                      <Link href={`/apps/${app.slug}`} className="text-tint underline underline-offset-4">
-                        {app.name}
-                      </Link>
-                      .
-                    </Note>
+                    <LinkButton key={app.slug} href={`/apps/${app.slug}`} forward>
+                      Track it over time in {app.name}
+                    </LinkButton>
                   ))
                 : undefined
             }

@@ -18,7 +18,9 @@ import {
 } from "@/lib/calc/macros";
 import { DEFAULT_ACTIVITY, PROFILE_LIMITS, tdee, type Activity } from "@/lib/calc/tdee";
 import { KG_PER_LB, formatNumber, formatSigned, kgToLb } from "@/lib/units";
-import { Callout, ReadoutRow, Rule, Value } from "@/vector";
+import { Callout } from "@/vector/feedback";
+import { ReadoutRow, Rule } from "@/vector/panel";
+import { Value } from "@/vector/text";
 import { Choices } from "@/vector/form/choices";
 import { Select } from "@/vector/form/select";
 import {
@@ -75,12 +77,15 @@ function blockedMessage(
     pace,
     estimated,
     fastestCut,
+    appName,
   }: {
     goal: Goal;
     pace: number;
     estimated: boolean;
     /** The fastest cut pace offered here that keeps a week of cutting at or above BMI 18.5, or null. */
     fastestCut: number | null;
+    /** The app whose limits these are, named by the server page. */
+    appName: string;
   }
 ): { title: string; body: string } {
   const outside = { title: "Outside the coached range" };
@@ -95,31 +100,31 @@ function blockedMessage(
       return fastestCut === null
         ? {
             title: "Cut not offered",
-            body: "At your height and weight, a week at any pace offered here takes your BMI under 18.5. Vector Macros does not set a cut goal under BMI 18.5, so no cut targets are generated. Choose Maintain or Bulk.",
+            body: `At your height and weight, a week at any pace offered here takes your BMI under 18.5. ${appName} does not set a cut goal under BMI 18.5, so no cut targets are generated. Choose Maintain or Bulk.`,
           }
         : {
             title: "Pace not offered",
-            body: `A week at ${pct(pace)} of body weight takes your BMI under 18.5. Vector Macros does not set a cut goal under BMI 18.5, so no targets are generated at this pace. Choose ${pct(fastestCut)} a week or slower.`,
+            body: `A week at ${pct(pace)} of body weight takes your BMI under 18.5. ${appName} does not set a cut goal under BMI 18.5, so no targets are generated at this pace. Choose ${pct(fastestCut)} a week or slower.`,
           };
     case "expenditure-low":
     case "expenditure-high":
       return {
         ...outside,
-        body: `${maintenance} is ${kcal(Math.round(plan.expenditure))} kcal a day. Vector Macros starts programs from ${kcal(EXPENDITURE_LIMITS.min)}–${kcal(EXPENDITURE_LIMITS.max)} kcal a day, so no targets are generated from it.${
+        body: `${maintenance} is ${kcal(Math.round(plan.expenditure))} kcal a day. ${appName} starts programs from ${kcal(EXPENDITURE_LIMITS.min)}–${kcal(EXPENDITURE_LIMITS.max)} kcal a day, so no targets are generated from it.${
           estimated ? " If you know your maintenance calories, enter them." : ""
         }`,
       };
     case "calories-low":
       return {
         ...outside,
-        body: `These choices come to ${kcal(plan.calories)} kcal a day. Vector Macros keeps targets within ${RANGE}. ${
+        body: `These choices come to ${kcal(plan.calories)} kcal a day. ${appName} keeps targets within ${RANGE}. ${
           goal === "cut" ? "Choose a slower pace or Maintain." : "A target this low needs professional guidance."
         }`,
       };
     case "calories-high":
       return {
         ...outside,
-        body: `These choices come to ${kcal(plan.calories)} kcal a day. Vector Macros keeps targets within ${RANGE}. Choose a slower pace or Maintain.`,
+        body: `These choices come to ${kcal(plan.calories)} kcal a day. ${appName} keeps targets within ${RANGE}. Choose a slower pace or Maintain.`,
       };
     case "carbs":
       return {
@@ -131,7 +136,8 @@ function blockedMessage(
   }
 }
 
-export function MacrosTool() {
+/** `appName`: the app whose program limits the tool applies, named by the server page (a client file reads no site content). */
+export function MacrosTool({ appName }: { appName: string }) {
   const [units, setUnits] = useUnits();
   const [goal, setGoal] = useState<Goal>("cut");
   const [pace, setPace] = useState(String(PACES.cut.default));
@@ -174,6 +180,7 @@ export function MacrosTool() {
           pace: weeklyPace,
           estimated: entered === null,
           fastestCut: plan.blocked === "goal-underweight" ? fastestCutPace(w, h) : null,
+          appName,
         })
       : null;
 
@@ -263,6 +270,7 @@ export function MacrosTool() {
                 ? blocked.body
                 : undefined
           }
+          hasResult={t !== null}
         >
           {!plan ? (
             maintenance.error ? (

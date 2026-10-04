@@ -3,10 +3,11 @@
 import { useState } from "react";
 import { BMI_BANDS, bmi, bmiCategory, changeToHealthy, healthyWeightRange, roundBmi } from "@/lib/calc/bmi";
 import { formatNumber, formatSigned } from "@/lib/units";
-import { ReadoutRow, Value } from "@/vector";
+import { ReadoutRow } from "@/vector/panel";
+import { Value } from "@/vector/text";
 import { EMPTY, HeightField, MassField, UnitChoice, type Measure } from "../shared/fields";
 import { quantityScale } from "../shared/measure";
-import { BandScale, EmptyResult, HeroValue, ResultPanel } from "../shared/results";
+import { BandScale, CheckInput, EmptyResult, HeroValue, ResultPanel, firstInvalid } from "../shared/results";
 import { ToolLayout } from "../shared/tool-layout";
 import { useUnits } from "../shared/use-units";
 
@@ -22,6 +23,10 @@ export function BmiTool() {
   const mass = quantityScale("mass", units);
   const range = ready ? healthyWeightRange(height.value!, mass) : null;
   const change = ready ? changeToHealthy(weight.value!, height.value!, mass) : 0;
+  const invalid = firstInvalid([
+    ["height", height],
+    ["weight", weight],
+  ]);
 
   return (
     <ToolLayout
@@ -39,7 +44,11 @@ export function BmiTool() {
           announce={value !== null && band ? `BMI ${formatNumber(roundBmi(value), 1)}, ${band.label.toLowerCase()}.` : undefined}
         >
           {value === null || !band || !range ? (
-            <EmptyResult>Enter your height and weight to see your BMI.</EmptyResult>
+            invalid ? (
+              <CheckInput field={invalid} outcome="your BMI" />
+            ) : (
+              <EmptyResult>Enter your height and weight to see your BMI.</EmptyResult>
+            )
           ) : (
             <>
               <HeroValue value={formatNumber(roundBmi(value), 1)} unit="kg/m²" caption={band.label} />

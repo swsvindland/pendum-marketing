@@ -40,12 +40,13 @@ Women  a = −0.0000010706
           <p>
             <strong>Wilks</strong> is Robert Wilks&rsquo; original formula; the IPF has since moved to its own points.
             Its denominator is a fifth-degree polynomial. OpenPowerlifting holds body weight to 40 to 201.9 kg for
-            men and 26.51 to 154.53 kg for women, which keeps clear of the polynomial&rsquo;s asymptote at the heavy
+            men and 26.51 to 154.53 kg for women. That keeps clear of the polynomial&rsquo;s asymptote at the heavy
             end and of very large coefficients at the light end.
           </p>
           <Formula label="Wilks formula">
             {`Wilks = total × 500
-        / (a + b·x + c·x² + d·x³ + e·x⁴ + f·x⁵)
+        / (a + b·x + c·x² + d·x³
+           + e·x⁴ + f·x⁵)
 
 Men    a = −216.0475144
        b = 16.2606339
