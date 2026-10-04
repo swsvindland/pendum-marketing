@@ -1,3 +1,4 @@
+import { Analytics } from "@vercel/analytics/next";
 import type { Metadata, Viewport } from "next";
 import { InlineScript } from "@/components/inline-script";
 import { SiteFooter } from "@/components/site-footer";
@@ -7,6 +8,14 @@ import { site } from "@/content/site";
 import { fontPreloads } from "@/fonts";
 import { appearanceScript } from "@/vector/appearance";
 import "./globals.css";
+
+/**
+ * Vercel Web Analytics counts page views without cookies (the privacy page says what it records). It loads its
+ * script from a path only Vercel serves, so it renders only in a build made on Vercel, where `VERCEL` is "1": a
+ * local or other-host build has no 404ing script, and `pnpm lighthouse` measures the site without it. Never send
+ * it anything typed into the site: no custom events with values, and no calculator inputs in page addresses.
+ */
+const onVercel = process.env.VERCEL === "1";
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
@@ -55,6 +64,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           {children}
         </main>
         <SiteFooter />
+        {onVercel ? <Analytics /> : null}
       </body>
     </html>
   );

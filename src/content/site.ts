@@ -28,7 +28,7 @@ export const site = {
   /** The one collective noun for the four one-time purchase apps: a label and its sentence form. */
   series: { label: `${family} apps`, sentence: `the ${family} apps` },
   /** The day the site's content was last checked against the app repos; index pages report it as lastModified. */
-  contentUpdated: "2026-10-03",
+  contentUpdated: "2026-10-04",
   /** Used in <title> templates and the footer. */
   title: `${family}: precise fitness apps for iPhone and Android`,
   /** The meta description: category first, then the two models, under 160 characters. */

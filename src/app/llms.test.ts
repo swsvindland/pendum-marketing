@@ -24,7 +24,7 @@ describe("/llms.txt", () => {
   it("opens with the site name and the family sentence", () => {
     expect(lines[0]).toBe(`# ${site.name}`);
     expect(lines[2]).toBe(`> ${site.description}`);
-    expect(text).toContain(`App facts checked ${latestUpdate()}; store listings verified ${site.contentUpdated}.`);
+    expect(text).toContain(`App facts checked ${latestUpdate()}; site content updated ${site.contentUpdated}.`);
   });
 
   it("lists every app with its page URL, definition and sale model", () => {

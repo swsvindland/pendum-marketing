@@ -64,7 +64,7 @@ function text() {
     "",
     `> ${site.description}`,
     "",
-    `This file is generated from the site content, which is checked against the app repos. App facts checked ${latestUpdate()}; store listings verified ${site.contentUpdated}.`,
+    `This file is generated from the site content, which is checked against the app repos. App facts checked ${latestUpdate()}; site content updated ${site.contentUpdated}.`,
     "",
     "## Apps",
     "",

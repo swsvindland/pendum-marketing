@@ -180,5 +180,8 @@ supplies the look, exactly as on native. Never edit `../vector-design` from here
   metadata from `src/content/calculators.ts`, the one source for titles, descriptions, lists and the sitemap.
 - Inputs start empty; results show `EmptyResult` until valid. Canonical units inside the math (kg, cm, mL); the
   shared `useUnits()` choice converts at the edges. Errors say what is wrong and the valid range.
+- The site counts page views with Vercel Web Analytics (`<Analytics />` in the root layout, rendered only in builds
+  on Vercel, where `VERCEL` is "1"). It sets no cookies; /privacy states what it records. Never send it anything a
+  visitor types: no custom events with values, and no calculator inputs in page addresses.
 - Nothing typed into a calculator is sent anywhere. Only the unit choice (and the site's appearance) is remembered,
   in this browser's localStorage.

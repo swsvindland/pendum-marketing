@@ -146,10 +146,10 @@ export default function PrivacyPage() {
         bordered
       >
         <Panel className="max-w-form">
-          <Panel.Header eyebrow="Site / Readout" title="No cookies and no analytics" />
+          <Panel.Header eyebrow="Site / Readout" title="No cookies and no ads" />
           <Panel.Body className="gap-0">
-            <ReadoutRow label="Analytics">
-              <Word>None</Word>
+            <ReadoutRow label="Analytics" stack>
+              <Word>Page views, without cookies</Word>
             </ReadoutRow>
             <ReadoutRow label="Cookies">
               <Word>None</Word>
@@ -166,10 +166,11 @@ export default function PrivacyPage() {
             <FactList
               className="mt-3 border-t border-separator pt-3"
               items={[
-                "The site runs no analytics, tracking or advertising scripts, and it sets no cookies.",
+                "The site counts page views with Vercel Web Analytics and sets no cookies. A visit is recognized by a hash of the request, which is discarded after 24 hours, and each view records the page, the site that linked to it, an approximate location, and the browser, system and device type. Reports show totals only.",
+                "The site runs no advertising or cross-site tracking scripts.",
                 "There is no sign-up, newsletter or contact form, so no form on the site sends data.",
                 "When you pick an appearance (Light or Dark) or a unit system, this browser’s local storage remembers it so the next page matches. The site does not send it anywhere, and clearing this site’s data in your browser removes it.",
-                "Calculators run in your browser. What you type into them is not stored or sent.",
+                "Calculators run in your browser. What you type into them is not stored or sent, and it never appears in a page address.",
                 "Fonts are served by this site, not by a font service.",
               ]}
             />
